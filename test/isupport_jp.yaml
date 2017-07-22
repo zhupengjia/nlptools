@@ -1,0 +1,30 @@
+APPNAME: ISUPPORT_SUPERVISED
+LANGUAGE: jp
+
+stopwords_path: data/jp_stopwords.txt
+dynamodb: 'word_vectors_jp' 
+#w2v_word2idx: /home/pzhu/data/word2vec/jp/fasttext/word2idx.pkl
+#w2v_idx2vec: /home/pzhu/data/word2vec/jp/fasttext/vectors.pkl
+vec_len: 300
+PAD: '</DTM>'
+
+#cached word2vec
+cached_w2v: data/w2v_jp.pkl
+cached_vocab: data/vocab_jp.pkl
+
+seg_dict_path: /usr/local/lib/mecab/dic/mecab-ipadic-neologd
+
+#topic model
+N_topic: 50
+lda_path: data/lda_5000.pkl
+lsi_path: data/lsi_5000.pkl
+
+#model save
+saved_model: data/model_jp.h5
+
+#log 
+#0 NOTSET, 10 DEBUG, 20 INFO, 30 WARNING, 40 ERROR, 50 CRITICAL
+LogLevel_Console:  0
+LogLevel_File: 0
+LogFile: /tmp/isupport_supervised.log
+LogFormat: '%(asctime)s | %(levelname)s: %(message)s'
