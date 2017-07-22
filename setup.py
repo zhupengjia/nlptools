@@ -39,7 +39,9 @@ setup(
     install_requires=[
         "numpy",
         "Cython",
-        "pandas"
+        "pandas",
+        "nameko",
+        "requests"
         ],
     tests_require=['pytest'],
     ext_modules = cythonize("ailab/*/*.pyx"),
