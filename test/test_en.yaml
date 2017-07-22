@@ -1,0 +1,18 @@
+APPNAME: ISUPPORT_SUPERVISED
+LANGUAGE: en
+
+stopwords_path: data/en_stopwords.txt
+dynamodb: 'word_vectors_eng' 
+vec_len: 300
+
+#cached word2vec
+cached_w2v: data/w2v_en.pkl
+cached_vocab: data/vocab_en.pkl
+
+#log 
+#0 NOTSET, 10 DEBUG, 20 INFO, 30 WARNING, 40 ERROR, 50 CRITICAL
+LogLevel_Console:  0
+LogLevel_File: 0
+LogFile: /tmp/isupport_supervised.log
+LogFormat: '%(asctime)s | %(levelname)s: %(message)s'
+
