@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import numpy, os
-from nlptools.utils import zload, zdump
+from ..utils import zload, zdump
 
 # get TF of vocabs and vectors
 class Vocab:

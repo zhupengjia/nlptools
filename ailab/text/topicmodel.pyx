@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import numpy as np
 from gensim import corpora, models, similarities
-from nlptools.utils import zload, zdump
+from ..utils import zload, zdump
 
 class TopicModel:
     def __init__(self, question_db_tokens, cfg):

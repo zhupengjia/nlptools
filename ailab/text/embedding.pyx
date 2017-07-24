@@ -5,7 +5,7 @@
 import time, redis, boto3, base64, os
 import numpy as np
 from scipy.spatial.distance import cosine
-from nlptools.utils import zload, zdump
+from ailab.utils import zload, zdump
 
 
 class Embedding_Base(object):

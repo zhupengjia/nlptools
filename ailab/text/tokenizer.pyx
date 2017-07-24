@@ -112,8 +112,8 @@ class Segment_JP(Segment_Base):
 class Segment_Keras(Segment_Base):
     def __init__(self, cfg):
         from keras.models import Model, load_model
-        from nlptools.utils import zload
-        from nlptools.corpus.vocab import Vocab
+        from ..utils import zload
+        from .vocab import Vocab
         Segment_Base.__init__(self, cfg)
         self.not_cuts = re.compile('([\da-zA-Z ]+)|[\.\+\,\-\!\?\/\:\;，。！？、；：]')
         self.seg_dict = cfg['seg_dict_path']
@@ -208,12 +208,5 @@ class Segment(object):
             raise('Error! %s language is not supported'%cfg['LANGUAGE'])
 
 
-if __name__ == '__main__':
-    from nlptools.utils import Config
-    cfg = Config('/home/pzhu/work/accenture/isupport_supervised/config/isupport_jp.yaml')
-    e = Segment(cfg)
-    e.seg_smart('Telecom/ 通信・国際電話代をどうやって清算しますか')
-    e.seg_smart('Training/　トレーニングを受けたいですが、注意事項は？')
-    e.seg_smart('航空券・例外手配申請 <JTB-CWT以外・高額> の方法を教えてください')
 
 
