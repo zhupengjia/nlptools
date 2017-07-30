@@ -75,6 +75,20 @@ class Embedding_Redis(Embedding_Base):
         v = self.redis_ins.get(word)
         return v is not None
 
+class Embedding_Random(Embedding_Base):
+    def __init__(self, cfg):
+        Embedding_Base.__init__(self, cfg)
+
+    def __getitem__(self, word):
+        if word in self.cached_vec:
+            return self.cached_vec[word]
+        v = np.random.randn(self.vec_len).astype('float32')
+        self.cached_vec[word] = v
+        return v
+
+    def __contains__(self, word):
+        return word in self.cached_vec
+
 class Embedding_Dynamodb(Embedding_Base):
     def __init__(self, cfg):
         Embedding_Base.__init__(self, cfg)
@@ -110,8 +124,10 @@ class Embedding(object):
             return Embedding_File(cfg)
         elif 'dynamodb' in cfg:
             return Embedding_Dynamodb(cfg)
-        else:
+        elif 'redis_host' in cfg:
             return Embedding_Redis(cfg)
+        else:
+            return Embedding_Random(cfg)
 
             
 
