@@ -8,5 +8,6 @@ from .vocab import Vocab
 from .docsim import DocSim
 from .translate import Translate
 from .searchkeyword import SearchKeyword
+from .vectfidf import VecTFIDF
 
-__all__ = ["Segment", 'Embedding', 'Vocab', 'DocSim', 'Translate', 'SearchKeyword']
+__all__ = ["Segment", 'Embedding', 'Vocab', 'DocSim', 'Translate', 'SearchKeyword', 'VecTFIDF']

@@ -5,7 +5,8 @@ import os, string, numpy, jieba, spacy, re
 class Segment_Base(object):
     def __init__(self, cfg):
         self.stopwords = {}
-        self.__loadStopwords(cfg['stopwords_path'])
+        if 'stopwords_path' in cfg:
+            self.__loadStopwords(cfg['stopwords_path'])
     
     def __loadStopwords(self, stopwords_path):
         if stopwords_path is not None and os.path.exists(stopwords_path):

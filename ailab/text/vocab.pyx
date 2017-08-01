@@ -81,12 +81,16 @@ class Vocab:
             vec[i] = self.emb_ins[self.id2word[sid]]
         return vec
     
+    def word2vec(self, word_id):
+        return self.emb_ins[word_id]
+    
     def ave_vec(self, sentence_id):
         vec = numpy.zeros(self.emb_ins.vec_len, 'float32')
         tottf = 0
         for i, sid in enumerate(sentence_id):
-            vec += self.emb_ins[self.id2word[sid]]*(1./self.id2tf[sid])
-            tottf += (1./self.id2tf[sid])
+            w = numpy.log(self.Nwords/(self.id2tf[sid]))
+            vec += self.emb_ins[self.id2word[sid]]*w
+            tottf += w
         if tottf == 0:
             return numpy.zeros(self.emb_ins.vec_len)
         return vec/tottf
