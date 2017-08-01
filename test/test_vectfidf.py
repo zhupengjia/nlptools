@@ -14,7 +14,8 @@ One of the simplest ranking functions is computed by summing the tf–idf for ea
 corpus = [x for x in re.split('[\n\.\[\]]', corpus) if len(x)>2]
 corpus_ids = [v.sentence2id(x) for x in corpus]
 
+t.train_index(corpus_ids)
 print('tf:', t.tf(3, corpus_ids[0]))
-print('idf:', t.idf(3, corpus_ids))
-print('tfidf:', t.tfidf(3, corpus_ids[0], corpus_ids))
+print('idf:', t.idf(3))
+print('tfidf:', t.tfidf(3, corpus_ids[0]))
 
