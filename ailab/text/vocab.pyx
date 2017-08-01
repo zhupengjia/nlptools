@@ -82,7 +82,7 @@ class Vocab:
         return vec
     
     def word2vec(self, word_id):
-        return self.emb_ins[word_id]
+        return self.emb_ins[self.id2word[word_id]]
     
     def ave_vec(self, sentence_id):
         vec = numpy.zeros(self.emb_ins.vec_len, 'float32')
