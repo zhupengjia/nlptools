@@ -13,6 +13,10 @@ class Embedding_Base(object):
         self.cfg = cfg
         self.__get_cached_vec()
         self.vec_len = cfg['vec_len'] + 1
+        if 'vec_type' in cfg:
+            self.vec_type = cfg['vec_type']
+        else:
+            self.vec_type = 'float64'
 
     def distance(self, word1, word2):
         vec1 = self.__getitem__(word1)
@@ -82,7 +86,7 @@ class Embedding_Random(Embedding_Base):
     def __getitem__(self, word):
         if word in self.cached_vec:
             return self.cached_vec[word]
-        v = np.random.randn(self.vec_len).astype('float32')
+        v = np.random.randn(self.vec_len -1).astype('float32')
         self.cached_vec[word] = v
         return v
 
@@ -94,10 +98,6 @@ class Embedding_Dynamodb(Embedding_Base):
         Embedding_Base.__init__(self, cfg)
         self.client = boto3.resource('dynamodb')
         self.table = self.client.Table(cfg['dynamodb'])
-        if 'vec_type' in cfg:
-            self.vec_type = cfg['vec_type']
-        else:
-            self.vec_type = 'float64'
 
     def __getitem__(self, word):
         if word in self.cached_vec:

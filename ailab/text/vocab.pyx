@@ -69,6 +69,7 @@ class Vocab:
         len_id2vec = self.id2vec.shape[0]
         self.id2vec = numpy.concatenate((self.id2vec, numpy.zeros((len(self.id2word)-self.id2vec.shape[0], self.emb_ins.vec_len))))
         for i in range(len_id2vec, len(self.id2word)):
+            print('get id2vec, ', i, len(self.id2word))
             self.id2vec[i] = self.emb_ins[self.id2word[i]]
         return len(self.id2word) - len_id2vec
 

@@ -27,8 +27,14 @@ class VecTFIDF:
     def train_index(self, corpus_ids):
         self.index_word2doc = {}
         self.len_corpus = len(corpus_ids)
-        for i in set([item for sublist in corpus_ids for item in sublist]):
-            self.index_word2doc[i] = {j:self.n_count(i, corpus_ids[j]) for j in range(len(corpus_ids))}
+        all_ids = set([item for sublist in corpus_ids for item in sublist])
+        for i in all_ids:
+            #if i%100 == 0:
+            self.index_word2doc[i] ={}
+            for j in range(len(corpus_ids)):
+                print(i, j, len(all_ids), len(corpus_ids))
+                self.index_word2doc[i][j] = self.n_count(i, corpus_ids[j])
+            #{j:self.n_count(i, corpus_ids[j]) for j in range(len(corpus_ids))}
         if 'cached_index' in self.cfg:
             zdump((self.index_word2doc, self.len_corpus), self.cfg['cached_index'])
 
