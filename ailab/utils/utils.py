@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, zlib
+import os, zlib, numpy
 import pickle
 
 #compress pickle file by using zlib and cpickle
@@ -37,5 +37,6 @@ def lloads(value):
     try:return pickle.loads(lzo.decompress(value))
     except:return pickle.loads(value)
 
-
+def n_count(i, ids):
+    return numpy.sum(numpy.array(ids) == i)
 
