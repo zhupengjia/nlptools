@@ -33,6 +33,6 @@ lsi, lda model
 
 ## Version
 
-### v0.0.2
+### v0.0.2 [Download link](http://54.65.195.194/acn.ai/ailab/ailab/blob/c3bafaf0da809a0773e4e726ba1aead316e3c52a/dist/ailab-0.0.2-cp27-cp27mu-linux_x86_64.whl)
 1. Build as wheel;
 1. Adopted to iSupport iPV
