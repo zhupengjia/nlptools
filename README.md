@@ -1,3 +1,8 @@
+# AILab Repo
+
+## Build
+python setup.py bdist_wheel
+
 ## Code tree
 ### test
 pytest codes
@@ -26,3 +31,8 @@ class to convert word/charactor to id, vector, build dictionary, etc
 #### ailab/text/topicmodel.pyx
 lsi, lda model
 
+## Version
+
+### v0.0.2
+1. Build as wheel;
+1. Adopted to iSupport iPV

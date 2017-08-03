@@ -5,7 +5,7 @@
 # author:    QIAO Nan <qiaonancn@gmail.com>
 # license:   GPL
 # created:   2016 Dec 17
-# modified:  2017 Jul 22
+# modified:  2017 Aug 03
 #
 
 import os
@@ -22,11 +22,11 @@ def read(fname):
 
 setup(
     name = "ailab",
-    version = "0.0.1",
+    version = "0.0.2",
     author = "Qiao, Nan",
     author_email = "qiaonancn@gmail.com",
     description = ("ailab"),
-    license = "BSD",
+    license = "Commercial",
     keywords = "ailab",
     url = "",
     packages= find_packages(),
