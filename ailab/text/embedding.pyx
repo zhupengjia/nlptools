@@ -82,11 +82,12 @@ class Embedding_Redis(Embedding_Base):
 class Embedding_Random(Embedding_Base):
     def __init__(self, cfg):
         Embedding_Base.__init__(self, cfg)
+        self.vec_len = cfg['vec_len']
 
     def __getitem__(self, word):
         if word in self.cached_vec:
             return self.cached_vec[word]
-        v = np.random.randn(self.vec_len -1).astype('float32')
+        v = np.random.randn(self.vec_len).astype('float32')
         self.cached_vec[word] = v
         return v
 

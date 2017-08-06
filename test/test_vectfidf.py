@@ -2,7 +2,7 @@
 import re, sys
 from ailab.text import *
 
-cfg = {'vec_len':10, 'LANGUAGE':'en', 'cached_w2v':'/tmp/w2v.pkl'}
+cfg = {'vec_len':10, 'LANGUAGE':'en', 'cached_w2v':'/tmp/w2v.pkl', 'cached_vocab':'/tmp/vocab.pkl', 'cached_index':'/tmp/tfidf.index'}
 e = Embedding(cfg)
 s = Segment(cfg)
 v = Vocab(cfg, s, e)
@@ -14,8 +14,14 @@ One of the simplest ranking functions is computed by summing the tf–idf for ea
 corpus = [x for x in re.split('[\n\.\[\]]', corpus) if len(x)>2]
 corpus_ids = [v.sentence2id(x) for x in corpus]
 
-t.train_index(corpus_ids)
-print('tf:', t.tf(3, corpus_ids[0]))
-print('idf:', t.idf(3))
-print('tfidf:', t.tfidf(3, corpus_ids[0]))
+#t.train_index(corpus_ids)
+t.load_index()
+
+#print('tf:', t.tf(3, corpus_ids[0]))
+#print('idf:', t.idf(3))
+
+print('tfidf:', t.tfidf(corpus_ids[1], corpus_ids[0]))
+
+#e.save()
+#v.save()
 
