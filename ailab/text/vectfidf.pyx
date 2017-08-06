@@ -17,19 +17,11 @@ class VecTFIDF(object):
             return 0
         if isinstance(word_ids, int):
             word_ids = [word_ids]
-        t1 = time.time()
         sentence_vec = self.vocab.senid2vec(sentence_ids)
-        t2 = time.time()
         word_vec = self.vocab.senid2vec(word_ids)
-        t3 = time.time()
         score = 1/(1.+pairwise_distances(word_vec, sentence_vec, metric = self.distance_metric))
-        t4 = time.time()
         score[score < self.scorelimit] = 0
-        t5 = time.time()
-        score = score.sum(axis = 1)
-        t6 = time.time()
-        print(t2-t1, t3-t2, t4-t3, t5-t4, t6-t5)
-        return score
+        return score.sum(axis = 1)
 
     #calculate tf
     def tf(self, word_ids, sentence_ids):
@@ -61,23 +53,13 @@ class VecTFIDF(object):
     def n_containing_id(self, word_id):
         if not word_id in self.index_word2doc:
             return 0
-        return len([x for x in self.index_word2doc[word_id] if x>=1])
+        return len(self.index_word2doc[word_id])
 
     def idf(self, word_ids):
         return numpy.log(self.len_corpus/(1. + self.n_containing(word_ids)))
 
     def tfidf(self, word_ids, sentence_ids):
-        t1 = time.time()
-        tf = self.tf(word_ids, sentence_ids)
-        t2 = time.time()
-        idf = self.idf(word_ids)
-        t3 = time.time()
-        print('tfidf', t2-t1, t3-t2)
-        return tf*idf
-        #return self.tf(word_ids, sentence_ids) * self.idf(word_ids)
+        return self.tf(word_ids, sentence_ids) * self.idf(word_ids)
 
-    #def search(self, word_ids, sentence_ids):
-
-    
 
 
