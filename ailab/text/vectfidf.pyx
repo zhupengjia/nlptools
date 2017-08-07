@@ -25,6 +25,8 @@ class VecTFIDF(object):
 
     #calculate tf
     def tf(self, word_ids, sentence_ids):
+        if len(sentence_ids) == 0:
+            return 0
         return self.n_sim(word_ids, sentence_ids)/len(sentence_ids)
     
     #build index for each word in corpus
