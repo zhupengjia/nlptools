@@ -44,7 +44,7 @@ setup(
         "requests"
         ],
     tests_require=['pytest'],
-    ext_modules = cythonize("ailab/*/*.pyx"),
+    ext_modules = cythonize("ailab/*/*.pyx", "ailab/*/*/*.pyx"),
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
