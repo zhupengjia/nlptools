@@ -3,9 +3,9 @@
 import os, string, numpy, jieba, spacy, re
 
 class Segment_Base(object):
-    def __init__(self, cfg):
+    def __init__(self, cfg, stopwords=True):
         self.stopwords = {}
-        if 'stopwords_path' in cfg:
+        if stopwords and 'stopwords_path' in cfg:
             self.__loadStopwords(cfg['stopwords_path'])
     
     def __loadStopwords(self, stopwords_path):

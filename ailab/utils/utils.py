@@ -40,3 +40,14 @@ def lloads(value):
 def n_count(i, ids):
     return numpy.sum(numpy.array(ids) == i)
 
+def status_save(fn, status):
+    with open(fn, 'w') as f:
+        f.write(str(status))
+
+def status_check(fn):
+    if not os.path.exists(fn):
+        return 0
+    with open(fn, 'r') as f:
+        return f.readlines()[0].strip()
+
+
