@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
-import os, string, numpy, jieba, spacy, re
+import os, string, numpy, re, glob
 
 class Segment_Base(object):
     def __init__(self, cfg, stopwords=True):
@@ -14,10 +13,11 @@ class Segment_Base(object):
                 for i in f.readlines():
                     self.stopwords[i.strip()] = ''
 
-class Segment_EN(Segment_Base):
+class Segment_Spacy(Segment_Base):
     def __init__(self, cfg):
+        import spacy
         Segment_Base.__init__(self, cfg)
-        self.nlp = spacy.load('en')
+        self.nlp = spacy.load(cfg['LANGUAGE'])
     
     def seg(self, sentence, remove_stopwords = False, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
         txts, tokens, tags, entities, pos, dep= [], [], [], [], [], []
@@ -42,22 +42,24 @@ class Segment_EN(Segment_Base):
             dep.append(token.dep_)
             
         return {"tokens":tokens, "tags":tags, "texts":txts, "entities":entities, 'pos':pos, 'dep':dep}
-    
+   
     def seg_sentence(self, sentence):
         return self.seg(sentence, remove_stopwords=True, pos_filter=['PROPN','NOUN','ADJ','PRON','ADV'])
 
 
-class Segment_CN(Segment_Base):
+class Segment_Jieba(Segment_Base):
     def __init__(self, cfg):
+        import jieba
         Segment_Base.__init__(self, cfg)
         if 'seg_dict_path' in cfg:
             jieba.load_userdict(cfg['seg_dict_path'])
+        self.nlp = jieba
 
     def seg(self, sentence, remove_stopwords=False):
         #sentence = re.sub(r"[\s\u0020-\u007f\u2000-\u206f\u3000-\u303f\uff00-\uffef]+", " ", sentence)
         sentence = re.sub(r"[^\w\d]+", " ", sentence)
         tokens = []
-        for x in jieba.cut(sentence, cut_all=False):
+        for x in self.nlp.cut(sentence, cut_all=False):
             x = x.strip()
             if remove_stopwords and x in self.stopwords:
                 continue
@@ -70,7 +72,95 @@ class Segment_CN(Segment_Base):
         return self.seg(sentence, remove_stopwords=True)
 
 
-class Segment_JP(Segment_Base):
+class Segment_LTP(Segment_Base):
+    def __init__(self, cfg):
+        Segment_Base.__init__(self, cfg)
+        from pyltp import Segmentor, Postagger, NamedEntityRecognizer
+        self.seg_ins = Segmentor()
+        self.seg_ins.load(cfg['cws_model_path'])
+        self.pos_ins = Postagger()
+        self.pos_ins.load(cfg['pos_model_path'])
+        self.ner_ins = []
+
+        for path in sorted(glob.glob(cfg['ner_model_path'])):
+            try:
+                if os.path.getsize(path) > 1024: 
+                    self.ner_ins.append(NamedEntityRecognizer())
+                    self.ner_ins[-1].load(path)
+            except Exception as err:
+                print(err)
+
+    def __del__(self):
+        self.seg_ins.release()
+        self.pos_ins.release()
+        for n in self.ner_ins:
+            n.release()
+
+    def seg(self, sentence, tags_filter = None, entities_filter = None, entityjoin=True):
+        words_ = self.seg_ins.segment(sentence)
+        postags_ = self.pos_ins.postag(words_)
+        entities__ = []
+        
+        for n in self.ner_ins:
+            entities__.append(list(n.recognize(words_, postags_)))
+        #mix entities
+        entities_ = entities__[0]
+        for ee in entities__:
+            for i,e in enumerate(ee):
+                if e != 'O':
+                    entities_[i] = e
+
+        words_, postags_ = list(words_), list(postags_)
+        words, postags, entities = [],[],[]
+        word_tmp, postag_tmp, entity_tmp = '', [], []
+        for i,w in enumerate(words_):
+            entity = re.split('-', entities_[i])
+            if len(entity) > 1:
+                entity_loc, entity = entity[0], entity[1]
+            else:
+                entity_loc, entity = 'O', 'O'
+            if entity in self.cfg['ner_name_replace']:
+                entity = self.cfg['ner_name_replace'][entity]
+            if tags_filter is not None and postags_[i] not in tags_filter:
+                continue
+            if entities_filter is not None and entity not in entities_filter:
+                continue
+            if entityjoin:
+                if entity_loc not in ['I', 'E'] and len(word_tmp) > 0:
+                    words.append(word_tmp)
+                    postags.append(postag_tmp[0])
+                    entities.append(entity_tmp[0])
+                    word_tmp, postag_tmp, entity_tmp = '', [], []
+                if entity_loc in ['B', 'I', 'E']:
+                    if len(entity_tmp) > 0 and entities_[i] != entity_tmp[-1]:
+                        words.append(word_tmp)
+                        postags.append(postag_tmp[0])
+                        entities.append(entity_tmp[0])
+                        word_tmp, postag_tmp, entity_tmp = '', [], []
+                    word_tmp += w
+                    postag_tmp.append(postags_[i])
+                    entity_tmp.append(entity)
+                    if entity_loc == 'E':
+                        words.append(word_tmp)
+                        postags.append(postag_tmp[0])
+                        entities.append(entity_tmp[0])
+                        word_tmp, postag_tmp, entity_tmp = '', [], []
+                else:
+                    words.append(w)
+                    postags.append(postags_[i])
+                    entities.append(entity)
+            else:
+                words.append(w)
+                postags.append(postags_[i])
+                if entity_loc == 'O':
+                    entities.append('O')
+                else:
+                    entities.append(entity_loc + '-' + entity)
+
+        return {'tokens':words, 'tags': postags, 'entities':entities}
+
+
+class Segment_Mecab(Segment_Base):
     def __init__(self, cfg):
         import MeCab
         self.mecab_ins = MeCab.Tagger('-d %s ' % cfg["seg_dict_path"])
@@ -198,11 +288,11 @@ class Segment_Keras(Segment_Base):
 class Segment(object):
     def __new__(cls, cfg):
         if cfg['LANGUAGE'] == 'en':
-            return Segment_EN(cfg)
+            return Segment_Spacy(cfg)
         elif cfg['LANGUAGE'] in ['yue', 'cn']:
-            return Segment_CN(cfg)
+            return Segment_Jieba(cfg)
         elif cfg['LANGUAGE'] == 'jp':
-            return Segment_JP(cfg)
+            return Segment_Mecab(cfg)
         #elif cfg['LANGUAGE'] in ['yue']:
         #    return Segment_Keras(cfg)
         else:
