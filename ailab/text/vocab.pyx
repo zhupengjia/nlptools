@@ -95,4 +95,6 @@ class Vocab:
             return numpy.zeros(self.emb_ins.vec_len)
         return vec/tottf
 
+    def __len__(self):
+        return self.Nwords
 
