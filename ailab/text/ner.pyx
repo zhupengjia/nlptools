@@ -92,7 +92,7 @@ class NER_LTP(NER_Base, Segment_LTP):
             ltp_train.append( '{0}/{1}#{2}'.format(w, tags[i], entities[i]) )
         return ' '.join(ltp_train)
         
-    def train(self, data, maxiter=100):
+    def train(self, data, maxiter=20):
         nfiles = len(glob.glob(self.cfg['ner_model_path']))
         tmp_file = '/tmp/ner_train_' + uuid.uuid4().hex
         tmp_ner_file = tmp_file + '.ner'
