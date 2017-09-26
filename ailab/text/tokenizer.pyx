@@ -132,7 +132,7 @@ class Segment_LTP(Segment_Base):
                     entities.append(entity_tmp[0])
                     word_tmp, postag_tmp, entity_tmp = '', [], []
                 if entity_loc in ['B', 'I', 'E']:
-                    if len(entity_tmp) > 0 and entities_[i] != entity_tmp[-1]:
+                    if len(entity_tmp) > 0 and entity != entity_tmp[-1]:
                         words.append(word_tmp)
                         postags.append(postag_tmp[0])
                         entities.append(entity_tmp[0])
