@@ -30,7 +30,7 @@ class VecTFIDF(object):
         return self.n_sim(word_ids, sentence_ids)/len(sentence_ids)
     
     #build index for each word in large corpus, for idf
-    def load_index(self, corpus_ids=None, retrain=False, salient=False):
+    def load_index(self, corpus_ids=None, retrain=False, silent=False):
         if 'cached_index' in self.cfg and os.path.exists(self.cfg['cached_index']):
             tmp = zload(self.cfg['cached_index'])
             self.index_word2doc = tmp[0]
