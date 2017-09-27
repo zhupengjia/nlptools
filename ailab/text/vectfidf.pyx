@@ -30,7 +30,7 @@ class VecTFIDF(object):
         return self.n_sim(word_ids, sentence_ids)/len(sentence_ids)
     
     #build index for each word in large corpus, for idf
-    def load_index(self, corpus_ids=None, retrain=False):
+    def load_index(self, corpus_ids=None, retrain=False, salient=False):
         if 'cached_index' in self.cfg and os.path.exists(self.cfg['cached_index']):
             tmp = zload(self.cfg['cached_index'])
             self.index_word2doc = tmp[0]
@@ -53,7 +53,8 @@ class VecTFIDF(object):
             self.index_word2doc[i] = {j:ncounts[j] for j in ncounts.nonzero()[0]}
             del func_n_count
             t2 = time.time()
-            print('building index, ', i, len(all_ids_1), t2-t1)
+            if not salient:
+                print('building index, ', i, len(all_ids_1), t2-t1)
 
         if 'cached_index' in self.cfg:
             zdump((self.index_word2doc, self.len_corpus, self.corpus_lens), self.cfg['cached_index'])
