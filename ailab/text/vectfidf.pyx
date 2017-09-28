@@ -66,15 +66,14 @@ class VecTFIDF(object):
         return len(self.index_word2doc[word_id])
 
     def idf(self, word_ids):
-        return numpy.log(self.len_corpus) - numpy.log(self.n_containing(word_ids))
+        idf = numpy.log(self.len_corpus) - numpy.log(self.n_containing(word_ids))
+        idf[numpy.isinf(idf)] = 0
+        return idf + 1
 
     def tfidf(self, word_ids, sentence_ids):
         tf = self.tf(word_ids, sentence_ids)
         idf = self.idf(word_ids)
-        if idf != 0 :
-            return tf*idf
-        else:
-            return tf
+        return tf*idf
 
     def search(self, word_ids, corpus_ids, topN=1):
         corpus_ids = pandas.Series(corpus_ids)
