@@ -2,11 +2,12 @@
 import numpy, sys, multiprocessing, time, os, pandas
 from sklearn.metrics.pairwise import pairwise_distances
 from functools import partial
-from ailab.utils import zload, zdump, n_count
+from ailab.utils import zload, zdump, n_count, setLogger
 
 class VecTFIDF(object):
     def __init__(self, cfg, vocab_ins=None):
         self.cfg = cfg
+        self.logger = setLogger(self.cfg)
         self.vocab = vocab_ins 
         self.n_containing = numpy.vectorize(self.n_containing_id)
         self.distance_metric = 'cosine'
@@ -73,6 +74,7 @@ class VecTFIDF(object):
     def tfidf(self, word_ids, sentence_ids):
         tf = self.tf(word_ids, sentence_ids)
         idf = self.idf(word_ids)
+        self.logger.debug('VecTFIDF: word_ids, ' + str(word_ids) + ' sentence_ids' + str(sentence_ids) + ' tf,' + str(tf) + " idf," + str(idf))
         return tf*idf
 
     def search(self, word_ids, corpus_ids, topN=1):
