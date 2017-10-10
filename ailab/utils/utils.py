@@ -50,4 +50,6 @@ def status_check(fn):
     with open(fn, 'r') as f:
         return f.readlines()[0].strip()
 
+def flat_list(l):
+    return [item for sublist in l for item in sublist]
 
