@@ -34,7 +34,9 @@ class Segment_Spacy(Segment_Base):
                 continue
             if len(token.lemma_)<1:
                 continue
-            txts.append(token.text)
+            txt = token.text.strip()
+            if len(txt) < 1 : continue
+            txts.append(txt)
             tokens.append(token.lemma_)
             tags.append(token.tag_)
             entities.append(token.ent_type_)
@@ -43,8 +45,8 @@ class Segment_Spacy(Segment_Base):
             
         return {"tokens":tokens, "tags":tags, "texts":txts, "entities":entities, 'pos':pos, 'dep':dep}
    
-    def seg_sentence(self, sentence):
-        return self.seg(sentence, remove_stopwords=True, pos_filter=['PROPN','NOUN','ADJ','PRON','ADV'])
+    def seg_sentence(self, sentence, remove_stopwords=True, pos_filter=['PROPN','NOUN','ADJ','PRON','ADV']):
+        return self.seg(sentence, remove_stopwords=remove_stopwords, pos_filter=pos_filter)
 
 
 class Segment_Jieba(Segment_Base):
