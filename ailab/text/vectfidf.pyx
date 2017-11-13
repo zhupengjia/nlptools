@@ -70,12 +70,14 @@ class VecTFIDF(object):
     def tfidf(self, word_ids, sentence_ids):
         return self.tf(word_ids, sentence_ids) * self.idf(word_ids)
 
+    #vec TF-IDF
     def search(self, word_ids, corpus_ids, topN=1):
         corpus_ids = pandas.Series(corpus_ids)
         tfidf = corpus_ids.apply(lambda x: self.tfidf(word_ids, x).sum()).as_matrix()
         scores = numpy.argsort(tfidf)[::-1]
         return list(zip(scores[:topN], tfidf[scores]))
 
+    #traditional TF-IDF algorithms
     def search_by_index(self, word_ids):
         idf = self.idf(word_ids)
         tfidf = {}

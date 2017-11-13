@@ -38,7 +38,8 @@ class Vocab:
             self._id_EOS = self.word2id('EOS')
     
     def save(self):
-        zdump((self._id2word, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec), self.cfg['cached_vocab'])
+        if len(self.cfg['cached_vocab']) > 0:
+            zdump((self._id2word, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec), self.cfg['cached_vocab'])
 
     @staticmethod
     def hashword(word, hashsize=24):
