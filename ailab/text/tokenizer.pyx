@@ -17,7 +17,10 @@ class Segment_Spacy(Segment_Base):
     def __init__(self, cfg):
         import spacy
         Segment_Base.__init__(self, cfg)
-        self.nlp = spacy.load(cfg['LANGUAGE'], path=cfg['cached_ner'])
+        if 'cached_ner' in cfg:
+            self.nlp = spacy.load(cfg['LANGUAGE'], path=cfg['cached_ner'])
+        else:
+            self.nlp = spacy.load(cfg['LANGUAGE'])
     
     def seg(self, sentence, remove_stopwords = False, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
         txts, tokens, tags, entities, pos, dep= [], [], [], [], [], []
