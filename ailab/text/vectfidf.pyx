@@ -12,7 +12,18 @@ class VecTFIDF(object):
         self.n_containing = numpy.vectorize(self.n_containing_id)
         self.distance_metric = 'cosine'
         self.scorelimit = 0.6
+        self.freqwords = {}
+        if 'freqwords_path' in self.cfg:
+            self.__loadFreqwords(self.cfg['freqwords_path'])
 
+    def __loadFreqwords(self, freqwords_path=None):
+        print(freqwords_path)
+        if freqwords_path is not None and os.path.exists(freqwords_path):
+            print('load freqword path')
+            with open(freqwords_path) as f:
+                for w in f.readlines():
+                    for i in self.vocab.sentence2id(w.strip(), addforce=True):
+                        self.freqwords[i] = ''
 
     def n_sim(self, word_ids, sentence_ids):
         if len(sentence_ids) < 1:
@@ -112,7 +123,9 @@ class VecTFIDF(object):
 
 
     def n_containing_id(self, word_id):
-        if not word_id in self.index_word2doc:
+        if word_id in self.freqwords:
+            return self.len_corpus
+        elif not word_id in self.index_word2doc:
             return 0
         return len(self.index_word2doc[word_id])
 

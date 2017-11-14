@@ -2,7 +2,7 @@
 import re, sys
 from ailab.text import *
 
-cfg = {'vec_len':10, 'LANGUAGE':'en', 'cached_w2v':'/tmp/w2v.pkl', 'cached_vocab':'/tmp/vocab.pkl', 'cached_index':'/tmp/tfidf.index'}
+cfg = {'vec_len':10, 'LANGUAGE':'en', 'cached_w2v':'/tmp/w2v.pkl', 'cached_vocab':'/tmp/vocab.pkl', 'cached_index':'/tmp/tfidf.index', 'freqwords_path':'data/en_freqwords.txt'}
 e = Embedding(cfg)
 s = Segment(cfg)
 v = Vocab(cfg, s, e, 3)
@@ -26,10 +26,11 @@ t.load_index(corpus_ids)
 
 print('tfidf:', t.tfidf(corpus_ids[1], corpus_ids[0]))
 
+query_ids = [v.word2id(x) for x in ['information', 'retrieval']]
 
-print('search:', t.search([1603082,7724154], corpus_ids, 10))
+print('search:', t.search(query_ids, corpus_ids, 10))
 
-print('search_by_index: ', t.search_by_index([1603082,7724154]))
+print('search_by_index: ', t.search_by_index(query_ids))
 
 #e.save()
 #v.save()
