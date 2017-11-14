@@ -14,9 +14,9 @@ class Vocab:
         self.sentences_hash = {} #check if sentence added
         self.ngrams = ngrams
         if 'vocab_hash_size' in self.cfg:
-            self.vocab_hash_size = self.cfg['vocab_hash_size']
+            self.vocab_hash_size = 2**self.cfg['vocab_hash_size']
         else:
-            self.vocab_hash_size = 24
+            self.vocab_hash_size = 2**24
         self.__get_cached_vocab()
 
     def __get_cached_vocab(self):
@@ -32,8 +32,8 @@ class Vocab:
             self._id2word = {}
             self._id2tf = {}
             self._id_ngrams = {}
-            self._id2vec = numpy.zeros((2**self.vocab_hash_size, self.emb_ins.vec_len), 'float32')
-            self._has_vec = numpy.zeros(2**self.vocab_hash_size, numpy.bool_)
+            self._id2vec = numpy.zeros((self.vocab_hash_size, self.emb_ins.vec_len), 'float32')
+            self._has_vec = numpy.zeros(self.vocab_hash_size, numpy.bool_)
             self._id_BOS = self.word2id('BOS')
             self._id_EOS = self.word2id('EOS')
     
@@ -42,8 +42,8 @@ class Vocab:
             zdump((self._id2word, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec), self.cfg['cached_vocab'])
 
     @staticmethod
-    def hashword(word, hashsize=24):
-        return murmurhash3_32(word, positive=True) % (2**hashsize)
+    def hashword(word, hashsize=16777216):
+        return murmurhash3_32(word, positive=True) % (hashsize)
 
     @property
     def Nwords(self):
@@ -71,7 +71,8 @@ class Vocab:
                 return None
         return wordid
 
-    def sentence2id(self, sentence):
+    #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
+    def sentence2id(self, sentence, useBE=False):
         if not any([isinstance(sentence, list), isinstance(sentence, tuple)]):
             sentence = self.seg_ins.seg_sentence(sentence)
         hash_sentence = hash(''.join(sentence))
@@ -83,9 +84,14 @@ class Vocab:
         ids = [func_add_word(t) for t in sentence['tokens']]
         #ngrams
         if self.ngrams > 1:
-            ids_BE = [self._id_BOS] + ids + [self._id_EOS]
-            words_BE = ['BOS'] + sentence['tokens'] + ['EOS']
+            if useBE:
+                ids_BE = [self._id_BOS] + ids + [self._id_EOS]
+                words_BE = ['BOS'] + sentence['tokens'] + ['EOS']
+            else:
+                ids_BE = ids
+                words_BE = sentence['tokens']
         for n in range(1, self.ngrams):
+            if len(ids_BE) < n: break
             ids_gram_tuple = [ids_BE[i:i+n+1] for i in range(len(ids_BE)-n)]
             ids_gram_word = [''.join(words_BE[i:i+n+1]) for i in range(len(words_BE)-n)]
             ids_gram = [func_add_word(x) for x in ids_gram_word]

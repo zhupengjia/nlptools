@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os, zlib, numpy
 import pickle
+from collections import Counter
 
 #compress pickle file by using zlib and cpickle
 def zdump(value,filename):
@@ -37,9 +38,6 @@ def lloads(value):
     try:return pickle.loads(lzo.decompress(value))
     except:return pickle.loads(value)
 
-def n_count(i, ids):
-    return numpy.sum(numpy.array(ids) == i)
-
 def status_save(fn, status):
     with open(fn, 'w') as f:
         f.write(str(status))
@@ -50,4 +48,14 @@ def status_check(fn):
     with open(fn, 'r') as f:
         return f.readlines()[0].strip()
 
+#def n_count(ids):
+#    ids, doc_id = ids
+#    counts = Counter(ids)
+#    row = list(counts.keys())
+#    data = list(counts.values())
+#    col = [doc_id] * len(row)
+#    return row, col, data
+
+def n_count(i, ids):
+    return numpy.sum(numpy.array(ids) == i)
 
