@@ -26,7 +26,7 @@ class DocSim(object):
         def doc2sparse(doc):
             v = np.zeros(len_words, 'float32')
             for d in doc:
-                v[word2id[d]] += 1./self.vocab.id2tf[d]
+                v[word2id[d]] += 1./self.vocab._id2tf[d]
                 #v[word2id[d]] += 1.
             return v/v.sum()
         d1, d2 = doc2sparse(sentence_id1), doc2sparse(sentence_id2)
@@ -51,7 +51,7 @@ class DocSim(object):
         def doc2sparse(doc):
             v = np.zeros(len_words, 'float32')
             for d in doc:
-                v[word2id[d]] += 1./self.vocab.id2tf[d]
+                v[word2id[d]] += 1./self.vocab._id2tf[d]
                 #v[word2id[d]] += 1.
             return v/v.sum()
         d1, d2 = doc2sparse(sentence_id1), doc2sparse(sentence_id2)
@@ -73,7 +73,7 @@ class DocSim(object):
         def doc2sparse(doc):
             v = np.zeros(len_words, 'float32')
             for d in doc:
-                v[word2id[d]] += 1./self.vocab.id2tf[d]
+                v[word2id[d]] += 1./self.vocab._id2tf[d]
                 #v[word2id[d]] += 1.
             return v/v.sum()
         d1, d2 = doc2sparse(sentence_id1), doc2sparse(sentence_id2)
