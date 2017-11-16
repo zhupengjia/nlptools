@@ -16,7 +16,7 @@ class Vocab:
         if 'vocab_hash_size' in self.cfg:
             self.vocab_hash_size = 2**self.cfg['vocab_hash_size']
         else:
-            self.vocab_hash_size = 2**24
+            self.vocab_hash_size = 2**15
         self.__get_cached_vocab()
 
     def __get_cached_vocab(self):
@@ -32,8 +32,10 @@ class Vocab:
             self._id2word = {}
             self._id2tf = {}
             self._id_ngrams = {}
-            self._id2vec = numpy.zeros((self.vocab_hash_size, self.emb_ins.vec_len), 'float32')
-            self._has_vec = numpy.zeros(self.vocab_hash_size, numpy.bool_)
+            self._id2vec, self._has_vec = None, None
+            if self.emb_ins is not None: 
+                self._id2vec = numpy.zeros((self.vocab_hash_size, self.emb_ins.vec_len), 'float32')
+                self._has_vec = numpy.zeros(self.vocab_hash_size, numpy.bool_)
             self._id_BOS = self.word2id('BOS')
             self._id_EOS = self.word2id('EOS')
     
