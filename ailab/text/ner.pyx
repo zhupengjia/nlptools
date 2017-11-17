@@ -13,35 +13,27 @@ class NER_Spacy(NER_Base, Segment_Spacy):
     def __init__(self, cfg):
         NER_Base.__init__(self, cfg)
         Segment_Spacy.__init__(self, cfg)
-   
-    def add_entity(self, entities):
+    def train(self, entities, data, n_iter = 50):
+        import random
+        from pathlib import Path
+        if 'ner' not in self.nlp.pipe_names:
+            self.nlp.create_pipe('ner')
+            self.nlp.add_pipe('ner')
+        else:
+            ner=self.nlp.get_pipe('ner')
+		
         for e in entities:
-            self.nlp.entity.add_label(e)
+            ner.add_label(e)
 
-    def train(self, data, iteration = 5):
-        from spacy.gold import GoldParse
-        idx = numpy.arange(len(data))
-        numpy.random.shuffle(idx)
-        n = 0
-
-        #add new words to vocab
-        for d in data:
-            doc = self.nlp.make_doc(d[0])
-            for word in doc:
-                _ = self.nlp.vocab[word.orth]
-
-        for it in range(iteration):
-            for i in idx:
-                if n%10000 == 0:
-                    print n, len(idx)*iteration
-                doc = self.nlp.make_doc(data[i][0])
-                gold = GoldParse(doc, entities=data[i][1])
-                self.nlp.tagger(doc)
-                self.nlp.entity.update(doc, gold)
-                n += 1
-        self.nlp.end_training()
-        self.nlp.save_to_directory(self.cfg['cached_ner'])
-
+        other_pipes=[pipe for pipe in self.nlp.pipe_names if pipe != 'ner']
+        with self.nlp.disable_pipes(*other_pipes):
+            optimizer = self.nlp.begin_training()
+            for itn in range(n_iter):
+                random.shuffle(data)
+                losses={}
+                for text, annotations in data:
+                    self.nlp.update([text], [annotations], sgd = optimizer, losses=losses)
+        self.nlp.to_disk(self.cfg['cached_ner'])
 
 class NER_LTP(NER_Base, Segment_LTP):
     def __init__(self, cfg):
