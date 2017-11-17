@@ -18,7 +18,7 @@ class Segment_Spacy(Segment_Base):
         import spacy
         Segment_Base.__init__(self, cfg)
         if 'cached_ner' in cfg:
-            self.nlp = spacy.load(cfg['LANGUAGE'], path=cfg['cached_ner'])
+            self.nlp = spacy.load(cfg['cached_ner'])
         else:
             self.nlp = spacy.load(cfg['LANGUAGE'])
     
