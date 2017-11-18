@@ -58,18 +58,18 @@ class Vocab:
     def hashword(word, hashsize=16777216):
         return murmurhash3_32(word, positive=True) % (hashsize)
 
-    def enumerateword(self, word, fulfill=True, tfenum = True):
+    def accumword(self, word, fulfill=True, tfaccum = True):
         if word in self._word2id:
-            if tfenum: self._id2tf[self._word2id[word]] += 1
+            if tfaccum: self._id2tf[self._word2id[word]] += 1
             return self._word2id[word]
         elif fulfill:
             if self.hashgenerate:
                 wordid = Vocab.hashword(word, self.vocab_hash_size)
             else:
-                wordid = len(self._id2word)+1
+                wordid = len(self._id2word)
             self._id2word[wordid] = word
             self._word2id[word] = wordid
-            if tfenum: self._id2tf[self._word2id[word]] = 1
+            if tfaccum: self._id2tf[self._word2id[word]] = 1
             return wordid
         else:
             return None
@@ -82,10 +82,10 @@ class Vocab:
         return len(self._id2word)
     
     def add_word(self, word):
-        return self.enumerateword(word)
+        return self.accumword(word)
 
     def word2id(self, word, fulfill=True):
-        return self.enumerateword(word, fulfill, False)
+        return self.accumword(word, fulfill, False)
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
     def sentence2id(self, sentence, useBE=False, addforce=True):
