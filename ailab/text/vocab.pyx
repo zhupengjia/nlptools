@@ -5,7 +5,7 @@ from sklearn.utils import murmurhash3_32
 
 # get TF of vocabs and vectors
 class Vocab:
-    def __init__(self, cfg={}, seg_ins=None, emb_ins=None, ngrams=1):
+    def __init__(self, cfg={}, seg_ins=None, emb_ins=None, ngrams=1, hashgenerate=True):
         self.cfg = cfg
         if not 'cached_vocab' in self.cfg:
             self.cfg['cached_vocab'] = ''
@@ -15,37 +15,64 @@ class Vocab:
         self.ngrams = ngrams
         if 'vocab_hash_size' in self.cfg:
             self.vocab_hash_size = 2**self.cfg['vocab_hash_size']
+            self.hashgenerate = True
         else:
             self.vocab_hash_size = 2**15
+            self.hashgenerate = hashgenerate
         self.__get_cached_vocab()
+        self.hashgenerate = hashgenerate
 
     def __get_cached_vocab(self):
         ifinit = True
         if os.path.exists(self.cfg['cached_vocab']):
             try:
                 cached_vocab = zload(self.cfg['cached_vocab'])
-                self._id2word, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec  = cached_vocab
+                self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec  = cached_vocab
                 ifinit = False
             except Exception as err:
                 print('warning!!! cached vocab read failed!!! ' + err)
         if ifinit:
             self._id2word = {}
+            self._word2id = {}
             self._id2tf = {}
             self._id_ngrams = {}
             self._id2vec, self._has_vec = None, None
-            if self.emb_ins is not None: 
-                self._id2vec = numpy.zeros((self.vocab_hash_size, self.emb_ins.vec_len), 'float32')
-                self._has_vec = numpy.zeros(self.vocab_hash_size, numpy.bool_)
-            self._id_BOS = self.word2id('BOS')
-            self._id_EOS = self.word2id('EOS')
+            if self.hashgenerate:
+                if self.emb_ins is not None: 
+                    self._id2vec = numpy.zeros((self.vocab_hash_size, self.emb_ins.vec_len), 'float32')
+                    self._has_vec = numpy.zeros(self.vocab_hash_size, numpy.bool_)
+            else:
+                if self.emb_ins is not None:
+                    self.id2vec = numpy.zeros((0, self.emb_ins.vec_len), 'float32')
+                else:
+                    self.id2vec = []
+            if self.ngrams>1:
+                self._id_BOS = self.word2id('BOS')
+                self._id_EOS = self.word2id('EOS')
     
     def save(self):
         if len(self.cfg['cached_vocab']) > 0:
-            zdump((self._id2word, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec), self.cfg['cached_vocab'])
+            zdump((self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec), self.cfg['cached_vocab'])
 
     @staticmethod
     def hashword(word, hashsize=16777216):
         return murmurhash3_32(word, positive=True) % (hashsize)
+
+    def accumword(self, word, fulfill=True, tfaccum = True):
+        if word in self._word2id:
+            if tfaccum: self._id2tf[self._word2id[word]] += 1
+            return self._word2id[word]
+        elif fulfill:
+            if self.hashgenerate:
+                wordid = Vocab.hashword(word, self.vocab_hash_size)
+            else:
+                wordid = len(self._id2word)
+            self._id2word[wordid] = word
+            self._word2id[word] = wordid
+            self._id2tf[self._word2id[word]] = 1
+            return wordid
+        else:
+            return None
 
     @property
     def Nwords(self):
@@ -55,33 +82,21 @@ class Vocab:
         return len(self._id2word)
     
     def add_word(self, word):
-        wordid = Vocab.hashword(word, self.vocab_hash_size) 
-        if wordid not in self._id2word:
-            self._id2word[wordid] = word
-            self._id2tf[wordid] = 1
-        else:
-            self._id2tf[wordid] += 1
-        return wordid
+        return self.accumword(word)
 
     def word2id(self, word, fulfill=True):
-        wordid = Vocab.hashword(word, self.vocab_hash_size) 
-        if wordid not in self._id2word:
-            if fulfill:
-                self._id2word[wordid] = word
-                self._id2tf[wordid] = 1
-            else:
-                return None
-        return wordid
+        return self.accumword(word, fulfill, False)
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
     def sentence2id(self, sentence, useBE=False, addforce=True):
         if not any([isinstance(sentence, list), isinstance(sentence, tuple)]):
             sentence = self.seg_ins.seg_sentence(sentence)
-        hash_sentence = hash(''.join(sentence))
+        hash_sentence = hash(''.join(sentence['tokens']))
         if hash_sentence in self.sentences_hash or addforce:
             func_add_word = self.word2id
         else:
             func_add_word = self.add_word
+
         self.sentences_hash[hash_sentence] = 0
         ids = [func_add_word(t) for t in sentence['tokens']]
         #ngrams
@@ -105,10 +120,15 @@ class Vocab:
     
     def get_id2vec(self):
         len_id2vec = len(self._has_vec[self._has_vec])
-        for i in self._id2word:
-            if not self._has_vec[i]:
-                self._id2vec[i] = self.word2vec(i)
-                self._has_vec[i] = True
+        if self.hashgenerate:
+            for i in self._id2word:
+                if not self._has_vec[i]:
+                    self._id2vec[i] = self.word2vec(i)
+                    self._has_vec[i] = True
+        else:
+            self._id2vec = numpy.concatenate((self._id2vec, numpy.zeros((len(self._id2word)-self._id2vec.shape[0], self.emb_ins.vec_len)))) 
+            for i in range(len_id2vec, len(self._id2word)):
+                self._id2vec[i] = self.emb_ins[self._id2word[i]]
         return len(self._id2word) - len_id2vec
 
     def senid2tf(self, sentence_id):

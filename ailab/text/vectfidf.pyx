@@ -117,8 +117,7 @@ class VecTFIDF(object):
             self.index_word2doc[i] = {j:ncounts[j] for j in ncounts.nonzero()[0]}
             del func_n_count
             t2 = time.time()
-            if not silent:
-                print('building index, ', i, len(all_ids), t2-t1)
+            #print('building index, ', i, len(all_ids), t2-t1)
 
         if 'cached_index' in self.cfg:
             zdump((self.index_word2doc, self.len_corpus, self.corpus_lens), self.cfg['cached_index'])
