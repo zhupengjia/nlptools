@@ -69,7 +69,7 @@ class Vocab:
                 wordid = len(self._id2word)
             self._id2word[wordid] = word
             self._word2id[word] = wordid
-            if tfaccum: self._id2tf[self._word2id[word]] = 1
+            self._id2tf[self._word2id[word]] = 1
             return wordid
         else:
             return None
@@ -91,11 +91,12 @@ class Vocab:
     def sentence2id(self, sentence, useBE=False, addforce=True):
         if not any([isinstance(sentence, list), isinstance(sentence, tuple)]):
             sentence = self.seg_ins.seg_sentence(sentence)
-        hash_sentence = hash(''.join(sentence))
+        hash_sentence = hash(''.join(sentence['tokens']))
         if hash_sentence in self.sentences_hash or addforce:
             func_add_word = self.word2id
         else:
             func_add_word = self.add_word
+
         self.sentences_hash[hash_sentence] = 0
         ids = [func_add_word(t) for t in sentence['tokens']]
         #ngrams
