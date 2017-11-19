@@ -150,7 +150,7 @@ class Vocab:
         vec = numpy.zeros(self.emb_ins.vec_len, 'float32')
         tottf = 0
         for i, sid in enumerate(sentence_id):
-            w = numpy.log(self.Nwords()/(self._id2tf[sid]))
+            w = numpy.log(self.Nwords/(self._id2tf[sid]))
             vec += self.emb_ins[self._id2word[sid]]*w
             tottf += w
         if tottf == 0:
