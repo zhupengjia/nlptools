@@ -18,8 +18,15 @@ class Supervised:
         self.train_epochs = self.cfg['train_epochs']
         self.batch_size = self.cfg['batch_size']
         self.MAX_SEQ_LEN = self.cfg['max_seq_len']
+        self.model_cfg = {'embedding_len':self.emb_ins.vec_len, \
+                          'embedding_trainable':True, "max_seq_len":50, "embedding_size":10000, "lstm_units":128, "kernel_size":5, 'pooling_size':[5,5], "filter_size":64, 'dropout':0.2 }
+        for k in self.model_cfg.keys():
+            if k in self.cfg:
+                self.model_cfg[k] = self.cfg[k]
+
         self.tf_session()
     
+
     def tf_session(self):
         config = tf.ConfigProto(intra_op_parallelism_threads=self.cfg['num_cores'],\
                 inter_op_parallelism_threads=self.cfg['num_cores'], allow_soft_placement=True,\
@@ -27,12 +34,13 @@ class Supervised:
         session = tf.Session(config=config)
         K.set_session(session)
 
+
     def build(self, n_classes):
-        self.model = v1(n_classes, \
-                embedding_len = self.emb_ins.vec_len, \
-                embedding_matrix = self.vocab._id2vec, \
-                max_seq_len = self.MAX_SEQ_LEN \
-                )
+        print(self.model_cfg)
+        self.model = v1(n_classes = n_classes,\
+                        embedding_matrix = self.vocab._id2vec,\
+                        **self.model_cfg)
+
 
     def train(self, X, Y, X_valid=None, Y_valid=None):
         if X_valid is None:

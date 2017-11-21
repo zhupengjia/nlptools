@@ -5,9 +5,10 @@ from .tokenizer import Segment
 from ..utils import zload, zdump, hashword
 from functools import partial
 
-def sentence2id(cfg, ngrams, sentences):
-    tokenize = Segment(cfg)
+
+def sentence2id(tokenize, cfg, ngrams, sentences):
     ids = []
+    print(tokenize)
     for s in sentences:
         words = tokenize(s)['tokens']
         if len(words) < 1:
@@ -20,8 +21,8 @@ def sentence2id(cfg, ngrams, sentences):
 
 
 # get TF of vocabs and vectors
-class Vocab:
-    def __init__(self, cfg={}, seg_ins=None, emb_ins=None, ngrams=1, hashgenerate=True):
+class Vocab(object):
+    def __init__(self, cfg={}, seg_ins=None, emb_ins=None, ngrams=1, hashgenerate=True, forceinit=False):
         self.cfg = cfg
         if not 'cached_vocab' in self.cfg:
             self.cfg['cached_vocab'] = ''
@@ -35,12 +36,13 @@ class Vocab:
         else:
             self.vocab_hash_size = 2**15
             self.hashgenerate = hashgenerate
-        self.__get_cached_vocab()
+        self.__get_cached_vocab(forceinit)
         self.hashgenerate = hashgenerate
 
-    def __get_cached_vocab(self):
+
+    def __get_cached_vocab(self, forceinit):
         ifinit = True
-        if os.path.exists(self.cfg['cached_vocab']):
+        if os.path.exists(self.cfg['cached_vocab']) and not forceinit:
             try:
                 cached_vocab = zload(self.cfg['cached_vocab'])
                 self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec  = cached_vocab
@@ -53,22 +55,23 @@ class Vocab:
             self._id2tf = {}
             self._id_ngrams = {}
             self._id2vec, self._has_vec = None, None
-            if self.hashgenerate:
-                if self.emb_ins is not None: 
+            if self.emb_ins is not None:
+                if self.hashgenerate:
                     self._id2vec = numpy.zeros((self.vocab_hash_size, self.emb_ins.vec_len), 'float32')
                     self._has_vec = numpy.zeros(self.vocab_hash_size, numpy.bool_)
-            else:
-                if self.emb_ins is not None:
-                    self.id2vec = numpy.zeros((0, self.emb_ins.vec_len), 'float32')
                 else:
-                    self.id2vec = []
+                    self.id2vec = numpy.zeros((0, self.emb_ins.vec_len), 'float32')
+            else:
+                self.id2vec = []
             if self.ngrams>1:
                 self._id_BOS = self.word2id('BOS')
                 self._id_EOS = self.word2id('EOS')
-    
+
+
     def save(self):
         if len(self.cfg['cached_vocab']) > 0:
             zdump((self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec), self.cfg['cached_vocab'])
+
 
 
     def accumword(self, word, fulfill=True, tfaccum = True):
@@ -87,18 +90,23 @@ class Vocab:
         else:
             return None
 
+
     @property
     def Nwords(self):
         return len(self._id2word)
 
+
     def __len__(self):
         return len(self._id2word)
-    
+ 
+
     def add_word(self, word):
         return self.accumword(word)
 
+
     def word2id(self, word, fulfill=True):
         return self.accumword(word, fulfill, False)
+
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
     def sentence2id(self, sentence, useBE=False, addforce=True):
@@ -131,7 +139,15 @@ class Vocab:
                     self._id_ngrams[d[0]] = d[1]
         return ids
 
-    
+
+    #call function, convert sentences to id
+    def __call__(self, sentences):
+        ids = []
+        for sentence in sentences:
+            ids.append(self.sentence2id(sentence, True))
+        return ids
+   
+
     def get_id2vec(self):
         len_id2vec = len(self._has_vec[self._has_vec])
         if self.hashgenerate:
@@ -145,21 +161,25 @@ class Vocab:
                 self._id2vec[i] = self.emb_ins[self._id2word[i]]
         return len(self._id2word) - len_id2vec
 
+
     def senid2tf(self, sentence_id):
         return [self._id2tf[x] for x in sentence_id]
+
 
     def senid2vec(self, sentence_id):
         vec = numpy.zeros((len(sentence_id), self.emb_ins.vec_len), 'float32')
         for i,sid in enumerate(sentence_id):
             vec[i] = self.word2vec(sid)
         return vec
-    
+
+
     def word2vec(self, word_id):
         if word_id in self._id_ngrams:
             return numpy.sum([self.emb_ins[self._id2word[ii]] for ii in self._id_ngrams[word_id]], axis=0)
         else:
             return self.emb_ins[self._id2word[word_id]]
-    
+
+
     def ave_vec(self, sentence_id):
         vec = numpy.zeros(self.emb_ins.vec_len, 'float32')
         tottf = 0
@@ -172,20 +192,20 @@ class Vocab:
         return vec/tottf
 
 
-    #document to vocab id(multiprocess), input is sentences. Only support hash for wordid, tf calculate not supported
-    def doc2ids(self, sentences):
-        #cpus = min(cpu_count() - 2, 4)
-        cpus = 1
-        step = max(int(len(sentences) / cpus), 1)
-        batches = [sentences[i:i + step] for i in range(0, len(sentences), step)]
-        
-        _sen2id = partial(sentence2id, self.cfg, self.ngrams)
-       
-        pool = Pool(cpus)
-        doc_ids = list(pool.imap_unordered(_sen2id, batches))
-        
+#document to vocab id(multiprocess), input is sentences. Only support hash for wordid, tf calculate not supported
+def doc2ids(self, sentences):
+    #cpus = cpu_count() - 2
+    cpus = 1
+    step = max(int(len(sentences) / cpus), 1)
+    batches = [sentences[i:i + step] for i in range(0, len(sentences), step)]
+    
+    _sen2id = partial(sentence2id, self.emb_ins, self.cfg, self.ngrams)
+    
+    #pool = Pool(cpus, initializer=init, initargs=())
+    #doc_ids = list(pool.imap_unordered(_sen2id, batches))
+    
 
-        #print(doc_ids)
+    #print(doc_ids)
 
 
 

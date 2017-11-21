@@ -13,6 +13,10 @@ class Segment_Base(object):
                 for i in f.readlines():
                     self.stopwords[i.strip()] = ''
 
+    def __call__(self, sentence):
+        return self.seg_sentence(sentence)
+
+
 class Segment_Spacy(Segment_Base):
     def __init__(self, cfg):
         import spacy
