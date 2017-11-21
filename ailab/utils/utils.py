@@ -2,6 +2,8 @@
 import os, zlib, numpy
 import pickle
 from collections import Counter
+from sklearn.utils import murmurhash3_32
+
 
 #compress pickle file by using zlib and cpickle
 def zdump(value,filename):
@@ -51,14 +53,9 @@ def status_check(fn):
 def flat_list(l):
     return [item for sublist in l for item in sublist]
 
-#def n_count(ids):
-#    ids, doc_id = ids
-#    counts = Counter(ids)
-#    row = list(counts.keys())
-#    data = list(counts.values())
-#    col = [doc_id] * len(row)
-#    return row, col, data
-
 def n_count(i, ids):
     return numpy.sum(numpy.array(ids) == i)
+
+def hashword(word, hashsize=16777216):
+    return murmurhash3_32(word, positive=True) % (hashsize)
 

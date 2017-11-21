@@ -1,7 +1,23 @@
 #!/usr/bin/env python
 import numpy, os
-from ..utils import zload, zdump
-from sklearn.utils import murmurhash3_32
+from multiprocessing import cpu_count, Process ,Pipe, Pool
+from .tokenizer import Segment
+from ..utils import zload, zdump, hashword
+from functools import partial
+
+def sentence2id(cfg, ngrams, sentences):
+    tokenize = Segment(cfg)
+    ids = []
+    for s in sentences:
+        words = tokenize(s)['tokens']
+        if len(words) < 1:
+            continue
+        words_BE = ['BOS'] + words + ['EOS']
+        for n in range(1, ngrams):
+            words += [''.join(words_BE[i:i+n+1]) for i in range(len(words_BE) - n)]
+        ids.append([hashword(w, cfg['vocab_hash_size']) for w in words])
+    return ids
+
 
 # get TF of vocabs and vectors
 class Vocab:
@@ -54,9 +70,6 @@ class Vocab:
         if len(self.cfg['cached_vocab']) > 0:
             zdump((self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec), self.cfg['cached_vocab'])
 
-    @staticmethod
-    def hashword(word, hashsize=16777216):
-        return murmurhash3_32(word, positive=True) % (hashsize)
 
     def accumword(self, word, fulfill=True, tfaccum = True):
         if word in self._word2id:
@@ -64,7 +77,7 @@ class Vocab:
             return self._word2id[word]
         elif fulfill:
             if self.hashgenerate:
-                wordid = Vocab.hashword(word, self.vocab_hash_size)
+                wordid = hashword(word, self.vocab_hash_size)
             else:
                 wordid = len(self._id2word)
             self._id2word[wordid] = word
@@ -90,23 +103,23 @@ class Vocab:
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
     def sentence2id(self, sentence, useBE=False, addforce=True):
         if not any([isinstance(sentence, list), isinstance(sentence, tuple)]):
-            sentence = self.seg_ins.seg_sentence(sentence)
-        hash_sentence = hash(''.join(sentence['tokens']))
+            sentence = self.seg_ins.seg_sentence(sentence)['tokens']
+        hash_sentence = hash(''.join(sentence))
         if hash_sentence in self.sentences_hash or addforce:
             func_add_word = self.word2id
         else:
             func_add_word = self.add_word
 
         self.sentences_hash[hash_sentence] = 0
-        ids = [func_add_word(t) for t in sentence['tokens']]
+        ids = [func_add_word(t) for t in sentence]
         #ngrams
         if self.ngrams > 1:
             if useBE:
                 ids_BE = [self._id_BOS] + ids + [self._id_EOS]
-                words_BE = ['BOS'] + sentence['tokens'] + ['EOS']
+                words_BE = ['BOS'] + sentence + ['EOS']
             else:
                 ids_BE = ids
-                words_BE = sentence['tokens']
+                words_BE = sentence
         for n in range(1, self.ngrams):
             if len(ids_BE) < n: break
             ids_gram_tuple = [ids_BE[i:i+n+1] for i in range(len(ids_BE)-n)]
@@ -117,6 +130,7 @@ class Vocab:
                 if not d[0] in self._id_ngrams:
                     self._id_ngrams[d[0]] = d[1]
         return ids
+
     
     def get_id2vec(self):
         len_id2vec = len(self._has_vec[self._has_vec])
@@ -156,5 +170,22 @@ class Vocab:
         if tottf == 0:
             return numpy.zeros(self.emb_ins.vec_len)
         return vec/tottf
+
+
+    #document to vocab id(multiprocess), input is sentences. Only support hash for wordid, tf calculate not supported
+    def doc2ids(self, sentences):
+        #cpus = min(cpu_count() - 2, 4)
+        cpus = 1
+        step = max(int(len(sentences) / cpus), 1)
+        batches = [sentences[i:i + step] for i in range(0, len(sentences), step)]
+        
+        _sen2id = partial(sentence2id, self.cfg, self.ngrams)
+       
+        pool = Pool(cpus)
+        doc_ids = list(pool.imap_unordered(_sen2id, batches))
+        
+
+        #print(doc_ids)
+
 
 
