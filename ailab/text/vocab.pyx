@@ -1,23 +1,10 @@
 #!/usr/bin/env python
 import numpy, os
 from multiprocessing import cpu_count, Process ,Pipe, Pool
+from multiprocessing.util import Finalize
 from .tokenizer import Segment
 from ..utils import zload, zdump, hashword
 from functools import partial
-
-
-def sentence2id(tokenize, cfg, ngrams, sentences):
-    ids = []
-    print(tokenize)
-    for s in sentences:
-        words = tokenize(s)['tokens']
-        if len(words) < 1:
-            continue
-        words_BE = ['BOS'] + words + ['EOS']
-        for n in range(1, ngrams):
-            words += [''.join(words_BE[i:i+n+1]) for i in range(len(words_BE) - n)]
-        ids.append([hashword(w, cfg['vocab_hash_size']) for w in words])
-    return ids
 
 
 # get TF of vocabs and vectors
@@ -27,6 +14,7 @@ class Vocab(object):
         if not 'cached_vocab' in self.cfg:
             self.cfg['cached_vocab'] = ''
         self.seg_ins = seg_ins
+        self.seg_ins_emb = seg_ins is None # if tokenizer embedded in Vocab or as a parameter input
         self.emb_ins = emb_ins
         self.sentences_hash = {} #check if sentence added
         self.ngrams = ngrams
@@ -39,6 +27,15 @@ class Vocab(object):
         self.__get_cached_vocab(forceinit)
         self.hashgenerate = hashgenerate
 
+
+    def shutdown(self):
+        del self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec
+        if self.seg_ins_emb: 
+            del self.seg_ins
+
+
+    def __del__(self):
+        self.shutdown()
 
     def __get_cached_vocab(self, forceinit):
         ifinit = True
@@ -71,7 +68,6 @@ class Vocab(object):
     def save(self):
         if len(self.cfg['cached_vocab']) > 0:
             zdump((self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec), self.cfg['cached_vocab'])
-
 
 
     def accumword(self, word, fulfill=True, tfaccum = True):
@@ -111,6 +107,8 @@ class Vocab(object):
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
     def sentence2id(self, sentence, useBE=False, addforce=True):
         if not any([isinstance(sentence, list), isinstance(sentence, tuple)]):
+            if self.seg_ins is None:
+                self.seg_ins = Segment(self.cfg)
             sentence = self.seg_ins.seg_sentence(sentence)['tokens']
         hash_sentence = hash(''.join(sentence))
         if hash_sentence in self.sentences_hash or addforce:
@@ -142,6 +140,7 @@ class Vocab(object):
 
     #call function, convert sentences to id
     def __call__(self, sentences):
+        return [1,2,3,4]
         ids = []
         for sentence in sentences:
             ids.append(self.sentence2id(sentence, True))
@@ -192,20 +191,34 @@ class Vocab(object):
         return vec/tottf
 
 
+###########multiprocess, not finished
+PROCESS_TOK = None
+PROCESS_VOC = None
+
+def batch_init(cfg, vocab):
+    global PROCESS_TOK, PROCESS_VOC
+    PROCESS_TOK = Segment(cfg)
+    PROCESS_VOC = vocab(cfg, forceinit=True)
+    #Finalize(PROCESS_TOK, PROCESS_TOK.shutdown, exitpriority=100)
+    Finalize(PROCESS_VOC, PROCESS_VOC.shutdown, exitpriority=100)
+
+def sentence2id(sentences):
+    global PROCESS_VOC
+    return PROCESS_VOC(sentences)
+
+
 #document to vocab id(multiprocess), input is sentences. Only support hash for wordid, tf calculate not supported
-def doc2ids(self, sentences):
+def doc2ids(cfg, sentences):
     #cpus = cpu_count() - 2
     cpus = 1
     step = max(int(len(sentences) / cpus), 1)
     batches = [sentences[i:i + step] for i in range(0, len(sentences), step)]
-    
-    _sen2id = partial(sentence2id, self.emb_ins, self.cfg, self.ngrams)
-    
-    #pool = Pool(cpus, initializer=init, initargs=())
-    #doc_ids = list(pool.imap_unordered(_sen2id, batches))
+
+    pool = Pool(cpus, initializer=batch_init, initargs=(cfg, Vocab))
+    doc_ids = list(pool.imap_unordered(sentence2id, batches))
     
 
-    #print(doc_ids)
+    print(doc_ids)
 
 
 

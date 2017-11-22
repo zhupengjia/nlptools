@@ -2,6 +2,7 @@
 import re, sys
 from ailab.text import *
 from ailab.text.tfidf import *
+from ailab.text.vocab import doc2ids
 
 cfg = {'APPNAME':'test', 'vec_len':10, 'LANGUAGE':'en', 'cached_w2v':'/tmp/w2v.pkl', 'cached_vocab':'/tmp/vocab.pkl', 'cached_index':'/tmp/tfidf.index', 'freqwords_path':'data/en_freqwords.txt'}
 #e = Embedding(cfg)
@@ -14,7 +15,7 @@ One of the simplest ranking functions is computed by summing the tf–idf for ea
 
 corpus = [x for x in re.split('[\n\.\[\]]', corpus) if len(x)>2]
 
-v.doc2ids(corpus)
+doc2ids(cfg, corpus)
 
 sys.exit()
 

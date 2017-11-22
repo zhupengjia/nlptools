@@ -6,7 +6,7 @@ class Segment_Base(object):
         self.stopwords = {}
         if stopwords and 'stopwords_path' in cfg:
             self.__loadStopwords(cfg['stopwords_path'])
-    
+
     def __loadStopwords(self, stopwords_path):
         if stopwords_path is not None and os.path.exists(stopwords_path):
             with open(stopwords_path) as f:
@@ -25,7 +25,7 @@ class Segment_Spacy(Segment_Base):
             self.nlp = spacy.load(cfg['cached_ner'])
         else:
             self.nlp = spacy.load(cfg['LANGUAGE'])
-    
+
     def seg(self, sentence, remove_stopwords = False, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
         txts, tokens, tags, entities, pos, dep= [], [], [], [], [], []
         for token in self.nlp(sentence):
@@ -175,7 +175,7 @@ class Segment_Mecab(Segment_Base):
         self.mecab_ins = MeCab.Tagger('-d %s ' % cfg["seg_dict_path"])
         Segment_Base.__init__(self, cfg)
 
-
+    
     def seg(self, sentence, remove_stopwords=False, tags_filter=None):
         #sentence = re.sub(r"[\s\u0020-\u007f\u2000-\u206f\u3000-\u303f\uff00-\uffef]+", " ", sentence)
         sentence = re.sub(r"[^\w\d]+", " ", sentence)
