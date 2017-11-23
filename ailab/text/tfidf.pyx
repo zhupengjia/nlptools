@@ -67,4 +67,52 @@ class TFIDF(object):
         return freqs
 
 
+    def load_index(self, corpus_ids=None, retrain=False):
+        if 'tfidf_index' in self.cfg and os.path.exists(self.cfg['tfidf_index']) and not retrain:
+            self.index = zload(self.cfg['tfidf_index'])
+            return
+          
+        count_matrix = self.get_count_matrix(corpus_ids)
+        tfidf = self.get_tfidf_matrix(count_matrix)
+        freqs = self.get_doc_freqs(count_matrix)
+        self.index = {'count_matrix': count_matrix, 'tfidf': tfidf, 'freqs': freqs}
+        zdump(self.index, self.cfg['tfidf_index'])
+
+    def search(self, word_ids, topN=1):
+        spvec = self.text2spvec(word_ids)
+         
+        res = spvec * self.index['count_matrix']
+        print(res)
+        print(res.data)
+        if len(res.data) <= topN:
+            o_sort = numpy.argsort(-res.data)
+        else:
+            o = numpy.argpartition(-res.data, topN)[0:topN]
+            o_sort = o[numpy.argsort(-res.data[o])]
+        
+        doc_scores = res.data[o_sort]
+        print('o_sort', o_sort, doc_scores)
+
+    
+    
+    def text2spvec(self, word_ids):
+        # Count 
+        wids_unique, wids_counts = numpy.unique(word_ids, return_counts=True)
+        tfs = numpy.log1p(wids_counts)
+        
+        # Count IDF
+        Ns = self.index['freqs'][wids_unique]
+        idfs = numpy.log((self.index['count_matrix'].shape[1] - Ns + 0.5) / (Ns + 0.5))
+        idfs[idfs < 0] = 0
+
+        # TF-IDF
+        data = numpy.multiply(tfs, idfs)
+
+        # One row, sparse csr matrix
+        indptr = numpy.array([0, len(wids_unique)])
+        spvec = scipy.sparse.csr_matrix(
+            (data, wids_unique, indptr), shape=(1, self.vocab.vocab_hash_size)
+        )
+        return spvec 
+
 

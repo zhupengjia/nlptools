@@ -105,11 +105,11 @@ class Vocab(object):
 
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
-    def sentence2id(self, sentence, useBE=False, addforce=True):
+    def sentence2id(self, sentence, useBE=True, addforce=True):
         if not any([isinstance(sentence, list), isinstance(sentence, tuple)]):
             if self.seg_ins is None:
                 self.seg_ins = Segment(self.cfg)
-            sentence = self.seg_ins.seg_sentence(sentence)['tokens']
+            sentence = self.seg_ins.seg(sentence)['tokens']
         hash_sentence = hash(''.join(sentence))
         if hash_sentence in self.sentences_hash or addforce:
             func_add_word = self.word2id

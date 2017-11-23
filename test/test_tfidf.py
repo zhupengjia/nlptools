@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-import re, sys
+import re, sys, time
 from ailab.text import *
+from ailab.text.vectfidf import *
 from ailab.text.tfidf import *
 from ailab.text.vocab import doc2ids
 
-cfg = {'APPNAME':'test', 'vec_len':10, 'LANGUAGE':'en', 'cached_w2v':'/tmp/w2v.pkl', 'cached_vocab':'/tmp/vocab.pkl', 'cached_index':'/tmp/tfidf.index', 'freqwords_path':'data/en_freqwords.txt'}
+cfg = {'APPNAME':'test', 'vec_len':10, 'LANGUAGE':'en', 'cached_w2v':'/tmp/w2v.pkl', 'cached_vocab':'/tmp/vocab.pkl', 'tfidf_index':'/tmp/tfidf.index', 'freqwords_path':'data/en_freqwords.txt'}
 #e = Embedding(cfg)
 s = Segment(cfg)
 v = Vocab(cfg, s, None, 3)
@@ -14,20 +15,17 @@ Variations of the tf–idf weighting scheme are often used by search engines as 
 One of the simplest ranking functions is computed by summing the tf–idf for each query term; many more sophisticated ranking functions are variants of this simple model.Therefore, common words like "the" and "for", which appear in many documents, will be scaled down. Words that appear frequently in a single document will be scaled up.'''
 
 corpus = [x for x in re.split('[\n\.\[\]]', corpus) if len(x)>2]
-
-doc2ids(cfg, corpus)
-
-sys.exit()
-
 corpus_ids = [v.sentence2id(x) for x in corpus]
 #print('-'*60)
 #for i in corpus_ids:
 #    print(i)
 #print('-'*60)
 
-count_matrix = t.get_count_matrix(corpus_ids)
-tfidf = t.get_tfidf_matrix(count_matrix)
-freqs = t.get_doc_freqs(count_matrix)
-print(tfidf)
+t.load_index(corpus_ids)
+
+query_ids  = v.sentence2id('search engines')
+
+
+print(t.search(query_ids))
 
 
