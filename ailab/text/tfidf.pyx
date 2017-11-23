@@ -26,7 +26,7 @@ class TFIDF(object):
     def get_count_matrix(self, corpus_ids):
         row, col, data = [], [], []
         pool = multiprocessing.Pool(
-            multiprocessing.cpu_count()-2
+            max(multiprocessing.cpu_count()-2, 1)
         )
 
         for b_row, b_col, b_data in pool.imap_unordered(n_count, zip(corpus_ids, range(len(corpus_ids)))):
@@ -82,8 +82,6 @@ class TFIDF(object):
         spvec = self.text2spvec(word_ids)
          
         res = spvec * self.index['count_matrix']
-        print(res)
-        print(res.data)
         if len(res.data) <= topN:
             o_sort = numpy.argsort(-res.data)
         else:
@@ -91,9 +89,18 @@ class TFIDF(object):
             o_sort = o[numpy.argsort(-res.data[o])]
         
         doc_scores = res.data[o_sort]
-        print('o_sort', o_sort, doc_scores)
-
+        doc_ids = [x for x in res.indices[o_sort]]
+        return list(zip(doc_ids, doc_scores))
     
+    def search_batch(self, word_idss, topN = 1):
+        """Process a batch of closest_docs requests multithreaded.
+        Note: we can use plain threads here as scipy is outside of the GIL.
+        """
+        ncpus = max(multiprocessing.cpu_count() - 2, 1)
+        with multiprocessing.pool.ThreadPool(ncpus) as threads:
+            closest_docs = partial(self.search, topN=topN)
+            results = threads.map(closest_docs, word_idss)
+        return results
     
     def text2spvec(self, word_ids):
         # Count 
