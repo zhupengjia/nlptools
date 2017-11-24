@@ -3,6 +3,7 @@ import re, sys, time, json
 from ailab.utils import zload, zdump
 from ailab.text import *
 from ailab.text.vectfidf import *
+from ailab.zoo.comprehension.DrQA.model import DocReader
 
 cfg = {'APPNAME':'test', 'vec_len':300, 'w2v_word2idx':'/home/pzhu/data/word2vec/en/word2idx_2000000.pp', 'w2v_idx2vec':'/home/pzhu/data/word2vec/en/weight_2000000.npy',  'LANGUAGE':'en', 'cached_w2v':'/tmp/w2v.pkl', 'cached_vocab':'/tmp/vocab.pkl', 'cached_index':'data/tfidf.index', 'freqwords_path':'data/en_freqwords.txt'}
 e = Embedding(cfg)
