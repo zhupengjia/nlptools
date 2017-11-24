@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 import numpy, os
-from multiprocessing import cpu_count, Process ,Pipe, Pool
-from multiprocessing.util import Finalize
+
 from .tokenizer import Segment
 from ..utils import zload, zdump, hashword
-from functools import partial
 
 
 # get TF of vocabs and vectors
@@ -60,9 +58,9 @@ class Vocab(object):
                     self.id2vec = numpy.zeros((0, self.emb_ins.vec_len), 'float32')
             else:
                 self.id2vec = []
-            if self.ngrams>1:
-                self._id_BOS = self.word2id('BOS')
-                self._id_EOS = self.word2id('EOS')
+        if self.ngrams>1:
+            self._id_BOS = self.word2id('BOS')
+            self._id_EOS = self.word2id('EOS')
 
 
     def save(self):
@@ -140,7 +138,6 @@ class Vocab(object):
 
     #call function, convert sentences to id
     def __call__(self, sentences):
-        return [1,2,3,4]
         ids = []
         for sentence in sentences:
             ids.append(self.sentence2id(sentence, True))
@@ -148,6 +145,8 @@ class Vocab(object):
    
 
     def get_id2vec(self):
+        if self.emb_ins is None:
+            return None
         len_id2vec = len(self._has_vec[self._has_vec])
         if self.hashgenerate:
             for i in self._id2word:
@@ -166,6 +165,8 @@ class Vocab(object):
 
 
     def senid2vec(self, sentence_id):
+        if self.emb_ins is None:
+            return None
         vec = numpy.zeros((len(sentence_id), self.emb_ins.vec_len), 'float32')
         for i,sid in enumerate(sentence_id):
             vec[i] = self.word2vec(sid)
@@ -190,35 +191,6 @@ class Vocab(object):
             return numpy.zeros(self.emb_ins.vec_len)
         return vec/tottf
 
-
-###########multiprocess, not finished
-PROCESS_TOK = None
-PROCESS_VOC = None
-
-def batch_init(cfg, vocab):
-    global PROCESS_TOK, PROCESS_VOC
-    PROCESS_TOK = Segment(cfg)
-    PROCESS_VOC = vocab(cfg, forceinit=True)
-    #Finalize(PROCESS_TOK, PROCESS_TOK.shutdown, exitpriority=100)
-    Finalize(PROCESS_VOC, PROCESS_VOC.shutdown, exitpriority=100)
-
-def sentence2id(sentences):
-    global PROCESS_VOC
-    return PROCESS_VOC(sentences)
-
-
-#document to vocab id(multiprocess), input is sentences. Only support hash for wordid, tf calculate not supported
-def doc2ids(cfg, sentences):
-    #cpus = cpu_count() - 2
-    cpus = 1
-    step = max(int(len(sentences) / cpus), 1)
-    batches = [sentences[i:i + step] for i in range(0, len(sentences), step)]
-
-    pool = Pool(cpus, initializer=batch_init, initargs=(cfg, Vocab))
-    doc_ids = list(pool.imap_unordered(sentence2id, batches))
-    
-
-    print(doc_ids)
 
 
 

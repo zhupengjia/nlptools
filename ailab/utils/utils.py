@@ -53,8 +53,6 @@ def status_check(fn):
 def flat_list(l):
     return [item for sublist in l for item in sublist]
 
-def n_count(i, ids):
-    return numpy.sum(numpy.array(ids) == i)
 
 def hashword(word, hashsize=16777216):
     return murmurhash3_32(word, positive=True) % (hashsize)
