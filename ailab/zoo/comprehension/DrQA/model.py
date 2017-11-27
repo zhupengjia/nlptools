@@ -10,11 +10,9 @@ import torch
 import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
-import logging
 import copy
 
 from torch.autograd import Variable
-from .config import override_model_args
 from .rnn_reader import RnnDocReader
 
 from ailab.utils import setLogger
@@ -29,29 +27,25 @@ class DocReader(object):
     # Initialization
     # --------------------------------------------------------------------------
 
-    def __init__(self, cfg, vocab, args, word_dict, feature_dict,
+    def __init__(self, cfg, vocab, feature_dict,
                  state_dict=None, normalize=True):
         # Book-keeping.
         self.cfg = cfg
         self.logger = setLogger(cfg)
         self.vocab = vocab
         
-        self.args = args
-        self.word_dict = word_dict
-        #self.args.vocab_size = len(word_dict)
-    
         self.feature_dict = feature_dict
-        self.args.num_features = len(feature_dict)
+        self.cfg['num_features'] = len(feature_dict)
         self.updates = 0
         self.use_cuda = False
         self.parallel = False
 
         # Building network. If normalize if false, scores are not normalized
         # 0-1 per paragraph (no softmax).
-        if args.model_type == 'rnn':
-            self.network = RnnDocReader(args, normalize)
+        if self.cfg['model_type'] == 'rnn':
+            self.network = RnnDocReader(self.cfg, normalize)
         else:
-            raise RuntimeError('Unsupported model: %s' % args.model_type)
+            raise RuntimeError('Unsupported model: %s' % self.cfg['model_type'])
 
         # Load saved state
         if state_dict:
@@ -72,15 +66,12 @@ class DocReader(object):
         Output:
             added: set of tokens that were added.
         """
-        to_add = {self.word_dict.normalize(w) for w in words
-                  if w not in self.word_dict}
+        to_add = {self.vocab.word2id(w) for w in words
+                  if w not in self.vocab}
 
         # Add words to dictionary and expand embedding layer
         if len(to_add) > 0:
             self.logger.info('Adding %d new words to dictionary...' % len(to_add))
-            for w in to_add:
-                self.word_dict.add(w)
-            self.logger.info('New vocab size: %d' % len(self.word_dict))
 
             old_embedding = self.network.embedding.weight.data
             self.network.embedding = torch.nn.Embedding(self.vocab.vocab_hash_size,
@@ -111,14 +102,14 @@ class DocReader(object):
             for line in f:
                 parsed = line.rstrip().split(' ')
                 assert(len(parsed) == embedding.size(1) + 1)
-                w = self.word_dict.normalize(parsed[0])
+                w = parsed[0]
                 if w in words:
                     vec = torch.Tensor([float(i) for i in parsed[1:]])
                     if w not in vec_counts:
                         vec_counts[w] = 1
                         embedding[self.word_dict[w]].copy_(vec)
                     else:
-                        logging.warning(
+                        self.logger.warning(
                             'WARN: Duplicate embedding found for %s' % w
                         )
                         vec_counts[w] = vec_counts[w] + 1
@@ -177,20 +168,20 @@ class DocReader(object):
         Args:
             state_dict: network parameters
         """
-        if self.args.fix_embeddings:
+        if self.cfg['fix_embeddings']:
             for p in self.network.embedding.parameters():
                 p.requires_grad = False
         parameters = [p for p in self.network.parameters() if p.requires_grad]
-        if self.args.optimizer == 'sgd':
-            self.optimizer = optim.SGD(parameters, self.args.learning_rate,
-                                       momentum=self.args.momentum,
-                                       weight_decay=self.args.weight_decay)
-        elif self.args.optimizer == 'adamax':
+        if self.cfg['optimizer'] == 'sgd':
+            self.optimizer = optim.SGD(parameters, self.cfg['learning_rate'],
+                                       momentum=self.cfg['momentum'],
+                                       weight_decay=self.cfg['weight_decay'])
+        elif self.cfg['optimizer'] == 'adamax':
             self.optimizer = optim.Adamax(parameters,
-                                          weight_decay=self.args.weight_decay)
+                                          weight_decay=self.cfg['weight_decay'])
         else:
             raise RuntimeError('Unsupported optimizer: %s' %
-                               self.args.optimizer)
+                               self.cfg['optimizer'])
 
     # --------------------------------------------------------------------------
     # Learning
@@ -227,7 +218,7 @@ class DocReader(object):
 
         # Clip gradients
         torch.nn.utils.clip_grad_norm(self.network.parameters(),
-                                      self.args.grad_clipping)
+                                      self.cfg['grad_clipping'])
 
         # Update parameters
         self.optimizer.step()
@@ -242,9 +233,9 @@ class DocReader(object):
         """Reset any partially fixed parameters to original states."""
 
         # Reset fixed embeddings to original value
-        if self.args.tune_partial > 0:
+        if self.cfg['tune_partial'] > 0:
             # Embeddings to fix are indexed after the special + N tuned words
-            offset = self.args.tune_partial + self.word_dict.START
+            offset = self.cfg['tune_partial'] + self.word_dict.START
             if self.parallel:
                 embedding = self.network.module.embedding.weight.data
                 fixed_embedding = self.network.module.fixed_embedding
@@ -294,7 +285,7 @@ class DocReader(object):
         score_s = score_s.data.cpu()
         score_e = score_e.data.cpu()
         if candidates:
-            args = (score_s, score_e, candidates, top_n, self.args.max_len)
+            args = (score_s, score_e, candidates, top_n, self.cfg['max_len'])
             if async_pool:
                 return async_pool.apply_async(self.decode_candidates, args)
             else:
@@ -402,9 +393,9 @@ class DocReader(object):
             state_dict.pop('fixed_embedding')
         params = {
             'state_dict': state_dict,
-            'word_dict': self.word_dict,
+            'word_dict': self.vocab,
             'feature_dict': self.feature_dict,
-            'args': self.args,
+            'args': self.cfg,
         }
         try:
             torch.save(params, filename)
@@ -416,7 +407,7 @@ class DocReader(object):
             'state_dict': self.network.state_dict(),
             'word_dict': self.word_dict,
             'feature_dict': self.feature_dict,
-            'args': self.args,
+            'args': self.cfg,
             'epoch': epoch,
             'optimizer': self.optimizer.state_dict(),
         }
@@ -426,8 +417,7 @@ class DocReader(object):
             self.logger.warning('WARN: Saving failed... continuing anyway.')
 
     @staticmethod
-    def load(filename, new_args=None, normalize=True):
-        self.logger.info('Loading model %s' % filename)
+    def load(filename):
         saved_params = torch.load(
             filename, map_location=lambda storage, loc: storage
         )
@@ -435,9 +425,8 @@ class DocReader(object):
         feature_dict = saved_params['feature_dict']
         state_dict = saved_params['state_dict']
         args = saved_params['args']
-        if new_args:
-            args = override_model_args(args, new_args)
-        return DocReader(args, word_dict, feature_dict, state_dict, normalize)
+        return {'args': args, 'word_dict': word_dict, 'feature_dict':feature_dict, 'state_dict':state_dict}
+        
 
     @staticmethod
     def load_checkpoint(filename, normalize=True):

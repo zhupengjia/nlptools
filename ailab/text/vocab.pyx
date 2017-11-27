@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 import numpy, os
-
+import unicodedata
 from .tokenizer import Segment
-from ..utils import zload, zdump, hashword
+from ..utils import zload, zdump, hashword, normalize
 
 
 # get TF of vocabs and vectors
 class Vocab(object):
-    def __init__(self, cfg={}, seg_ins=None, emb_ins=None, ngrams=1, hashgenerate=True, forceinit=False):
+    def __init__(self, cfg={}, seg_ins=None, emb_ins=None, ngrams=1, hashgenerate=False, forceinit=False):
         self.cfg = cfg
         if not 'cached_vocab' in self.cfg:
             self.cfg['cached_vocab'] = ''
@@ -16,24 +16,21 @@ class Vocab(object):
         self.emb_ins = emb_ins
         self.sentences_hash = {} #check if sentence added
         self.ngrams = ngrams
-        if 'vocab_hash_size' in self.cfg:
-            self.vocab_hash_size = 2**self.cfg['vocab_hash_size']
-            self.hashgenerate = True
+        if 'vocab_size' in self.cfg:
+            self.vocab_size = 2**self.cfg['vocab_size']
         else:
-            self.vocab_hash_size = 2**15
-            self.hashgenerate = hashgenerate
-        self.__get_cached_vocab(forceinit)
+            self.vocab_size = 2**15
         self.hashgenerate = hashgenerate
+        self.__get_cached_vocab(forceinit)
 
-
-    def shutdown(self):
+    def __del__(self):
         del self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec
         if self.seg_ins_emb: 
             del self.seg_ins
 
-
-    def __del__(self):
-        self.shutdown()
+    def __addBE(self):
+        self._id_BOS = self.word2id('BOS')
+        self._id_EOS = self.word2id('EOS')
 
     def __get_cached_vocab(self, forceinit):
         ifinit = True
@@ -41,6 +38,7 @@ class Vocab(object):
             try:
                 cached_vocab = zload(self.cfg['cached_vocab'])
                 self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec  = cached_vocab
+                self._vocab_max = max(self._id2word)
                 ifinit = False
             except Exception as err:
                 print('warning!!! cached vocab read failed!!! ' + err)
@@ -48,20 +46,13 @@ class Vocab(object):
             self._id2word = {}
             self._word2id = {}
             self._id2tf = {}
+            self._vocab_max = -1
             self._id_ngrams = {}
-            self._id2vec, self._has_vec = None, None
+            self._id2vec, self._has_vec = {}, None
             if self.emb_ins is not None:
-                if self.hashgenerate:
-                    self._id2vec = numpy.zeros((self.vocab_hash_size, self.emb_ins.vec_len), 'float32')
-                    self._has_vec = numpy.zeros(self.vocab_hash_size, numpy.bool_)
-                else:
-                    self.id2vec = numpy.zeros((0, self.emb_ins.vec_len), 'float32')
-            else:
-                self.id2vec = []
+                self._has_vec = numpy.zeros(self.vocab_size, numpy.bool_)
         if self.ngrams>1:
-            self._id_BOS = self.word2id('BOS')
-            self._id_EOS = self.word2id('EOS')
-
+            self.__addBE()
 
     def save(self):
         if len(self.cfg['cached_vocab']) > 0:
@@ -74,9 +65,13 @@ class Vocab(object):
             return self._word2id[word]
         elif fulfill:
             if self.hashgenerate:
-                wordid = hashword(word, self.vocab_hash_size)
+                wordid = hashword(word, self.vocab_size)
+                if wordid > self._vocab_max:
+                    self._vocab_max = wordid
             else:
-                wordid = len(self._id2word)
+                if self._vocab_max < self.vocab_size - 1:
+                    self._vocab_max += 1
+                wordid = self._vocab_max
             self._id2word[wordid] = word
             self._word2id[word] = wordid
             self._id2tf[self._word2id[word]] = 1
@@ -92,7 +87,46 @@ class Vocab(object):
 
     def __len__(self):
         return len(self._id2word)
+
  
+    #call function, convert sentences to id
+    def __call__(self, sentences):
+        ids = []
+        for sentence in sentences:
+            ids.append(self.sentence2id(sentence, True))
+        return ids
+  
+    #get id from word, or word from id
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            if key in self._id2word:
+                return self._id2word[key]
+            else:
+                return None
+        return self.word2id(key)
+
+    #set id for word or word for id manually
+    def __setitem__(self, key, item):
+        if isinstance(key, int):
+            word, wordid = item, key
+        else:
+            word, wordid = key, item
+        if self.hashgenerate:
+            wordid = wordid % self.vocab_size
+        else:
+            wordid = wordid if wordid < self.vocab_size else self.vocab_size - 1
+        if wordid > self._vocab_max:
+            self._vocab_max = wordid
+        self._id2word[wordid] = word
+        self._word2id[word] = wordid
+        self._id2tf[wordid] = 0
+        if self.emb_ins is not None:
+            self._has_vec[wordid] = False
+
+    def __contains__(self, key):
+        if isinstance(key, int):
+            return key in self._id2word
+        return key in self._word2id
 
     def add_word(self, word):
         return self.accumword(word)
@@ -136,28 +170,24 @@ class Vocab(object):
         return ids
 
 
-    #call function, convert sentences to id
-    def __call__(self, sentences):
-        ids = []
-        for sentence in sentences:
-            ids.append(self.sentence2id(sentence, True))
-        return ids
-   
-
     def get_id2vec(self):
         if self.emb_ins is None:
             return None
         len_id2vec = len(self._has_vec[self._has_vec])
-        if self.hashgenerate:
-            for i in self._id2word:
-                if not self._has_vec[i]:
-                    self._id2vec[i] = self.word2vec(i)
-                    self._has_vec[i] = True
-        else:
-            self._id2vec = numpy.concatenate((self._id2vec, numpy.zeros((len(self._id2word)-self._id2vec.shape[0], self.emb_ins.vec_len)))) 
-            for i in range(len_id2vec, len(self._id2word)):
-                self._id2vec[i] = self.emb_ins[self._id2word[i]]
+        for i in self._id2word:
+            if not self._has_vec[i]:
+                self._id2vec[i] = self.word2vec(i)
+                self._has_vec[i] = True
         return len(self._id2word) - len_id2vec
+
+    
+    #return dense vector for id2vec
+    def dense_vectors(self):
+        self.get_id2vec()
+        vectors = numpy.zeros((self._vocab_max+1, self.emb_ins.__vec_len), 'float32')
+        for k in self._id2vec:
+            vectors[k] = self._id2vec[k]
+        return vectors
 
 
     def senid2tf(self, sentence_id):

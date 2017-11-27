@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os, zlib, numpy
-import pickle
+import pickle, unicodedata
 from collections import Counter
 from sklearn.utils import murmurhash3_32
 
@@ -56,4 +56,15 @@ def flat_list(l):
 
 def hashword(word, hashsize=16777216):
     return murmurhash3_32(word, positive=True) % (hashsize)
+
+
+#resolve different type of unicode encodings
+def normalize(text):
+    try:
+        return unicodedata.normalize('NFD', text)
+    except Exception as err:
+        print(err)
+        raise(err)
+
+
 

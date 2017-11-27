@@ -70,7 +70,7 @@ class VecTFIDF(object):
         pool.join()
         
         count_matrix = scipy.sparse.csr_matrix(
-            (data, (row, col)), shape=(self.vocab.vocab_hash_size, len(corpus_ids))
+            (data, (row, col)), shape=(self.vocab.vocab_size, len(corpus_ids))
         )
         count_matrix.sum_duplicates()
          
@@ -95,7 +95,6 @@ class VecTFIDF(object):
         self.word_idfs = numpy.log(self.count_matrix.shape[1] - word_freqs + 0.5) - numpy.log(word_freqs + 0.5)
         if 'cached_index' in self.cfg:
             zdump((self.count_matrix, self.word_idfs), self.cfg['cached_index'])
-            self.vocab.get_id2vec()
             self.vocab.save()
 
 
@@ -153,7 +152,7 @@ class VecTFIDF(object):
         # One row, sparse csr matrix
         indptr = numpy.array([0, len(wids_unique)])
         spvec = scipy.sparse.csr_matrix(
-            (data, wids_unique, indptr), shape=(1, self.vocab.vocab_hash_size)
+            (data, wids_unique, indptr), shape=(1, self.vocab.vocab_size)
         )
         return spvec 
 
