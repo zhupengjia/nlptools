@@ -28,9 +28,13 @@ class Vocab(object):
         if self.seg_ins_emb: 
             del self.seg_ins
 
-    def __addBE(self):
-        self._id_BOS = self.word2id('BOS')
-        self._id_EOS = self.word2id('EOS')
+    def addBE(self):
+        if '<unk>' in self._word2id:
+            return
+        self._word_spec = ('<pad>', '<eos>', '<bos>','<unk>')
+        self._id_spec = (self.word2id(w) for w in self._word_spec)
+        self.PAD, self.EOS, self.BOS, self.UNK = self._word_spec
+        self._id_PAD, self._id_EOS, self._id_BOS, self._id_UNK = self._id_spec
 
     def __get_cached_vocab(self, forceinit):
         ifinit = True
@@ -45,14 +49,14 @@ class Vocab(object):
         if ifinit:
             self._id2word = {}
             self._word2id = {}
-            self._id2tf = {}
+            self._id2tf = numpy.zeros(self.vocab_size, 'int')
             self._vocab_max = -1
             self._id_ngrams = {}
             self._id2vec, self._has_vec = {}, None
             if self.emb_ins is not None:
                 self._has_vec = numpy.zeros(self.vocab_size, numpy.bool_)
         if self.ngrams>1:
-            self.__addBE()
+            self.addBE()
 
     def save(self):
         if len(self.cfg['cached_vocab']) > 0:
@@ -68,13 +72,20 @@ class Vocab(object):
                 wordid = hashword(word, self.vocab_size)
                 if wordid > self._vocab_max:
                     self._vocab_max = wordid
+                self._id2word[wordid] = word
+                self._id2tf[wordid] = 1
             else:
+                if self._vocab_max >= self.vocab_size - 5:
+                    self.addBE()
                 if self._vocab_max < self.vocab_size - 1:
                     self._vocab_max += 1
-                wordid = self._vocab_max
-            self._id2word[wordid] = word
+                    wordid = self._vocab_max
+                    self._id2word[wordid] = word
+                    self._id2tf[wordid] = 1
+                else:
+                    wordid = self._id_UNK
+                    self._id2tf[wordid] += 1
             self._word2id[word] = wordid
-            self._id2tf[self._word2id[word]] = 1
             return wordid
         else:
             return None
@@ -87,6 +98,64 @@ class Vocab(object):
 
     def __len__(self):
         return len(self._id2word)
+
+
+    #reduce vocab size by tf
+    def reduce_vocab(self, vocab_size):
+        if vocab_size >= self.vocab_size:
+            return
+        self.addBE()
+        maxtf = self._id2tf.max()
+        for i in range(len(self._id_spec)):
+            self._id2tf[self._id_spec[i]] = maxtf + len(self._id_spec) - i #avoid remove spec vocab
+        sortedid = numpy.argsort(self._id2tf)[::-1]
+        for i in sortedid[vocab_size:]:
+            if not i in self._id2word:continue
+            word, wordid_old = self._id2word[i], i
+            self._word2id[word] = self._id_UNK
+            del self._id2word[i]
+            if i in self._id2vec:
+                del self._id2vec[i]
+        self._vocab_max = max(self._id2word)
+        self.vocab_size = vocab_size
+    
+    #resort vocab size by tf
+    def resort_vocab(self):
+        if self.hashgenerate:
+            #if hash generate, then do nothing
+            return
+        new_id2word = {}
+        new_word2id = {}
+        new_id2tf = numpy.zeros(self.vocab_size, 'int')
+        new_id_ngrams = {}
+        id_mapping = {}
+        new_id2vec, new_has_vec = {}, None
+        if self.emb_ins is not None:
+            new_has_vec = numpy.zeros(self.vocab_size, numpy.bool_)
+        
+        maxtf = self._id2tf.max()
+        for i in range(len(self._id_spec)):
+            self._id2tf[self._id_spec[i]] = maxtf + len(self._id_spec) - i #make sure spec id in the front
+        sortedid = numpy.argsort(self._id2tf)[::-1]
+        for i, wordid_old in enumerate(sortedid):
+            id_mapping[wordid_old] = i
+            word = self._id2word[wordid_old]
+            new_id2word[i] = word
+            new_word2id[word] = i
+            new_id2tf[i] = self._id2tf[wordid_old]
+            if self.emb_ins is not None:
+                if wordid_old in self._id2vec:
+                    new_id2vec[i] = self._id2vec[wordid_old] 
+                new_has_vec[i] = self._has_vec[wordid_old]
+        for wordid_old in self._id_ngrams:
+            new_id_ngrams[id_mapping[wordid_old]] = [id_mapping[i] for i in self._id_grams[wordid_old]] 
+        self._id2word = new_id2word
+        self._word2id = new_word2id
+        self._id2tf = new_id2tf
+        self._id_ngrams = new_id_ngrams
+        self._has_vec = new_has_vec
+        self._id2vec = new_id2vec
+        self._vocab_max = max(self._id2word)
 
  
     #call function, convert sentences to id
@@ -105,7 +174,7 @@ class Vocab(object):
                 return None
         return self.word2id(key)
 
-    #set id for word or word for id manually
+    #set id for word or word for id manually, be careful!
     def __setitem__(self, key, item):
         if isinstance(key, int):
             word, wordid = item, key
@@ -114,14 +183,18 @@ class Vocab(object):
         if self.hashgenerate:
             wordid = wordid % self.vocab_size
         else:
-            wordid = wordid if wordid < self.vocab_size else self.vocab_size - 1
+            if wordid >= self.vocab_size:
+                wordid = self._id_UNK
         if wordid > self._vocab_max:
             self._vocab_max = wordid
-        self._id2word[wordid] = word
         self._word2id[word] = wordid
-        self._id2tf[wordid] = 0
-        if self.emb_ins is not None:
-            self._has_vec[wordid] = False
+        if wordid != self._id_UNK:
+            self._id2word[wordid] = word
+            self._id2tf[wordid] = 0
+            if self.emb_ins is not None:
+                self._has_vec[wordid] = False
+                if wordid in self._id2vec:
+                    del self._id2vec[wordid]
 
     def __contains__(self, key):
         if isinstance(key, int):
@@ -137,11 +210,13 @@ class Vocab(object):
 
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
-    def sentence2id(self, sentence, useBE=True, addforce=True):
+    def sentence2id(self, sentence, ngrams=None, useBE=True, addforce=True):
         if not any([isinstance(sentence, list), isinstance(sentence, tuple)]):
             if self.seg_ins is None:
                 self.seg_ins = Segment(self.cfg)
             sentence = self.seg_ins.seg(sentence)['tokens']
+        if ngrams is None:
+            ngrams = self.ngrams
         hash_sentence = hash(''.join(sentence))
         if hash_sentence in self.sentences_hash or addforce:
             func_add_word = self.word2id
@@ -151,14 +226,14 @@ class Vocab(object):
         self.sentences_hash[hash_sentence] = 0
         ids = [func_add_word(t) for t in sentence]
         #ngrams
-        if self.ngrams > 1:
+        if ngrams > 1:
             if useBE:
                 ids_BE = [self._id_BOS] + ids + [self._id_EOS]
-                words_BE = ['BOS'] + sentence + ['EOS']
+                words_BE = self.BOS + sentence + self.EOS
             else:
                 ids_BE = ids
                 words_BE = sentence
-        for n in range(1, self.ngrams):
+        for n in range(1, ngrams):
             if len(ids_BE) < n: break
             ids_gram_tuple = [ids_BE[i:i+n+1] for i in range(len(ids_BE)-n)]
             ids_gram_word = [''.join(words_BE[i:i+n+1]) for i in range(len(words_BE)-n)]
