@@ -38,11 +38,11 @@ ranked_doc = t.search_index(query_id,5)
 ranked_doc_indexes = list(zip(*ranked_doc))[0]
 ranked_doc = [corpus[i] for i in ranked_doc_indexes]
 ranked_doc_ids = [corpus_ids[i] for i in ranked_doc_indexes]
-print(ranked_doc, ranked_doc_ids)
-print(ranked_doc_indexes)
 
 for k in reader_params['args'].__dict__:
     cfg[k] = reader_params['args'].__dict__[k]
+
+print(reader_params['feature_dict'])
 
 reader = DocReader(cfg, v, reader_params['feature_dict'], reader_params['state_dict'])
 
