@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-# Copyright 2017-present, Facebook, Inc.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
 """Functions for putting examples into torch format."""
 
 from collections import Counter
@@ -47,7 +42,8 @@ class DrQA(object):
                 corpus_ids += text_ids
         #tfidf training
         self.tfidf.load_index(corpus_ids) 
-    
+        self.vocab.save()
+
     def search(self, query, topN=1):
         query_seg = self.seg_ins.seg(query)
         query_id = self.vocab.sentence2id(query_seg['tokens'])
