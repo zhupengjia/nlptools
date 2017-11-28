@@ -33,8 +33,8 @@ class VecTFIDF(object):
             print('load freqword path')
             with open(freqwords_path) as f:
                 for w in f.readlines():
-                    for i in self.vocab.sentence2id(w.strip(), addforce=True):
-                        self.freqwords[i] = ''
+                    for i in self.vocab.sentence2id(w.strip(), ngrams=1, useBE=False, addforce=True):
+                        self.freqwords[i] = 0
 
     def n_sim(self, word_ids, sentence_ids):
         if len(sentence_ids) < 1:

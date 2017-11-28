@@ -28,8 +28,8 @@ class Vocab(object):
         if self.seg_ins_emb: 
             del self.seg_ins
 
-    def addBE(self):
-        if '<unk>' in self._word2id:
+    def addBE(self, forceadd=False):
+        if '<unk>' in self._word2id and not forceadd:
             return
         self._word_spec = ('<pad>', '<eos>', '<bos>','<unk>')
         self._id_spec = (self.word2id(w) for w in self._word_spec)
@@ -176,6 +176,7 @@ class Vocab(object):
 
     #set id for word or word for id manually, be careful!
     def __setitem__(self, key, item):
+        self.addBE()
         if isinstance(key, int):
             word, wordid = item, key
         else:
@@ -211,28 +212,32 @@ class Vocab(object):
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
     def sentence2id(self, sentence, ngrams=None, useBE=True, addforce=True):
-        if not any([isinstance(sentence, list), isinstance(sentence, tuple)]):
+        if isinstance(sentence, str):
             if self.seg_ins is None:
                 self.seg_ins = Segment(self.cfg)
-            sentence = self.seg_ins.seg(sentence)['tokens']
+            sentence_seg = self.seg_ins.seg(sentence)['tokens']
+        else:
+            sentence_seg = sentence
+            sentence = ''.join(sentence_seg)
+
         if ngrams is None:
             ngrams = self.ngrams
-        hash_sentence = hash(''.join(sentence))
-        if hash_sentence in self.sentences_hash or addforce:
-            func_add_word = self.word2id
-        else:
+        hash_sentence = hash(sentence)
+        if not hash_sentence in self.sentences_hash or addforce:
             func_add_word = self.add_word
+        else:
+            func_add_word = self.word2id
 
         self.sentences_hash[hash_sentence] = 0
-        ids = [func_add_word(t) for t in sentence]
+        ids = [func_add_word(t) for t in sentence_seg]
         #ngrams
         if ngrams > 1:
             if useBE:
                 ids_BE = [self._id_BOS] + ids + [self._id_EOS]
-                words_BE = self.BOS + sentence + self.EOS
+                words_BE = [self.BOS] + sentence_seg + [self.EOS]
             else:
                 ids_BE = ids
-                words_BE = sentence
+                words_BE = sentence_seg
         for n in range(1, ngrams):
             if len(ids_BE) < n: break
             ids_gram_tuple = [ids_BE[i:i+n+1] for i in range(len(ids_BE)-n)]
