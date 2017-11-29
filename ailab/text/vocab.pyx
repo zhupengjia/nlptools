@@ -34,10 +34,10 @@ class Vocab(object):
     def addBE(self, forceadd=False):
         if '<unk>' in self._word2id and not forceadd:
             return
-        self._word_spec = ('<pad>', '<eos>', '<bos>','<unk>')
-        self._id_spec = (self.word2id(w) for w in self._word_spec)
-        self.PAD, self.EOS, self.BOS, self.UNK = self._word_spec
-        self._id_PAD, self._id_EOS, self._id_BOS, self._id_UNK = self._id_spec
+        self._word_spec = ['<pad>', '<eos>', '<bos>','<unk>']
+        self._id_spec = [self.word2id(w) for w in self._word_spec]
+        self.PAD, self.EOS, self.BOS, self.UNK = tuple(self._word_spec)
+        self._id_PAD, self._id_EOS, self._id_BOS, self._id_UNK = tuple(self._id_spec)
 
     def __get_cached_vocab(self, forceinit):
         ifinit = True
@@ -114,13 +114,14 @@ class Vocab(object):
         sortedid = numpy.argsort(self._id2tf)[::-1]
         for i in sortedid[vocab_size:]:
             if not i in self._id2word:continue
-            word, wordid_old = self._id2word[i], i
+            word = self._id2word[i]
             self._word2id[word] = self._id_UNK
             del self._id2word[i]
             if i in self._id2vec:
                 del self._id2vec[i]
         self._vocab_max = max(self._id2word)
         self.vocab_size = vocab_size
+        self.resort_vocab()
     
     #resort vocab size by tf
     def resort_vocab(self):
@@ -140,7 +141,7 @@ class Vocab(object):
         for i in range(len(self._id_spec)):
             self._id2tf[self._id_spec[i]] = maxtf + len(self._id_spec) - i #make sure spec id in the front
         sortedid = numpy.argsort(self._id2tf)[::-1]
-        for i, wordid_old in enumerate(sortedid):
+        for i, wordid_old in enumerate(sortedid[:self.vocab_size]):
             id_mapping[wordid_old] = i
             word = self._id2word[wordid_old]
             new_id2word[i] = word
