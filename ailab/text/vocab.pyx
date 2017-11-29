@@ -180,7 +180,6 @@ class Vocab(object):
 
     #set id for word or word for id manually, be careful!
     def __setitem__(self, key, item):
-        self.addBE()
         if isinstance(key, int):
             word, wordid = item, key
         else:
