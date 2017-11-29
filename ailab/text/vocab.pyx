@@ -17,7 +17,10 @@ class Vocab(object):
         self.sentences_hash = {} #check if sentence added
         self.ngrams = ngrams
         if 'vocab_size' in self.cfg:
-            self.vocab_size = 2**self.cfg['vocab_size']
+            if self.cfg['vocab_size'] < 30:
+                self.vocab_size = 2**self.cfg['vocab_size']
+            else:
+                self.vocab_size = self.cfg['vocab_size']
         else:
             self.vocab_size = 2**15
         self.hashgenerate = hashgenerate
@@ -162,7 +165,7 @@ class Vocab(object):
     def __call__(self, sentences):
         ids = []
         for sentence in sentences:
-            ids.append(self.sentence2id(sentence, True))
+            ids.append(self.sentence2id(sentence))
         return ids
   
     #get id from word, or word from id

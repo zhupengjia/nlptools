@@ -286,7 +286,7 @@ class DocReader(object):
             else:
                 return self.decode_candidates(*args)
         else:
-            args = (score_s, score_e, top_n, self.args.max_len)
+            args = (score_s, score_e, top_n, self.cfg['max_len'])
             if async_pool:
                 return async_pool.apply_async(self.decode, args)
             else:

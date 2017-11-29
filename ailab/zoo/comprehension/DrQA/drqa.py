@@ -19,12 +19,14 @@ class DrQA(object):
     #load reader model
     def load_reader(self):
         self.reader_params = DocReader.load(self.cfg['drqa_reader_path'])
-        #vocab merge
-        for w in self.reader_params['word_dict']:
-            self.vocab[w] = self.reader_params['word_dict'][w]
+        cfg_old = self.cfg
         #cfg merge
         for k in self.reader_params['args'].__dict__:
             self.cfg[k] = self.reader_params['args'].__dict__[k]
+       
+        #vocab merge
+        for w in self.reader_params['word_dict']:
+            self.vocab[w] = self.reader_params['word_dict'][w]
         self.reader = DocReader(self.cfg, self.vocab, self.reader_params['feature_dict'], self.reader_params['state_dict'])
 
     def train(self, documents):
@@ -44,12 +46,16 @@ class DrQA(object):
         self.tfidf.load_index(corpus_ids) 
         self.vocab.save()
 
-    def search(self, query, topN=1):
-        query_seg = self.seg_ins.seg(query)
-        query_id = self.vocab.sentence2id(query_seg['tokens'])
-        query_seg['id'] = torch.LongTensor(self.vocab.sentence2id(query_seg['tokens'], 1))
+    def tokenize(self, doc):
+        doc_seg = self.seg_ins.seg(doc)
+        doc_seg['id'] = torch.LongTensor(self.vocab.sentence2id(doc_seg['tokens'], 1, addforce=False))
+        return doc_seg
 
-        ranked_doc = self.tfidf.search_index(query_id, topN*5)
+    def search(self, query, topN=1):
+        query_seg = self.tokenize(query)
+        query_id = self.vocab.sentence2id(query_seg['tokens'])
+
+        ranked_doc = self.tfidf.search_index(query_id, 5)
         ranked_doc_indexes = list(zip(*ranked_doc))[0]
         ranked_doc = [self.corpus[i] for i in ranked_doc_indexes]
         ranked_doc_seg = [self.corpus_segs[i] for i in ranked_doc_indexes]
@@ -57,23 +63,26 @@ class DrQA(object):
         for i in range(len(ranked_doc_seg)):
             ranked_doc_seg[i]['id'] = torch.LongTensor(self.vocab.sentence2id(ranked_doc_seg[i]['tokens'], 1))
         
+        return self.search_reader(query_seg, ranked_doc_seg)
+        
+    
+    def search_reader(self, query, documents, topN = 1):
+        if isinstance(query, str):
+            query = self.tokenize(query)
+        if isinstance(documents, str):
+            documents = [self.tokenize(documents)]
         examples = []
-        for i in range(len(ranked_doc_seg)):
-            examples.append(self.vectorize(i, query_seg, ranked_doc_seg[i]))
+        for i in range(len(documents)):
+            examples.append(self.vectorize(i, query, documents[i]))
         #build the batch and run it through the mode
         batch_exs = self.batchify(examples)
+        print('-'*60, '\n', batch_exs, '\n', '-'*60)
         s, e, score = self.reader.predict(batch_exs, None, topN)
+        
         print(s)
         print(e)
         print(score)
-        
-        #retrieve the predicted spans
-        results = []
-        #for i in range(len(s)):
-        #    predictions = []
-        #    for j in range(len(s[i])):
-        #        span = d_tokens[i].slice(s[i][j], e[i][j]+1)
-    
+
 
 
     def vectorize(self, eid, query, documents):
