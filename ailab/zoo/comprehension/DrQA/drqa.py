@@ -5,7 +5,7 @@ from collections import Counter
 from .model import DocReader
 from ailab.utils import zload, zdump, normalize
 from ailab.text import *
-import torch, json, os, re
+import torch, json, os, re, sys
 
 class DrQA(object):
     def __init__(self, cfg):
@@ -24,9 +24,6 @@ class DrQA(object):
         for k in self.reader_params['args'].__dict__:
             self.cfg[k] = self.reader_params['args'].__dict__[k]
        
-        #vocab merge
-        for w in self.reader_params['word_dict']:
-            self.vocab[w] = self.reader_params['word_dict'][w]
         self.reader = DocReader(self.cfg, self.vocab, self.reader_params['feature_dict'], self.reader_params['state_dict'])
 
     def train(self, documents):
@@ -48,7 +45,7 @@ class DrQA(object):
 
     def tokenize(self, doc):
         doc_seg = self.seg_ins.seg(doc)
-        doc_seg['id'] = torch.LongTensor(self.vocab.sentence2id(doc_seg['tokens'], 1, addforce=False))
+        doc_seg['id'] = torch.LongTensor(self.vocab.sentence2id(doc_seg['texts'], 1, addforce=False))
         return doc_seg
 
     def search(self, query, topN=1):
@@ -72,17 +69,24 @@ class DrQA(object):
         if isinstance(documents, str):
             documents = [self.tokenize(documents)]
         examples = []
+
         for i in range(len(documents)):
             examples.append(self.vectorize(i, query, documents[i]))
+
         #build the batch and run it through the mode
         batch_exs = self.batchify(examples)
-        print('-'*60, '\n', batch_exs, '\n', '-'*60)
         s, e, score = self.reader.predict(batch_exs, None, topN)
-        
-        print(s)
-        print(e)
-        print(score)
-
+       
+        # Retrieve the predicted spans
+        results = []
+        for i in range(len(s)):
+            predictions = []
+            for j in range(len(s[i])):
+                predictions.append((' '.join(documents[i]['texts'][s[i][j]: e[i][j]+1]), score[i][j]))
+                #span = d_tokens[i].slice(s[i][j], e[i][j] + 1).untokenize()
+                #predictions.append((span, score[i][j]))
+            results.append(predictions)
+        return results[0]
 
 
     def vectorize(self, eid, query, documents):

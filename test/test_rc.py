@@ -7,15 +7,19 @@ cfg = {'APPNAME':'test', 'vec_len':300, 'w2v_word2idx':homedir+'data/word2vec/en
 
 d = DrQA(cfg)
 d.load_reader()
-#with open('data/accenture_policy.txt') as f:
-#    documents = re.split('\n',f.read())
-#documents = [json.loads(l)['text'] for l in documents if len(l.strip())>0]
-#d.train(documents)
+d.vocab.save()
+with open('data/accenture_policy.txt') as f:
+    documents = re.split('\n',f.read())
+documents = [json.loads(l)['text'] for l in documents if len(l.strip())>0]
+d.train(documents)
 
-doc = "China emerged as one of the world's earliest civilizations in the fertile basin of the Yellow River in the North China Plain. For millennia, China's political system was based on hereditary monarchies, or dynasties, beginning with the semi-legendary Xia dynasty. Since then, China has expanded, fractured, and re-unified numerous times. In 1912, the Republic of China (ROC) replaced the last dynasty and ruled the Chinese mainland until 1949, when it was defeated by the communist People's Liberation Army in the Chinese Civil War. The Communist Party established the People's Republic of China in Beijing on 21 September 1949, while the ROC government retreated to Taiwan with its present de facto capital in Taipei. Both the ROC and PRC continue to claim to be the legitimate government of all China, though the latter has more recognition in the world and controls more territory.\n\n"
+#doc = "China emerged as one of the world's earliest civilizations in the fertile basin of the Yellow River in the North China Plain. For millennia, China's political system was based on hereditary monarchies, or dynasties, beginning with the semi-legendary Xia dynasty. Since then, China has expanded, fractured, and re-unified numerous times. In 1912, the Republic of China (ROC) replaced the last dynasty and ruled the Chinese mainland until 1949, when it was defeated by the communist People's Liberation Army in the Chinese Civil War. The Communist Party established the People's Republic of China in Beijing on 21 September 1949, while the ROC government retreated to Taiwan with its present de facto capital in Taipei. Both the ROC and PRC continue to claim to be the legitimate government of all China, though the latter has more recognition in the world and controls more territory.\n\n"
 
-question = 'where is ROC gpvernment'
+#question = 'where is ROC government'
+#print(d.search_reader(question, doc))
 
-d.search_reader(question, doc)
+question = 'what is the dresscode'
+d.search(question)
+
 
 

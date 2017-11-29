@@ -388,7 +388,6 @@ class DocReader(object):
             state_dict.pop('fixed_embedding')
         params = {
             'state_dict': state_dict,
-            'word_dict': self.vocab,
             'feature_dict': self.feature_dict,
             'args': self.cfg,
         }
@@ -400,7 +399,6 @@ class DocReader(object):
     def checkpoint(self, filename, epoch):
         params = {
             'state_dict': self.network.state_dict(),
-            'word_dict': self.word_dict,
             'feature_dict': self.feature_dict,
             'args': self.cfg,
             'epoch': epoch,
@@ -416,26 +414,27 @@ class DocReader(object):
         saved_params = torch.load(
             filename, map_location=lambda storage, loc: storage
         )
-        word_dict = saved_params['word_dict']
         feature_dict = saved_params['feature_dict']
         state_dict = saved_params['state_dict']
         args = saved_params['args']
-        return {'args': args, 'word_dict': word_dict, 'feature_dict':feature_dict, 'state_dict':state_dict}
+
+        saved_params = {'args': args, 'feature_dict':feature_dict, 'state_dict':state_dict}
+
+        return saved_params
         
 
     @staticmethod
     def load_checkpoint(filename, normalize=True):
-        self.logger.info('Loading model %s' % filename)
         saved_params = torch.load(
             filename, map_location=lambda storage, loc: storage
         )
-        word_dict = saved_params['word_dict']
         feature_dict = saved_params['feature_dict']
         state_dict = saved_params['state_dict']
         epoch = saved_params['epoch']
         optimizer = saved_params['optimizer']
         args = saved_params['args']
-        model = DocReader(args, word_dict, feature_dict, state_dict, normalize)
+
+        model = DocReader(args, feature_dict, state_dict, normalize)
         model.init_optimizer(optimizer)
         return model, epoch
 
