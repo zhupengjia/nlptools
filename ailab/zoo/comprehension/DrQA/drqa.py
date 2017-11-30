@@ -9,57 +9,62 @@ import torch, json, os, re, sys
 
 class DrQA(object):
     def __init__(self, cfg):
-        self.cfg = cfg
-        self.emb_ins = Embedding(cfg)
-        self.seg_ins = Segment(cfg)
-        self.vocab = Vocab(cfg, self.seg_ins, self.emb_ins, 3, hashgenerate=False)
-        self.vocab.addBE(forceadd=True)
-        self.tfidf = VecTFIDF(cfg, self.vocab)
+        self.cfg_tfidf = cfg['tfidf']
+        self.seg_ins = Segment(self.cfg_tfidf)
+        self.vocab_tfidf = Vocab(self.cfg_tfidf, self.seg_ins, None, 3, hashgenerate=True)
+        self.vocab_tfidf.addBE(forceadd=True)
+        self.tfidf = VecTFIDF(cfg, self.vocab_tfidf)
+         
+        self.cfg_reader = cfg['reader']
+        self.emb_ins = Embedding(self.cfg_reader)
+        self.vocab_reader = Vocab(self.cfg_reader, self.seg_ins, self.emb_ins, 1, hashgenerate=False)
+        self.vocab_reader.addBE(forceadd=True)
    
     #load reader model
     def load_reader(self):
-        self.reader_params = DocReader.load(self.cfg['drqa_reader_path'])
-        cfg_old = self.cfg
+        self.reader_params = DocReader.load(self.cfg_reader['drqa_reader_path'])
         #cfg merge
         for k in self.reader_params['args'].__dict__:
-            self.cfg[k] = self.reader_params['args'].__dict__[k]
+            self.cfg_reader[k] = self.reader_params['args'].__dict__[k]
        
-        self.reader = DocReader(self.cfg, self.vocab, self.reader_params['feature_dict'], self.reader_params['state_dict'])
+        self.reader = DocReader(self.cfg_reader, self.vocab_reader, self.reader_params['feature_dict'], self.reader_params['state_dict'])
 
-    def train(self, documents):
+    def build_index(self, documents):
         #predeal
-        if 'drqa_data_cache' in self.cfg and os.path.exists(self.cfg['drqa_data_cache']):
-            self.corpus, self.corpus_segs, corpus_ids = zload(self.cfg['drqa_data_cache'])
+        if 'cached_corpus' in self.cfg_tfidf and os.path.exists(self.cfg_tfidf['cached_corpus']):
+            self.corpus, self.corpus_segs, corpus_ids = zload(self.cfg_tfidf['cached_corpus'])
         else:
             self.corpus, self.corpus_segs, corpus_ids = [], [], []
             for text in documents:
-                text = [x for x in re.split('[\n\.\[\]]', text) if len(x)>2]
+                text = [x for x in re.split('\n', text) if len(x)>2]
                 text_seg = [self.seg_ins.seg(x) for x in text]
-                text_ids = [self.vocab.sentence2id(x['tokens']) for x in text_seg]
+                text_ids = [self.vocab_tfidf.sentence2id(x['tokens']) for x in text_seg]
                 self.corpus += text
                 self.corpus_segs += text_seg
                 corpus_ids += text_ids
+            zdump((self.corpus, self.corpus_segs, corpus_ids), self.cfg_tfidf['cached_corpus'])
         #tfidf training
         self.tfidf.load_index(corpus_ids) 
-        self.vocab.save()
+        self.vocab_tfidf.save()
 
     def tokenize(self, doc):
         doc_seg = self.seg_ins.seg(doc)
-        doc_seg['id'] = torch.LongTensor(self.vocab.sentence2id(doc_seg['texts'], 1, addforce=False))
+        doc_seg['id'] = torch.LongTensor(self.vocab_reader.sentence2id(doc_seg['texts'], addforce=False))
         return doc_seg
 
-    def search(self, query, topN=1):
+    def search(self, query, prefilter = 5, topN=1):
         query_seg = self.tokenize(query)
-        query_id = self.vocab.sentence2id(query_seg['tokens'])
+        query_id = self.vocab_tfidf.sentence2id(query_seg['tokens'])
 
-        ranked_doc = self.tfidf.search_index(query_id, 5)
+        ranked_doc = self.tfidf.search_index(query_id, prefilter)
+
         ranked_doc_indexes = list(zip(*ranked_doc))[0]
         ranked_doc = [self.corpus[i] for i in ranked_doc_indexes]
         ranked_doc_seg = [self.corpus_segs[i] for i in ranked_doc_indexes]
         
         for i in range(len(ranked_doc_seg)):
-            ranked_doc_seg[i]['id'] = torch.LongTensor(self.vocab.sentence2id(ranked_doc_seg[i]['tokens'], 1))
-        
+            ranked_doc_seg[i]['id'] = torch.LongTensor(self.vocab_reader.sentence2id(ranked_doc_seg[i]['texts'], 1, addforce=False))
+      
         return self.search_reader(query_seg, ranked_doc_seg)
         
     
@@ -82,11 +87,10 @@ class DrQA(object):
         for i in range(len(s)):
             predictions = []
             for j in range(len(s[i])):
-                predictions.append((' '.join(documents[i]['texts'][s[i][j]: e[i][j]+1]), score[i][j]))
-                #span = d_tokens[i].slice(s[i][j], e[i][j] + 1).untokenize()
-                #predictions.append((span, score[i][j]))
-            results.append(predictions)
-        return results[0]
+                predictions.append((i, ' '.join(documents[i]['texts'][s[i][j]: e[i][j]+1]), score[i][j]))
+            results += predictions
+        results.sort(key=lambda r:r[2], reverse=True)
+        return results[:topN]
 
 
     def vectorize(self, eid, query, documents):
@@ -97,10 +101,10 @@ class DrQA(object):
             features = None
     
         # f_{exact_match}
-        if self.cfg['use_in_question']:
+        if self.cfg_reader['use_in_question']:
             q_words_cased = {w for w in query['texts']}
             q_words_uncased = {w.lower() for w in query['texts']}
-            q_lemma = {w for w in query['tokens']} if self.cfg['use_lemma'] else None
+            q_lemma = {w for w in query['tokens']} if self.cfg_reader['use_lemma'] else None
             for i in range(len(documents['texts'])):
                 if documents['texts'][i] in q_words_cased:
                     features[i][self.reader_params['feature_dict']['in_question']] = 1.0
@@ -110,21 +114,21 @@ class DrQA(object):
                     features[i][self.reader_params['feature_dict']['in_question_lemma']] = 1.0
     
         # f_{token} (POS)
-        if self.cfg['use_pos']:
+        if self.cfg_reader['use_pos']:
             for i, w in enumerate(documents['pos']):
                 f = 'pos=%s' % w
                 if f in self.reader_params['feature_dict']:
                     features[i][self.reader_params['feature_dict'][f]] = 1.0
     
         # f_{token} (NER)
-        if self.cfg['use_ner']:
+        if self.cfg_reader['use_ner']:
             for i, w in enumerate(documents['entities']):
                 f = 'ner=%s' % w
                 if f in self.reader_params['feature_dict']:
                     features[i][self.reader_params['feature_dict'][f]] = 1.0
     
         # f_{token} (TF)
-        if self.cfg['use_tf']:
+        if self.cfg_reader['use_tf']:
             counter = Counter([w.lower() for w in documents['texts']])
             l = len(documents['texts'])
             for i, w in enumerate(documents['texts']):
