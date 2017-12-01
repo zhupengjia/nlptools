@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, string, numpy, re, glob, json
+import os, string, numpy, re, glob, json, requests
 
 class Segment_Base(object):
     def __init__(self, cfg, stopwords=True):
@@ -19,6 +19,7 @@ class Segment_Base(object):
 
 class Segment_CoreNLP(Segment_Base):
     def __init__(self, cfg):
+        Segment_Base.__init__(self, cfg)
         self.server_url = cfg['CORENLP_URL']
 
     def annotate(self, text, properties=None):
@@ -28,10 +29,7 @@ class Segment_CoreNLP(Segment_Base):
         else:
             assert isinstance(properties, dict)
 
-        r = requests.post(
-            self.server_url, params={
-                'properties': str(properties)
-            }, data=data, headers={'Connection': 'close'})
+        r = requests.post(self.server_url, params={'properties': str(properties)}, data=text, headers={'Connection': 'close'})
         output = r.text
         if ('outputFormat' in properties
              and properties['outputFormat'] == 'json'):
@@ -60,6 +58,27 @@ class Segment_CoreNLP(Segment_Base):
             pass
         return output
 
+    def seg(self, sentence, remove_stopwords = False, entities_filter = None, pos_filter = None):
+        txts, tokens, entities, pos= [], [], [], []
+        for idx, sentence in enumerate(self.annotate(sentence, properties={'annotators': 'tokenize, pos, lemma, ner', 'outputFormat':'json'})['sentences']):
+            for token in sentence['tokens']:
+                if remove_stopwords and token['word'] in self.stopwords:
+                    continue
+                if pos_filter is not None and token['pos'] not in pos_filter:
+                    continue
+                if entities_filter is not None and token['ner'] not in entities_filter:
+                    continue
+                if len(token['lemma'])<1:
+                    continue
+                txts.append(token['word'])
+                tokens.append(token['lemma'])
+                pos.append(token['pos'])
+                entities.append(token['ner'])
+    
+        return {"tokens":tokens, "texts":txts, "entities":entities, 'pos':pos}
+   
+    def seg_sentence(self, sentence, remove_stopwords=True, pos_filter=None):
+        return self.seg(sentence, remove_stopwords=remove_stopwords, pos_filter=pos_filter)
 
 class Segment_Spacy(Segment_Base):
     def __init__(self, cfg):
