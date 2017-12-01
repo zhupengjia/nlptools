@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, string, numpy, re, glob
+import os, string, numpy, re, glob, json
 
 class Segment_Base(object):
     def __init__(self, cfg, stopwords=True):
@@ -15,6 +15,50 @@ class Segment_Base(object):
 
     def __call__(self, sentence):
         return self.seg_sentence(sentence)
+
+
+class Segment_CoreNLP(Segment_Base):
+    def __init__(self, cfg):
+        self.server_url = cfg['CORENLP_URL']
+
+    def annotate(self, text, properties=None):
+        assert isinstance(text, str)
+        if properties is None:
+            properties = {}
+        else:
+            assert isinstance(properties, dict)
+
+        r = requests.post(
+            self.server_url, params={
+                'properties': str(properties)
+            }, data=data, headers={'Connection': 'close'})
+        output = r.text
+        if ('outputFormat' in properties
+             and properties['outputFormat'] == 'json'):
+            try:
+                output = json.loads(output, encoding='utf-8', strict=True)
+            except:
+                pass
+        return output
+
+    def tokensregex(self, text, pattern, filter):
+        return self.regex('/tokensregex', text, pattern, filter)
+
+    def semgrex(self, text, pattern, filter):
+        return self.regex('/semgrex', text, pattern, filter)
+
+    def regex(self, endpoint, text, pattern, filter):
+        r = requests.get(
+            self.server_url + endpoint, params={
+                'pattern':  pattern,
+                'filter': filter
+            }, data=text)
+        output = r.text
+        try:
+            output = json.loads(r.text)
+        except:
+            pass
+        return output
 
 
 class Segment_Spacy(Segment_Base):
