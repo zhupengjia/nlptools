@@ -24,13 +24,14 @@ class Embedding_Base(object):
         return cosine(vec1, vec2)
 
     def __get_cached_vec(self):
-        if os.path.exists(self.cfg['cached_w2v']):
+        if 'cached_w2v' in self.cfg and  os.path.exists(self.cfg['cached_w2v']):
             self.cached_vec = zload(self.cfg['cached_w2v'])
         else:
             self.cached_vec = {}
     
     def save(self):
-        zdump(self.cached_vec, self.cfg['cached_w2v'])
+        if 'cached_w2v' in self.cfg:
+            zdump(self.cached_vec, self.cfg['cached_w2v'])
 
 
 class Embedding_File(Embedding_Base):
@@ -108,10 +109,15 @@ class Embedding_Dynamodb(Embedding_Base):
             vector_binary = v['Item']['vector']
             if isinstance(vector_binary, boto3.dynamodb.types.Binary):
                 vector_binary = vector_binary.value
-            vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.vec_type)
-            v = np.concatenate((vector, np.zeros(1))).astype('float32')
+            if 'RETURNBASE64' in self.cfg:
+                v = vector_binary
+            else:
+                vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.vec_type)
+                v = np.concatenate((vector, np.zeros(1))).astype('float32')
         else:
             v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1))).astype('float32')
+            if 'RETURNBASE64' in self.cfg:
+                v = base64.b64encode(v.tostring())
         self.cached_vec[word] = v
         return v
 
