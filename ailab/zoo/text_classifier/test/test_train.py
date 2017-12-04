@@ -1,4 +1,6 @@
-from train import TextJudgment
+import sys
+sys.path.append('..')
+from text.train import TextJudgment
 
 
 
@@ -34,3 +36,11 @@ cfg = {
 
 Text_Judge = TextJudgment(cfg)
 Text_Judge.train()
+
+query = '明白了'
+result = Text_Judge.predict(query)
+print(result)
+
+query = '不了解'
+result = Text_Judge.predict(query)
+print(result)

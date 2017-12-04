@@ -5,11 +5,10 @@ import numpy as np
 import os
 import time
 import datetime
-import data_helpers
-from text_cnn import TextCNN
+from .text_cnn import TextCNN
 from tensorflow.contrib import learn
 from ailab.text import Embedding
-from data_helpers import Data_helpers
+from .data_helpers import Data_helpers
 
 
 class TextJudgment(object):
@@ -18,8 +17,7 @@ class TextJudgment(object):
 		self.FLAGS = self.cfg['FLAGS']
 		self.data_ins = Data_helpers(self.cfg)
 		self.emb_ins = Embedding(self.cfg)
-		self.data_process(self.FLAGS['positive_data_file'], self.FLAGS['negative_data_file'])
-
+#		self.model_path()
 
 
 	def data_process(self, positive_file, negative_file):
@@ -72,6 +70,16 @@ class TextJudgment(object):
 		print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
 		if writer:
 			writer.add_summary(summaries, step)
+
+	def model_path(self):
+		# output directory for models and summaries
+		timestamp = str(int(time.time()))
+		self.out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", timestamp))
+		
+		self.checkpoint_dir = os.path.abspath(os.path.join(self.out_dir, "checkpoints"))
+		self.checkpoint_prefix = os.path.join(self.checkpoint_dir, "model")
+		if not os.path.exists(self.checkpoint_dir):
+			os.makedirs(self.checkpoint_dir)
 	
 	def train_parameters(self):
 		# Define Training procedure
@@ -110,15 +118,18 @@ class TextJudgment(object):
 	    self.dev_summary_writer = tf.summary.FileWriter(dev_summary_dir, self.sess.graph)
 	
 	    # Checkpoint directory. Tensorflow assumes this directory already exists so we need to create it
-	    checkpoint_dir = os.path.abspath(os.path.join(self.out_dir, "checkpoints"))
-	    self.checkpoint_prefix = os.path.join(checkpoint_dir, "model")
-	    if not os.path.exists(checkpoint_dir):
-	        os.makedirs(checkpoint_dir)
+	    self.checkpoint_dir = os.path.abspath(os.path.join(self.out_dir, "checkpoints"))
+	    self.checkpoint_prefix = os.path.join(self.checkpoint_dir, "model")
+	    if not os.path.exists(self.checkpoint_dir):
+	        os.makedirs(self.checkpoint_dir)
 	    self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=self.FLAGS['num_checkpoints'])
 	
 	
 	
 	def train(self):
+		# data process
+		self.data_process(self.FLAGS['positive_data_file'], self.FLAGS['negative_data_file'])
+		# train
 		with tf.Graph().as_default():
 			session_conf = tf.ConfigProto(
 				allow_soft_placement = self.FLAGS['allow_soft_placement'],
@@ -166,4 +177,34 @@ class TextJudgment(object):
 						path = self.saver.save(self.sess, self.checkpoint_prefix, global_step = current_step)
 						print('Saved model checkpoint to {}\n'.format(path))
 		
-
+	def predict(self, query):
+		# read the vocab
+		vocab_path = os.path.join(self.out_dir, "vocab")
+		vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
+		
+		# seg sentence and map to vocabulary
+		query_token = self.data_ins.seg_sentence(query)
+		query_test = np.array(list(vocab_processor.transform([query_token]))) #transform accept list as input
+		
+		# read model and predict					
+		checkpoint_file = tf.train.latest_checkpoint(self.checkpoint_dir)
+		graph = tf.Graph()
+		with graph.as_default():
+			session_conf = tf.ConfigProto(
+				allow_soft_placement=True,
+				log_device_placement=False)
+			sess = tf.Session(config = session_conf)
+			with sess.as_default():
+				#load the saved meta graph and restore variables
+				saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
+				saver.restore(sess, checkpoint_file)
+				
+				#Get the placeholders from the graph by name
+				input_x = graph.get_operation_by_name("input_x").outputs[0]
+				dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]	
+				
+				# Tensors to evaluate
+				predictions = graph.get_operation_by_name("output/predictions").outputs[0]
+				
+				result = sess.run(predictions, {input_x:query_test, dropout_keep_prob: 1.0})	
+				return result	
