@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import numpy, os
+import numpy, os, random
 import unicodedata
 from .tokenizer import Segment
 from ..utils import zload, zdump, hashword, normalize
@@ -7,22 +7,16 @@ from ..utils import zload, zdump, hashword, normalize
 
 # get TF of vocabs and vectors
 class Vocab(object):
-    def __init__(self, cfg={}, seg_ins=None, emb_ins=None, ngrams=1, hashgenerate=False, forceinit=False):
-        self.cfg = cfg
-        if not 'cached_vocab' in self.cfg:
-            self.cfg['cached_vocab'] = ''
+    def __init__(self, cfg={}, seg_ins=None, emb_ins=None, hashgenerate=False, forceinit=False):
+        self.cfg = {'cached_vocab': '', 'vocab_size': 2**15, 'ngrams':1, 'outofvocab':'unk'}
+        for k in cfg: self.cfg[k] = cfg[k]
         self.seg_ins = seg_ins
         self.seg_ins_emb = seg_ins is None # if tokenizer embedded in Vocab or as a parameter input
         self.emb_ins = emb_ins
         self.sentences_hash = {} #check if sentence added
-        self.ngrams = ngrams
-        if 'vocab_size' in self.cfg:
-            if self.cfg['vocab_size'] < 30:
-                self.vocab_size = 2**self.cfg['vocab_size']
-            else:
-                self.vocab_size = self.cfg['vocab_size']
-        else:
-            self.vocab_size = 2**15
+        self.vocab_size = self.cfg['vocab_size']
+        if self.vocab_size < 30:
+            self.vocab_size = 2**self.cfg['vocab_size']
         self.hashgenerate = hashgenerate
         self.__get_cached_vocab(forceinit)
 
@@ -58,7 +52,7 @@ class Vocab(object):
             self._id2vec, self._has_vec = {}, None
             if self.emb_ins is not None:
                 self._has_vec = numpy.zeros(self.vocab_size, numpy.bool_)
-        if self.ngrams>1:
+        if self.cfg['ngrams']>1:
             self.addBE()
 
     def save(self):
@@ -115,7 +109,10 @@ class Vocab(object):
         for i in sortedid[vocab_size:]:
             if not i in self._id2word:continue
             word = self._id2word[i]
-            self._word2id[word] = self._id_UNK
+            if self.cfg['outofvocab']=='random':
+                self._word2id[word] = random.randint(0, vocab_size-1)
+            else:
+                self._word2id[word] = self._id_UNK
             del self._id2word[i]
             if i in self._id2vec:
                 del self._id2vec[i]
@@ -184,15 +181,21 @@ class Vocab(object):
             word, wordid = item, key
         else:
             word, wordid = key, item
+        wordid_outofvocab = False
         if self.hashgenerate:
             wordid = wordid % self.vocab_size
         else:
             if wordid >= self.vocab_size:
+                wordid_outofvocab = True
+                if self.cfg['outofvocab']=='random':
+                    word2id = random.randint(0, self.vocab_size-1)
+                else:
+                    word2id = self._id_UNK
                 wordid = self._id_UNK
         if wordid > self._vocab_max:
             self._vocab_max = wordid
         self._word2id[word] = wordid
-        if wordid != self._id_UNK:
+        if not wordid_outofvocab:
             self._id2word[wordid] = word
             self._id2tf[wordid] = 0
             if self.emb_ins is not None:
@@ -224,7 +227,7 @@ class Vocab(object):
             sentence = ''.join(sentence_seg)
 
         if ngrams is None:
-            ngrams = self.ngrams
+            ngrams = self.cfg['ngrams']
         hash_sentence = hash(sentence)
         if not hash_sentence in self.sentences_hash or addforce:
             func_add_word = self.add_word
