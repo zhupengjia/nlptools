@@ -9,7 +9,7 @@ from .text_cnn import TextCNN
 from tensorflow.contrib import learn
 from ailab.text import Embedding
 from .data_helpers import Data_helpers
-
+import json
 
 class TextJudgment(object):
 	def __init__(self, cfg={}):
@@ -71,7 +71,7 @@ class TextJudgment(object):
 		if writer:
 			writer.add_summary(summaries, step)
 
-	def model_path(self):
+	def model_path(self, path_cfg={}):
 		# output directory for models and summaries
 		timestamp = str(int(time.time()))
 		self.out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", timestamp))
@@ -80,7 +80,15 @@ class TextJudgment(object):
 		self.checkpoint_prefix = os.path.join(self.checkpoint_dir, "model")
 		if not os.path.exists(self.checkpoint_dir):
 			os.makedirs(self.checkpoint_dir)
-	
+
+		path_cfg['out_dir'] = self.out_dir
+		path_cfg['checkpoint_dir'] = self.checkpoint_dir
+		
+		path_data = json.dumps(path_cfg)
+		with open('model_path.json', 'w') as f:
+			json.dump(path_data, f)
+		
+	     
 	def train_parameters(self):
 		# Define Training procedure
 	    self.global_step = tf.Variable(0, name="global_step", trainable=False)
@@ -97,10 +105,11 @@ class TextJudgment(object):
 	            grad_summaries.append(grad_hist_summary)
 	            grad_summaries.append(sparsity_summary)
 	    grad_summaries_merged = tf.summary.merge(grad_summaries)
-	
-	    # Output directory for models and summaries
-	    timestamp = str(int(time.time()))
-	    self.out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", timestamp))
+
+        # set model out put path
+	    self.model_path()
+	 #   timestamp = str(int(time.time()))
+	 #   self.out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", timestamp))
 	    print("Writing to {}\n".format(self.out_dir))
 	
 	    # Summaries for loss and accuracy
@@ -118,10 +127,10 @@ class TextJudgment(object):
 	    self.dev_summary_writer = tf.summary.FileWriter(dev_summary_dir, self.sess.graph)
 	
 	    # Checkpoint directory. Tensorflow assumes this directory already exists so we need to create it
-	    self.checkpoint_dir = os.path.abspath(os.path.join(self.out_dir, "checkpoints"))
-	    self.checkpoint_prefix = os.path.join(self.checkpoint_dir, "model")
-	    if not os.path.exists(self.checkpoint_dir):
-	        os.makedirs(self.checkpoint_dir)
+#	    self.checkpoint_dir = os.path.abspath(os.path.join(self.out_dir, "checkpoints"))
+#	    self.checkpoint_prefix = os.path.join(self.checkpoint_dir, "model")
+#	    if not os.path.exists(self.checkpoint_dir):
+#	        os.makedirs(self.checkpoint_dir)
 	    self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=self.FLAGS['num_checkpoints'])
 	
 	
@@ -178,8 +187,12 @@ class TextJudgment(object):
 						print('Saved model checkpoint to {}\n'.format(path))
 		
 	def predict(self, query):
+        # load model path
+		with open('model_path.json', 'r') as f:
+			path_cfg = json.load(f)
+		path_cfg = json.loads(path_cfg)
 		# read the vocab
-		vocab_path = os.path.join(self.out_dir, "vocab")
+		vocab_path = os.path.join(path_cfg['out_dir'], "vocab")
 		vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
 		
 		# seg sentence and map to vocabulary
@@ -187,7 +200,7 @@ class TextJudgment(object):
 		query_test = np.array(list(vocab_processor.transform([query_token]))) #transform accept list as input
 		
 		# read model and predict					
-		checkpoint_file = tf.train.latest_checkpoint(self.checkpoint_dir)
+		checkpoint_file = tf.train.latest_checkpoint(path_cfg['checkpoint_dir'])
 		graph = tf.Graph()
 		with graph.as_default():
 			session_conf = tf.ConfigProto(
