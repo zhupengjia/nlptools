@@ -369,9 +369,9 @@ class Segment(object):
                      'en':'spacy', \
                      'jp': 'mecab'}
         if 'TOKENIZER' in cfg and cfg['TOKENIZER'] in tokenizers:
-            return tokenizers[cfg['TOKENIZER']]
+            return tokenizers[cfg['TOKENIZER']](cfg)
         if 'LANGUAGE' in cfg and cfg['LANGUAGE'] in languages:
-            return tokenizers[languages[cfg['LANGUAGE']]]
+            return tokenizers[languages[cfg['LANGUAGE']]](cfg)
         raise('Error! %s language is not supported'%cfg['LANGUAGE'])
 
 
