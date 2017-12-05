@@ -14,7 +14,7 @@ class Segment_Base(object):
                     self.stopwords[i.strip()] = ''
 
     def __call__(self, sentence):
-        return self.seg_sentence(sentence)
+        return self.seg(sentence)
 
 
 class Segment_CoreNLP(Segment_Base):
