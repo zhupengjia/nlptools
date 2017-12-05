@@ -216,8 +216,8 @@ class TextJudgment(object):
 				input_x = graph.get_operation_by_name("input_x").outputs[0]
 				dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]	
 				
-				# Tensors to evaluate
-				predictions = graph.get_operation_by_name("output/predictions").outputs[0]
+				# Tensors to evaluate, outputs[0]输出为list
+				predictions = graph.get_operation_by_name("output/predictions").outputs[0][0]
 				
 				result = sess.run(predictions, {input_x:query_test, dropout_keep_prob: 1.0})	
 				return result	
