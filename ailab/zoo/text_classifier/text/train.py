@@ -17,7 +17,6 @@ class TextJudgment(object):
 		self.FLAGS = self.cfg['FLAGS']
 		self.data_ins = Data_helpers(self.cfg)
 		self.emb_ins = Embedding(self.cfg)
-#		self.model_path()
 
 
 	def data_process(self, positive_file, negative_file):
@@ -108,8 +107,6 @@ class TextJudgment(object):
 
         # set model out put path
 	    self.model_path()
-	 #   timestamp = str(int(time.time()))
-	 #   self.out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", timestamp))
 	    print("Writing to {}\n".format(self.out_dir))
 	
 	    # Summaries for loss and accuracy
@@ -126,11 +123,7 @@ class TextJudgment(object):
 	    dev_summary_dir = os.path.join(self.out_dir, "summaries", "dev")
 	    self.dev_summary_writer = tf.summary.FileWriter(dev_summary_dir, self.sess.graph)
 	
-	    # Checkpoint directory. Tensorflow assumes this directory already exists so we need to create it
-#	    self.checkpoint_dir = os.path.abspath(os.path.join(self.out_dir, "checkpoints"))
-#	    self.checkpoint_prefix = os.path.join(self.checkpoint_dir, "model")
-#	    if not os.path.exists(self.checkpoint_dir):
-#	        os.makedirs(self.checkpoint_dir)
+	    # set saver
 	    self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=self.FLAGS['num_checkpoints'])
 	
 	

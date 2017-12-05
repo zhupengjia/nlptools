@@ -44,7 +44,7 @@ cfg = json.loads(cfg)
 
 
 Text_Judge = TextJudgment(cfg)
-#Text_Judge.train()
+Text_Judge.train()
 
 query = '明白了'
 result = Text_Judge.predict(query)
