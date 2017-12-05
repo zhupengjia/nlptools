@@ -359,16 +359,20 @@ class Segment_Keras(Segment_Base):
 
 class Segment(object):
     def __new__(cls, cfg):
-        if cfg['LANGUAGE'] == 'en':
-            return Segment_Spacy(cfg)
-        elif cfg['LANGUAGE'] in ['yue', 'cn']:
-            return Segment_Jieba(cfg)
-        elif cfg['LANGUAGE'] == 'jp':
-            return Segment_Mecab(cfg)
-        #elif cfg['LANGUAGE'] in ['yue']:
-        #    return Segment_Keras(cfg)
-        else:
-            raise('Error! %s language is not supported'%cfg['LANGUAGE'])
+        tokenizers = {'corenlp':Segment_CoreNLP, \
+                      'spacy':Segment_Spacy, \
+                      'jieba':Segment_Jieba, \
+                      'ltp':Segment_LTP, \
+                      'mecab': Segment_Mecab}
+        languages = {'cn':'jieba', \
+                     'yue':'jieba', \
+                     'en':'spacy', \
+                     'jp': 'mecab'}
+        if 'TOKENIZER' in cfg and cfg['TOKENIZER'] in tokenizers:
+            return tokenizers[cfg['TOKENIZER']]
+        if 'LANGUAGE' in cfg and cfg['LANGUAGE'] in languages:
+            return tokenizers[languages[cfg['LANGUAGE']]]
+        raise('Error! %s language is not supported'%cfg['LANGUAGE'])
 
 
 
