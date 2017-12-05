@@ -7,8 +7,8 @@ from ..utils import zload, zdump, hashword, normalize
 
 # get TF of vocabs and vectors
 class Vocab(object):
-    def __init__(self, cfg={}, seg_ins=None, emb_ins=None, hashgenerate=False, forceinit=False):
-        self.cfg = {'cached_vocab': '', 'vocab_size': 2**15, 'ngrams':1, 'outofvocab':'unk'}
+    def __init__(self, cfg={}, seg_ins=None, emb_ins=None, forceinit=False):
+        self.cfg = {'cached_vocab': '', 'vocab_size': 2**15, 'ngrams':1, 'outofvocab':'unk', 'hashgenerate':0}
         for k in cfg: self.cfg[k] = cfg[k]
         self.seg_ins = seg_ins
         self.seg_ins_emb = seg_ins is None # if tokenizer embedded in Vocab or as a parameter input
@@ -17,7 +17,6 @@ class Vocab(object):
         self.vocab_size = self.cfg['vocab_size']
         if self.vocab_size < 30:
             self.vocab_size = 2**self.cfg['vocab_size']
-        self.hashgenerate = hashgenerate
         self.__get_cached_vocab(forceinit)
 
     def __del__(self):
@@ -65,7 +64,7 @@ class Vocab(object):
             if tfaccum: self._id2tf[self._word2id[word]] += 1
             return self._word2id[word]
         elif fulfill:
-            if self.hashgenerate:
+            if self.cfg['hashgenerate']:
                 wordid = hashword(word, self.vocab_size)
                 if wordid > self._vocab_max:
                     self._vocab_max = wordid
@@ -122,7 +121,7 @@ class Vocab(object):
     
     #resort vocab size by tf
     def resort_vocab(self):
-        if self.hashgenerate:
+        if self.cfg['hashgenerate']:
             #if hash generate, then do nothing
             return
         new_id2word = {}
@@ -139,6 +138,7 @@ class Vocab(object):
             self._id2tf[self._id_spec[i]] = maxtf + len(self._id_spec) - i #make sure spec id in the front
         sortedid = numpy.argsort(self._id2tf)[::-1]
         for i, wordid_old in enumerate(sortedid[:self.vocab_size]):
+            if wordid_old not in self._id2word:continue
             id_mapping[wordid_old] = i
             word = self._id2word[wordid_old]
             new_id2word[i] = word
@@ -182,7 +182,7 @@ class Vocab(object):
         else:
             word, wordid = key, item
         wordid_outofvocab = False
-        if self.hashgenerate:
+        if self.cfg['hashgenerate']:
             wordid = wordid % self.vocab_size
         else:
             if wordid >= self.vocab_size:
