@@ -14,7 +14,7 @@ import json
 class TextJudgment(object):
 	def __init__(self, cfg={}):
 		self.cfg = cfg
-		self.FLAGS = self.cfg['FLAGS']
+	#	self.FLAGS = self.cfg['FLAGS']
 		self.data_ins = Data_helpers(self.cfg)
 		self.emb_ins = Embedding(self.cfg)
 
@@ -129,6 +129,9 @@ class TextJudgment(object):
 	
 	
 	def train(self):
+		#set parameters
+		self.FLAGS = self.cfg['FLAGS']
+
 		# data process
 		self.data_process(self.FLAGS['positive_data_file'], self.FLAGS['negative_data_file'])
 		# train
