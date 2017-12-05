@@ -179,7 +179,7 @@ class TextJudgment(object):
 						path = self.saver.save(self.sess, self.checkpoint_prefix, global_step = current_step)
 						print('Saved model checkpoint to {}\n'.format(path))
 		
-	def predict(self, query):
+	def predict(self, query='', positive_file='', negative_file=''):
         # load model path
 		with open('model_path.json', 'r') as f:
 			path_cfg = json.load(f)
@@ -189,8 +189,15 @@ class TextJudgment(object):
 		vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
 		
 		# seg sentence and map to vocabulary
-		query_token = self.data_ins.seg_sentence(query)
-		query_test = np.array(list(vocab_processor.transform([query_token]))) #transform accept list as input
+		if len(positive_file) !=0 and len(negative_file) !=0:
+			x_raw, y_test = self.data_ins.load_data_and_labels(positive_file, negative_file)
+			y_test = np.argmax(y_test, axis=1)
+		else:
+			if len(query) is not 0:
+				x_raw = [self.data_ins.seg_sentence(query)]
+				y_test = []				
+
+		x_test = np.array(list(vocab_processor.transform(x_raw))) #transform accept list as input
 		
 		# read model and predict					
 		checkpoint_file = tf.train.latest_checkpoint(path_cfg['checkpoint_dir'])
@@ -210,7 +217,11 @@ class TextJudgment(object):
 				dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]	
 				
 				# Tensors to evaluate, outputs[0]输出为list
-				predictions = graph.get_operation_by_name("output/predictions").outputs[0][0]
+				predictions = graph.get_operation_by_name("output/predictions").outputs[0]
 				
-				result = sess.run(predictions, {input_x:query_test, dropout_keep_prob: 1.0})	
-				return result	
+				self.result = sess.run(predictions, {input_x:x_test, dropout_keep_prob: 1.0})	
+					
+				if y_test is not None and len(y_test) is not 0:
+					correct_predictions = float(sum(self.result == y_test))	
+					print('Total number of test_examples: {}'.format(len(y_test)))
+					print('Accuracy: {:g}'.format(correct_predictions/float(len(y_test))))		

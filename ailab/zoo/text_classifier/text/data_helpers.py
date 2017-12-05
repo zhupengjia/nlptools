@@ -53,7 +53,7 @@ class Data_helpers(object):
 #		print('len of x_text is:', len(x_text))
 		if self.cfg['LANGUAGE'] == 'en':
 			x_text = [self.clean_str(sent) for sent in x_text]
-		print(x_text[:6])
+		print('first 6 sentences is:',x_text[:6])
 		x_text = [self.seg_sentence(sent) for sent in x_text]
 		# Generate labels
 		positive_labels = [[0, 1] for _ in positive_examples]
