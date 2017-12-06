@@ -10,13 +10,10 @@ from ailab.utils import zload, zdump
 
 class Embedding_Base(object):
     def __init__(self, cfg):
-        self.cfg = cfg
+        self.cfg = {'vec_len':50, 'vec_type':'float64', 'cached_w2v':''}
+        for k in cfg:self.cfg[k] = cfg[k]
         self.__get_cached_vec()
-        self.vec_len = cfg['vec_len'] + 1
-        if 'vec_type' in cfg:
-            self.vec_type = cfg['vec_type']
-        else:
-            self.vec_type = 'float64'
+        self.vec_len = self.cfg['vec_len'] + 1
 
     def distance(self, word1, word2):
         vec1 = self.__getitem__(word1)
@@ -83,7 +80,7 @@ class Embedding_Redis(Embedding_Base):
 class Embedding_Random(Embedding_Base):
     def __init__(self, cfg):
         Embedding_Base.__init__(self, cfg)
-        self.vec_len = cfg['vec_len']
+        self.vec_len = self.cfg['vec_len']
 
     def __getitem__(self, word):
         if word in self.cached_vec:
@@ -112,7 +109,7 @@ class Embedding_Dynamodb(Embedding_Base):
             if 'RETURNBASE64' in self.cfg:
                 v = vector_binary
             else:
-                vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.vec_type)
+                vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.cfg['vec_type'])
                 v = np.concatenate((vector, np.zeros(1))).astype('float32')
         else:
             v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1))).astype('float32')
