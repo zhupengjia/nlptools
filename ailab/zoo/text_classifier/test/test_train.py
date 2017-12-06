@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from text.train import TextJudgment
+from train import TextJudgment
 import json
 
 

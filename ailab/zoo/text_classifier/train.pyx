@@ -16,7 +16,7 @@ class TextJudgment(object):
         self.cfg = cfg
         #self.FLAGS = self.cfg['FLAGS']
         self.data_ins = Data_helpers(self.cfg)
-        self.emb_ins = Embedding(self.cfg)
+        #self.emb_ins = Embedding(self.cfg)
 
 
     def data_process(self, positive_file, negative_file):
@@ -127,6 +127,8 @@ class TextJudgment(object):
     def train(self):
         #set parameters
         self.FLAGS = self.cfg['FLAGS']
+        #emb_ins
+        self.emb_ins = Embedding(self.cfg) 
 
         # data process
         self.data_process(self.FLAGS['positive_data_file'], self.FLAGS['negative_data_file'])
