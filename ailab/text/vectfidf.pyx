@@ -17,20 +17,19 @@ def n_count_ids(ids):
 
 class VecTFIDF(object):
     def __init__(self, cfg, vocab_ins=None):
-        self.cfg = cfg
+        self.cfg = {'freqwords_path':'', 'cached_index':''}
+        for k in cfg: self.cfg[k] = cfg[k]
         self.logger = setLogger(self.cfg)
         self.vocab = vocab_ins 
-        #self.n_containing = numpy.vectorize(self.n_containing_id)
         self.distance_metric = 'cosine'
         self.scorelimit = 0.6
         self.freqwords = {}
-        if 'freqwords_path' in self.cfg:
-            self.__loadFreqwords(self.cfg['freqwords_path'])
+        self.word_idfs = None
+        self.__loadFreqwords(self.cfg['freqwords_path'])
 
     def __loadFreqwords(self, freqwords_path=None):
-        print(freqwords_path)
-        if freqwords_path is not None and os.path.exists(freqwords_path):
-            print('load freqword path')
+        if os.path.exists(freqwords_path):
+            print('load freqword path', freqwords_path)
             with open(freqwords_path) as f:
                 for w in f.readlines():
                     for i in self.vocab.sentence2id(w.strip(), ngrams=1, useBE=False, addforce=True):
@@ -82,42 +81,56 @@ class VecTFIDF(object):
         freqs = numpy.array(binary.sum(1)).squeeze()
         return freqs
 
-
-    def load_index(self, corpus_ids=None, retrain=False, silent=False):
-        if 'cached_index' in self.cfg and os.path.exists(self.cfg['cached_index']):
+    def load_index(self, corpus_ids=None, retrain=False, local_use=False):
+        if not local_use and os.path.exists(self.cfg['cached_index']) and not retrain:
             tmp = zload(self.cfg['cached_index'])
             self.count_matrix = tmp[0]
             self.word_idfs = tmp[1]
             return
-        self.corpus_lens = numpy.array([len(x) for x in corpus_ids])
-        self.count_matrix = self.get_count_matrix(corpus_ids)
-        word_freqs = self.get_doc_freqs(self.count_matrix)
-        self.word_idfs = numpy.log(self.count_matrix.shape[1] - word_freqs + 0.5) - numpy.log(word_freqs + 0.5)
-        if 'cached_index' in self.cfg:
-            zdump((self.count_matrix, self.word_idfs), self.cfg['cached_index'])
-            self.vocab.save()
+        count_matrix = self.get_count_matrix(corpus_ids)
+        word_freqs = self.get_doc_freqs(count_matrix)
+        word_idfs = numpy.log(count_matrix.shape[1] - word_freqs + 0.5) - numpy.log(word_freqs + 0.5)
+        if not local_use:
+            self.count_matrix = count_matrix
+            self.word_idfs = word_idfs
+            if len(self.cfg['cached_index']) > 0:
+                zdump((count_matrix, word_idfs), self.cfg['cached_index'])
+                self.vocab.save()
+        else:
+            return count_matrix, word_idfs
 
 
-    def tfidf(self, word_ids, sentence_ids):
+    def tfidf(self, word_ids, sentence_ids, word_idfs):
         tf = self.tf(word_ids, sentence_ids)
-        #idf = self.idf(word_ids)
-        idf = self.word_idfs[word_ids]
+        idf = word_idfs[word_ids]
         self.logger.debug('VecTFIDF: word_ids, ' + str(word_ids) + ' sentence_ids' + str(sentence_ids) + ' tf,' + str(tf) + " idf," + str(idf))
         return tf*idf
 
     #vec TF-IDF
-    def search(self, word_ids, corpus_ids, topN=1):
+    def search(self, word_ids, corpus_ids, topN=1, global_idfs=True):
         corpus_ids = pandas.Series(corpus_ids)
-        tfidf = corpus_ids.apply(lambda x: self.tfidf(word_ids, x).sum()).as_matrix()
+        if self.word_idfs is not None and global_idfs:
+            word_idfs = self.word_idfs
+        else:
+            count_matrix, word_idfs = self.load_index(corpus_ids, local_use=True)
+        tfidf = corpus_ids.apply(lambda x: self.tfidf(word_ids, x, word_idfs).sum()).as_matrix()
         
         scores = numpy.argsort(tfidf)[::-1]
         return list(zip(scores[:topN], tfidf[scores]))
 
     
     #traditional TF-IDF algorithms
-    def search_index(self, word_ids, topN=1):
-        spvec = self.text2spvec(word_ids)
-        res = spvec * self.count_matrix
+    def search_index(self, word_ids, corpus_ids=None, topN=1, global_idfs=True):
+        if corpus_ids is None:
+            spvec = self.text2spvec(word_ids, self.word_idfs)
+            res = spvec * self.count_matrix
+        else:
+            count_matrix, word_idfs = self.load_index(corpus_ids, local_use=True)
+            if self.word_idfs is not None and global_idfs: 
+                word_idfs = self.word_idfs
+            spvec = self.text2spvec(word_ids, word_idfs)
+            res = spvec * count_matrix
+
         if len(res.data) <= topN:
             o_sort = numpy.argsort(-res.data)
         else:
@@ -134,17 +147,17 @@ class VecTFIDF(object):
         """
         ncpus = max(multiprocessing.cpu_count() - 2, 1)
         with multiprocessing.pool.ThreadPool(ncpus) as threads:
-            closest_docs = partial(self.search, topN=topN)
+            closest_docs = partial(self.search_index, topN=topN)
             results = threads.map(closest_docs, word_idss)
         return results
     
-    def text2spvec(self, word_ids):
+    def text2spvec(self, word_ids, word_idfs):
         # Count 
         wids_unique, wids_counts = numpy.unique(word_ids, return_counts=True)
         tfs = numpy.log1p(wids_counts)
         
         # Count IDF
-        idfs = self.word_idfs[wids_unique]
+        idfs = word_idfs[wids_unique]
 
         # TF-IDF
         data = numpy.multiply(tfs, idfs)
