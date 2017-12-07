@@ -67,4 +67,8 @@ def normalize(text):
         raise(err)
 
 
+#rest client
+def restclient(url):
+    import requests
+    return requests.get(url).json()
 

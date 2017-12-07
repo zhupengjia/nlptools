@@ -357,6 +357,11 @@ class Segment_Keras(Segment_Base):
         tokens.append(token)
         return [x for x in tokens if len(x)>0]
 
+
+class Segment_REST(object):
+    def __init__(self, cfg)
+
+
 class Segment(object):
     def __new__(cls, cfg):
         tokenizers = {'corenlp':Segment_CoreNLP, \
