@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from train import TextJudgment
+from text_judgment import TextJudgment
 import json
 
 
@@ -44,7 +44,9 @@ cfg = json.loads(cfg)
 
 
 Text_Judge = TextJudgment(cfg)
-Text_Judge.train()
+#Text_Judge.train()
+Text_Judge.load_checkpoint()
+
 
 Text_Judge.predict(positive_file=cfg['FLAGS']['positive_data_file'], negative_file=cfg['FLAGS']['negative_data_file'])
 query = '明白了'

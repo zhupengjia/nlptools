@@ -86,6 +86,7 @@ class TextJudgment(object):
         path_data = json.dumps(path_cfg)
         with open('model_path.json', 'w') as f:
             json.dump(path_data, f)
+    
     def train_parameters(self):
         # Define Training procedure
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
@@ -181,16 +182,24 @@ class TextJudgment(object):
                         path = self.saver.save(self.sess, self.checkpoint_prefix, global_step = current_step)
                         print('Saved model checkpoint to {}\n'.format(path))
 		
+    
+    def load_checkpoint(self):
+        if 'model_file' in self.cfg:
+            vocab_path = os.path.join(self.cfg['model_file']['out_dir'], "vocab")
+            self.vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
+            
+            self.checkpoint_file = tf.train.latest_checkpoint(self.cfg['model_file']['checkpoint_dir'])
+        else:
+            if 'model_path' in self.cfg:
+                with open('model_path.json', 'r') as f:
+                    path_cfg = json.load(f)
+                    path_cfg = json.loads(path_cfg)
+                vocab_path = os.path.join(path_cfg['out_dir'], "vocab")
+                self.vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
+                self.checkpoint_file = tf.train.latest_checkpoint(path_cfg['checkpoint_dir'])
+
+    
     def predict(self, query='', positive_file='', negative_file=''):
-        # load model path
-        with open('model_path.json', 'r') as f:
-            path_cfg = json.load(f)
-        path_cfg = json.loads(path_cfg)
-        
-        # read the vocab
-        vocab_path = os.path.join(path_cfg['out_dir'], "vocab")
-        vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
-		
         # seg sentence and map to vocabulary
         if len(positive_file) !=0 and len(negative_file) !=0:
             x_raw, y_test = self.data_ins.load_data_and_labels(positive_file, negative_file)
@@ -200,10 +209,9 @@ class TextJudgment(object):
                 x_raw = [self.data_ins.seg_sentence(query)]
                 y_test = []				
 
-        x_test = np.array(list(vocab_processor.transform(x_raw))) #transform accept list as input
+        x_test = np.array(list(self.vocab_processor.transform(x_raw))) #transform accept list as input
 		
         # read model and predict					
-        checkpoint_file = tf.train.latest_checkpoint(path_cfg['checkpoint_dir'])
         graph = tf.Graph()
         with graph.as_default():
             session_conf = tf.ConfigProto(
@@ -212,8 +220,8 @@ class TextJudgment(object):
             sess = tf.Session(config = session_conf)
             with sess.as_default():
                 #load the saved meta graph and restore variables
-                saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
-                saver.restore(sess, checkpoint_file)
+                saver = tf.train.import_meta_graph("{}.meta".format(self.checkpoint_file))
+                saver.restore(sess, self.checkpoint_file)
 				
                 #Get the placeholders from the graph by name
                 input_x = graph.get_operation_by_name("input_x").outputs[0]
