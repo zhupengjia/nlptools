@@ -362,7 +362,7 @@ class Segment_Keras(Segment_Base):
 class Segment_Rest(Segment_Base):
     def __init__(self, cfg):
         Segment_Base.__init__(self, cfg)
-        self.rest_url = cfg['tokenizer_restapi']
+        self.rest_url = cfg['TOKENIZER']
     
     def seg(self, sentence, remove_stopwords = False, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
         txts, tokens, entities, pos= [], [], [], []
@@ -390,14 +390,16 @@ class Segment(object):
                       'spacy':Segment_Spacy, \
                       'jieba':Segment_Jieba, \
                       'ltp':Segment_LTP, \
-                      'mecab': Segment_Mecab, \
-                      'rest': Segment_Rest}
+                      'mecab': Segment_Mecab}
         languages = {'cn':'jieba', \
                      'yue':'jieba', \
                      'en':'spacy', \
                      'jp': 'mecab'}
-        if 'TOKENIZER' in cfg and cfg['TOKENIZER'] in tokenizers:
-            return tokenizers[cfg['TOKENIZER']](cfg)
+        if 'TOKENIZER' in cfg:
+            if cfg['TOKENIZER'] in tokenizers:
+                return tokenizers[cfg['TOKENIZER']](cfg)
+            elif 'http' in cfg['TOKENIZER']:
+                return Segment_Rest(cfg) 
         if 'LANGUAGE' in cfg and cfg['LANGUAGE'] in languages:
             return tokenizers[languages[cfg['LANGUAGE']]](cfg)
         raise('Error! %s language is not supported'%cfg['LANGUAGE'])
