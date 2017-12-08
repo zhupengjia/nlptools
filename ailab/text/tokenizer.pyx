@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os, string, numpy, re, glob, json, requests
+from ..utils import restpost
 
 class Segment_Base(object):
     def __init__(self, cfg, stopwords=True):
@@ -358,8 +359,29 @@ class Segment_Keras(Segment_Base):
         return [x for x in tokens if len(x)>0]
 
 
-class Segment_REST(object):
-    def __init__(self, cfg)
+class Segment_Rest(Segment_Base):
+    def __init__(self, cfg):
+        Segment_Base.__init__(self, cfg)
+        self.rest_url = cfg['tokenizer_restapi']
+    
+    def seg(self, sentence, remove_stopwords = False, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
+        txts, tokens, entities, pos= [], [], [], []
+        data = restpost(self.rest_url, {'text':sentence})
+        filtereddata = {}
+        for k in data: filtereddata[k] = []
+        for i in range(len(data['tokens'])):
+            if remove_stopwords and data['tokens'][i] in self.stopwords:
+                continue
+            if tags_filter is not None and 'tags' in data and data['tags'][i] not in tags_filter:
+                continue
+            if entities_filter is not None and 'entities' in data and data['entities'][i] not in entities_filter:
+                continue
+            if pos_filter is not None and 'pos' in data and data['pos'][i] not in pos_filter:
+                continue
+            if dep_filter is not None and 'dep' in data and data['dep'][i] not in dep_filter:
+                continue
+            for k in data: filtereddata[k].append(data[k][i])
+        return filtereddata
 
 
 class Segment(object):
@@ -368,7 +390,8 @@ class Segment(object):
                       'spacy':Segment_Spacy, \
                       'jieba':Segment_Jieba, \
                       'ltp':Segment_LTP, \
-                      'mecab': Segment_Mecab}
+                      'mecab': Segment_Mecab, \
+                      'rest': Segment_Rest}
         languages = {'cn':'jieba', \
                      'yue':'jieba', \
                      'en':'spacy', \

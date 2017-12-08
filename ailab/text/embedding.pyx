@@ -5,12 +5,12 @@
 import time, redis, boto3, base64, os
 import numpy as np
 from scipy.spatial.distance import cosine
-from ailab.utils import zload, zdump
+from ..utils import zload, zdump, restpost
 
 
 class Embedding_Base(object):
     def __init__(self, cfg):
-        self.cfg = {'vec_len':50, 'vec_type':'float64', 'cached_w2v':''}
+        self.cfg = {'vec_len':300, 'vec_type':'float64', 'cached_w2v':''}
         for k in cfg:self.cfg[k] = cfg[k]
         self.__get_cached_vec()
         self.vec_len = self.cfg['vec_len'] + 1
@@ -122,6 +122,23 @@ class Embedding_Dynamodb(Embedding_Base):
         v = self.table.get_item(Key={"word":word})
         return "Item" in v
 
+
+class Embedding_Rest(Embedding_Base):
+    def __init__(self, cfg):
+        Embedding_Base.__init__(self, cfg)
+        self.rest_url = cfg['embedding_restapi']
+    
+    def __getitem__(self, word):
+        vector_binary = restpost(self.rest_url, {'text':word})
+        vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.cfg['vec_type'])
+        if len(vector) == self.vec_len - 1:
+            vector = np.concatenate((vector, np.zeros(1))).astype('float32')
+        return vector
+
+    def __contains(self, word):
+        return True
+
+
 class Embedding(object):
     def __new__(cls, cfg):
         if 'w2v_word2idx' in cfg and 'w2v_idx2vec' in cfg:
@@ -130,6 +147,8 @@ class Embedding(object):
             return Embedding_Dynamodb(cfg)
         elif 'redis_host' in cfg:
             return Embedding_Redis(cfg)
+        elif 'embedding_restapi' in cfg:
+            return Embedding_Rest(cfg)
         else:
             return Embedding_Random(cfg)
 
