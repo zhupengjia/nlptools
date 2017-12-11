@@ -37,7 +37,7 @@ class Supervised:
 
     def build(self, n_classes):
         self.model = v1(n_classes = n_classes,\
-                        embedding_matrix = self.vocab._id2vec,\
+                        embedding_matrix = self.vocab.dense_vectors(),\
                         **self.model_cfg)
 
 

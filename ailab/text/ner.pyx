@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 import os, numpy, re, uuid, shutil, glob
-from .tokenizer import Segment_Spacy, Segment_LTP
+from .tokenizer import *
 
 
 class NER_Base(object):
@@ -9,10 +9,21 @@ class NER_Base(object):
         self.cfg = cfg
     
 
+
+class NER_CoreNLP(NER_Base, Segment_CoreNLP):
+    def __init__(self, cfg):
+        NER_Base.__init__(self,cfg)
+        Segment_CoreNLP.__init__(self, cfg)
+    
+    def train(self, entities, data, n_iter=50):
+        raise('The function of CoreNLP ner training is not finished')
+
+
 class NER_Spacy(NER_Base, Segment_Spacy):
     def __init__(self, cfg):
         NER_Base.__init__(self, cfg)
         Segment_Spacy.__init__(self, cfg)
+
     def train(self, entities, data, n_iter = 50):
         import random
         from pathlib import Path
@@ -34,6 +45,7 @@ class NER_Spacy(NER_Base, Segment_Spacy):
                 for text, annotations in data:
                     self.nlp.update([text], [annotations], sgd = optimizer, losses=losses)
         self.nlp.to_disk(self.cfg['cached_ner'])
+
 
 class NER_LTP(NER_Base, Segment_LTP):
     def __init__(self, cfg):
@@ -102,12 +114,30 @@ class NER_LTP(NER_Base, Segment_LTP):
         self.ner_ins[-1].load(new_ner_file)
 
 
+class NER_Rest(NER_Base, Segment_Rest):
+    def __init__(self, cfg):
+        NER_Base.__init__(self, cfg)
+        Segment_Rest.__init__(self, cfg)
+    
+    def train(self, entities, data, n_iter=50):
+        raise('training via NER Rest api is not supported')
+
+
 class NER(object):
     def __new__(cls, cfg):
-        if cfg['LANGUAGE'] in ['en']:
-            return NER_Spacy(cfg)
-        elif cfg['LANGUAGE'] == 'cn':
-            return NER_LTP(cfg)
-        else:
-            raise('Error! %s language is not supported'%cfg['LANGUAGE'])
+        tokenizers = {'corenlp':NER_CoreNLP, \
+                      'spacy':NER_Spacy, \
+                      'ltp':NER_LTP}
+        languages = {'cn':'ltp', \
+                     'en':'spacy'}
+        if 'TOKENIZER' in cfg:
+            if cfg['TOKENIZER'] in tokenizers:
+                return tokenizers[cfg['TOKENIZER']](cfg)
+            elif 'http' in cfg['TOKENIZER']:
+                return NER_Rest(cfg) 
+        if 'LANGUAGE' in cfg and cfg['LANGUAGE'] in languages:
+            return tokenizers[languages[cfg['LANGUAGE']]](cfg)
+        raise('Error! %s language is not supported'%cfg['LANGUAGE'])
+
+
 

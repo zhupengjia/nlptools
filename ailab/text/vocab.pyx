@@ -38,8 +38,9 @@ class Vocab(object):
             try:
                 cached_vocab = zload(self.cfg['cached_vocab'])
                 self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec  = cached_vocab
-                self._vocab_max = max(self._id2word)
-                ifinit = False
+                if len(self._id2word) > 0:
+                    self._vocab_max = max(self._id2word)
+                    ifinit = False
             except Exception as err:
                 print('warning!!! cached vocab read failed!!! ' + err)
         if ifinit:
@@ -270,7 +271,7 @@ class Vocab(object):
     #return dense vector for id2vec
     def dense_vectors(self):
         self.get_id2vec()
-        vectors = numpy.zeros((self._vocab_max+1, self.emb_ins.__vec_len), 'float32')
+        vectors = numpy.zeros((self._vocab_max+1, self.emb_ins.vec_len), 'float')
         for k in self._id2vec:
             vectors[k] = self._id2vec[k]
         return vectors
@@ -283,7 +284,7 @@ class Vocab(object):
     def senid2vec(self, sentence_id):
         if self.emb_ins is None:
             return None
-        vec = numpy.zeros((len(sentence_id), self.emb_ins.vec_len), 'float32')
+        vec = numpy.zeros((len(sentence_id), self.emb_ins.vec_len), 'float')
         for i,sid in enumerate(sentence_id):
             vec[i] = self.word2vec(sid)
         return vec
@@ -297,7 +298,7 @@ class Vocab(object):
 
 
     def ave_vec(self, sentence_id):
-        vec = numpy.zeros(self.emb_ins.vec_len, 'float32')
+        vec = numpy.zeros(self.emb_ins.vec_len, 'float')
         tottf = 0
         for i, sid in enumerate(sentence_id):
             w = numpy.log(self.Nwords/(self._id2tf[sid]))

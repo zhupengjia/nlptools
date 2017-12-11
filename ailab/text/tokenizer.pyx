@@ -5,8 +5,9 @@ from ..utils import restpost
 class Segment_Base(object):
     def __init__(self, cfg, stopwords=True):
         self.stopwords = {}
-        if stopwords and 'stopwords_path' in cfg:
-            self.__loadStopwords(cfg['stopwords_path'])
+        self.cfg = {'stopwords_path':None, 'ner_name_replace':{}}
+        for k in cfg: self.cfg[k] = cfg[k]
+        self.__loadStopwords(self.cfg['stopwords_path'])
 
     def __loadStopwords(self, stopwords_path):
         if stopwords_path is not None and os.path.exists(stopwords_path):
@@ -67,6 +68,8 @@ class Segment_CoreNLP(Segment_Base):
                     continue
                 if pos_filter is not None and token['pos'] not in pos_filter:
                     continue
+                if token['ner'] in self.cfg['ner_name_replace']:
+                    token['ner'] = self.cfg['ner_name_replace'][token['ner']]
                 if entities_filter is not None and token['ner'] not in entities_filter:
                     continue
                 if len(token['lemma'])<1:
@@ -101,7 +104,10 @@ class Segment_Spacy(Segment_Base):
                 continue
             if dep_filter is not None and token.dep_ not in dep_filter:
                 continue
-            if entities_filter is not None and token.ent_type_ not in entities_filter:
+            entity = token.ent_type_
+            if entity in self.cfg['ner_name_replace']:
+                entitiy = self.cfg['ner_name_replace'][entity]
+            if entities_filter is not None and entity not in entities_filter:
                 continue
             if len(token.lemma_)<1:
                 continue
@@ -110,7 +116,7 @@ class Segment_Spacy(Segment_Base):
             txts.append(txt)
             tokens.append(token.lemma_)
             tags.append(token.tag_)
-            entities.append(token.ent_type_)
+            entities.append(entity)
             pos.append(token.pos_)
             dep.append(token.dep_)
             
@@ -374,11 +380,14 @@ class Segment_Rest(Segment_Base):
                 continue
             if tags_filter is not None and 'tags' in data and data['tags'][i] not in tags_filter:
                 continue
-            if entities_filter is not None and 'entities' in data and data['entities'][i] not in entities_filter:
-                continue
             if pos_filter is not None and 'pos' in data and data['pos'][i] not in pos_filter:
                 continue
             if dep_filter is not None and 'dep' in data and data['dep'][i] not in dep_filter:
+                continue
+            entity = data['entities'][i]
+            if data['entities'][i] in self.cfg['ner_name_replace']:
+                data['entities'][i] = self.cfg['ner_name_replace'][data['entities'][i]]
+            if entities_filter is not None and 'entities' in data and data['entities'][i] not in entities_filter:
                 continue
             for k in data: filtereddata[k].append(data[k][i])
         return filtereddata

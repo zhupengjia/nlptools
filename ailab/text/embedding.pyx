@@ -46,9 +46,9 @@ class Embedding_File(Embedding_Base):
             return self.cached_vec[word]
         self.__load_vec()
         if word in self.word2idx:
-            v = np.concatenate((self.idx2vec[self.word2idx[word]],np.zeros(1))).astype('float32')
+            v = np.concatenate((self.idx2vec[self.word2idx[word]],np.zeros(1)))
         else:
-            v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1))).astype('float32')
+            v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1)))
         if 'RETURNBASE64' in self.cfg:
             v = base64.b64encode(v.tostring()).decode()
         self.cached_vec[word] = v
@@ -69,9 +69,9 @@ class Embedding_Redis(Embedding_Base):
             return self.cached_vec[word]
         v = self.redis_ins.get(word)
         if v is not None:
-            v = np.concatenate((np.fromstring(v),np.zeros(1))).astype('float32')
+            v = np.concatenate((np.fromstring(v),np.zeros(1)))
         else:
-            v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1))).astype('float32')
+            v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1)))
         self.cached_vec[word] = v
         if 'RETURNBASE64' in self.cfg:
             v = base64.b64encode(v.tostring()).decode()
@@ -89,7 +89,7 @@ class Embedding_Random(Embedding_Base):
     def __getitem__(self, word):
         if word in self.cached_vec:
             return self.cached_vec[word]
-        v = np.random.randn(self.vec_len).astype('float32')
+        v = np.random.randn(self.vec_len)
         if 'RETURNBASE64' in self.cfg:
             v = base64.b64encode(v.tostring()).decode()
         self.cached_vec[word] = v
@@ -116,9 +116,9 @@ class Embedding_Dynamodb(Embedding_Base):
                 v = vector_binary
             else:
                 vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.cfg['vec_type'])
-                v = np.concatenate((vector, np.zeros(1))).astype('float32')
+                v = np.concatenate((vector, np.zeros(1)))
         else:
-            v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1))).astype('float32')
+            v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1)))
             if 'RETURNBASE64' in self.cfg:
                 v = base64.b64encode(v.tostring()).decode()
         self.cached_vec[word] = v
@@ -140,7 +140,7 @@ class Embedding_Rest(Embedding_Base):
             return vector_binary
         vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.cfg['vec_type'])
         if len(vector) == self.vec_len - 1:
-            vector = np.concatenate((vector, np.zeros(1))).astype('float32')
+            vector = np.concatenate((vector, np.zeros(1)))
         return vector
 
     def __contains(self, word):
