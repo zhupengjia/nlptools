@@ -27,7 +27,7 @@ class Embedding_Base(object):
             self.cached_vec = {}
     
     def save(self):
-        if 'cached_w2v' in self.cfg:
+        if len(self.cfg['cached_w2v']) > 0:
             zdump(self.cached_vec, self.cfg['cached_w2v'])
 
 
