@@ -116,7 +116,9 @@ class VecTFIDF(object):
         tfidf = corpus_ids.apply(lambda x: self.tfidf(word_ids, x, word_idfs).sum()).as_matrix()
         
         scores = numpy.argsort(tfidf)[::-1]
-        return list(zip(scores[:topN], tfidf[scores]))
+        tfidf = tfidf[scores[:topN]]
+        scores = [int(s) for s in scores[:topN]]
+        return list(zip([int(s) for s in scores[:topN]], tfidf[scores]))
 
     
     #traditional TF-IDF algorithms
@@ -138,7 +140,7 @@ class VecTFIDF(object):
             o_sort = o[numpy.argsort(-res.data[o])]
         
         doc_scores = res.data[o_sort]
-        doc_ids = [x for x in res.indices[o_sort]]
+        doc_ids = [int(x) for x in res.indices[o_sort]]
         return list(zip(doc_ids, doc_scores))
     
     def search_index_batch(self, word_idss, topN = 1):
