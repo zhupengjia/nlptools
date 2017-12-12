@@ -72,3 +72,12 @@ def restpost(url, data):
     import requests, json
     return requests.post(url=url, data=json.dumps(data)).json()
 
+
+#use environment variables to cover original environment
+def envread(keys):
+    cfg = {}
+    for k in keys:
+        if k in os.environ:
+            cfg[k] = os.environ[k]
+    return cfg
+
