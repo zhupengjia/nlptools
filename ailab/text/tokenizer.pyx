@@ -384,11 +384,12 @@ class Segment_Rest(Segment_Base):
                 continue
             if dep_filter is not None and 'dep' in data and data['dep'][i] not in dep_filter:
                 continue
-            entity = data['entities'][i]
-            if data['entities'][i] in self.cfg['ner_name_replace']:
-                data['entities'][i] = self.cfg['ner_name_replace'][data['entities'][i]]
-            if entities_filter is not None and 'entities' in data and data['entities'][i] not in entities_filter:
-                continue
+            if 'entities' in data:
+                entity = data['entities'][i]
+                if data['entities'][i] in self.cfg['ner_name_replace']:
+                    data['entities'][i] = self.cfg['ner_name_replace'][data['entities'][i]]
+                if entities_filter is not None and 'entities' in data and data['entities'][i] not in entities_filter:
+                    continue
             for k in data: filtereddata[k].append(data[k][i])
         return filtereddata
 
@@ -411,7 +412,7 @@ class Segment(object):
                 return Segment_Rest(cfg) 
         if 'LANGUAGE' in cfg and cfg['LANGUAGE'] in languages:
             return tokenizers[languages[cfg['LANGUAGE']]](cfg)
-        raise('Error! %s language is not supported'%cfg['LANGUAGE'])
+        print('Error! %s language is not supported'%cfg['LANGUAGE'])
 
 
 
