@@ -184,12 +184,14 @@ class TextJudgment(object):
 		
     
     def load_checkpoint(self):
+		# read model path directly from cfg
         if 'model_file' in self.cfg:
             vocab_path = os.path.join(self.cfg['model_file']['out_dir'], "vocab")
             self.vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
             
             self.checkpoint_file = tf.train.latest_checkpoint(self.cfg['model_file']['checkpoint_dir'])
         else:
+			# read model path from model_path file created by train process
             if 'model_path' in self.cfg:
                 with open('model_path.json', 'r') as f:
                     path_cfg = json.load(f)
