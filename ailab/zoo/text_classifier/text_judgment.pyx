@@ -237,4 +237,8 @@ class TextJudgment(object):
                 if y_test is not None and len(y_test) is not 0:
                     correct_predictions = float(sum(self.result == y_test))	
                     print('Total number of test_examples: {}'.format(len(y_test)))
-                    print('Accuracy: {:g}'.format(correct_predictions/float(len(y_test))))		
+                    print('Accuracy: {:g}'.format(correct_predictions/float(len(y_test))))
+                    
+                    wrong_indexs = [i for i, j in enumerate(self.result == y_test) if j == False]
+                    for idx in wrong_indexs:
+                        print(x_test[idx])		
