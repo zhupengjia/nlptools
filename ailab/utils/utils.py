@@ -81,3 +81,9 @@ def envread(keys):
             cfg[k] = os.environ[k]
     return cfg
 
+#language detection
+def lang_detect(string):
+    from langdetect import detect
+    return detect(string)
+
+
