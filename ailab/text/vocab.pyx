@@ -20,7 +20,7 @@ class Vocab(object):
         self.__get_cached_vocab(forceinit)
 
     def __del__(self):
-        del self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec
+        del self._id2word, self._word2id, self._id2tf, self._id_ngrams
         if self.seg_ins_emb: 
             del self.seg_ins
 
@@ -37,7 +37,7 @@ class Vocab(object):
         if os.path.exists(self.cfg['cached_vocab']) and not forceinit:
             try:
                 cached_vocab = zload(self.cfg['cached_vocab'])
-                self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec  = cached_vocab
+                self._id2word, self._word2id, self._id2tf, self._id_ngrams  = cached_vocab
                 if len(self._id2word) > 0:
                     self._vocab_max = max(self._id2word)
                     ifinit = False
@@ -49,15 +49,12 @@ class Vocab(object):
             self._id2tf = numpy.zeros(self.vocab_size, 'int')
             self._vocab_max = -1
             self._id_ngrams = {}
-            self._id2vec, self._has_vec = {}, None
-            if self.emb_ins is not None:
-                self._has_vec = numpy.zeros(self.vocab_size, numpy.bool_)
         if self.cfg['ngrams']>1:
             self.addBE()
 
     def save(self):
         if len(self.cfg['cached_vocab']) > 0:
-            zdump((self._id2word, self._word2id, self._id2tf, self._id2vec, self._id_ngrams, self._has_vec), self.cfg['cached_vocab'])
+            zdump((self._id2word, self._word2id, self._id2tf, self._id_ngrams), self.cfg['cached_vocab'])
 
 
     def accumword(self, word, fulfill=True, tfaccum = True):
@@ -114,8 +111,6 @@ class Vocab(object):
             else:
                 self._word2id[word] = self._id_UNK
             del self._id2word[i]
-            if i in self._id2vec:
-                del self._id2vec[i]
         self._vocab_max = max(self._id2word)
         self.vocab_size = vocab_size
         self.resort_vocab()
@@ -130,7 +125,6 @@ class Vocab(object):
         new_id2tf = numpy.zeros(self.vocab_size, 'int')
         new_id_ngrams = {}
         id_mapping = {}
-        new_id2vec, new_has_vec = {}, None
         if self.emb_ins is not None:
             new_has_vec = numpy.zeros(self.vocab_size, numpy.bool_)
         
@@ -145,20 +139,13 @@ class Vocab(object):
             new_id2word[i] = word
             new_word2id[word] = i
             new_id2tf[i] = self._id2tf[wordid_old]
-            if self.emb_ins is not None:
-                if wordid_old in self._id2vec:
-                    new_id2vec[i] = self._id2vec[wordid_old] 
-                new_has_vec[i] = self._has_vec[wordid_old]
         for wordid_old in self._id_ngrams:
             new_id_ngrams[id_mapping[wordid_old]] = [id_mapping[i] for i in self._id_grams[wordid_old]] 
         self._id2word = new_id2word
         self._word2id = new_word2id
         self._id2tf = new_id2tf
         self._id_ngrams = new_id_ngrams
-        self._has_vec = new_has_vec
-        self._id2vec = new_id2vec
         self._vocab_max = max(self._id2word)
-
  
     #call function, convert sentences to id
     def __call__(self, sentences):
@@ -199,10 +186,6 @@ class Vocab(object):
         if not wordid_outofvocab:
             self._id2word[wordid] = word
             self._id2tf[wordid] = 0
-            if self.emb_ins is not None:
-                self._has_vec[wordid] = False
-                if wordid in self._id2vec:
-                    del self._id2vec[wordid]
 
     def __contains__(self, key):
         if isinstance(key, int):
@@ -258,24 +241,19 @@ class Vocab(object):
                     self._id_ngrams[d[0]] = d[1]
         return ids
 
-
+    #used to cache word2vec
     def get_id2vec(self):
         if self.emb_ins is None:
             return None
-        len_id2vec = len(self._has_vec[self._has_vec])
         for i in self._id2word:
-            if not self._has_vec[i]:
-                self._id2vec[i] = self.word2vec(i)
-                self._has_vec[i] = True
-        return len(self._id2word) - len_id2vec
-
+            self.id2vec(i)
     
     #return dense vector for id2vec
     def dense_vectors(self):
         self.get_id2vec()
         vectors = numpy.zeros((self._vocab_max+1, self.emb_ins.vec_len), 'float')
         for k in self._id2vec:
-            vectors[k] = self._id2vec[k]
+            vectors[k] = self.id2vec(k)
         return vectors
 
 
@@ -288,11 +266,11 @@ class Vocab(object):
             return None
         vec = numpy.zeros((len(sentence_id), self.emb_ins.vec_len), 'float')
         for i,sid in enumerate(sentence_id):
-            vec[i] = self.word2vec(sid)
+            vec[i] = self.id2vec(sid)
         return vec
 
 
-    def word2vec(self, word_id):
+    def id2vec(self, word_id):
         if word_id in self._id_ngrams:
             return numpy.sum([self.emb_ins[self._id2word[ii]] for ii in self._id_ngrams[word_id]], axis=0)
         else:

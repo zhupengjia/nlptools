@@ -8,6 +8,5 @@ s = Segment(cfg)
 v = Vocab(cfg, s, e, 3)
 
 v.sentence2id('hello world, hi members')
-print(v.get_id2vec())
 
 
