@@ -223,6 +223,8 @@ class Vocab(object):
             if self.seg_ins is None:
                 self.seg_ins = Segment(self.cfg)
             sentence_seg = self.seg_ins.seg(sentence)['tokens']
+        elif numpy.isnan(sentence):
+            return []
         else:
             sentence_seg = sentence
             sentence = ''.join(sentence_seg)
