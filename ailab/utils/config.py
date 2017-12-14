@@ -12,6 +12,10 @@ class Config:
     def __getitem__(self, key):
         return self.config[key]
 
+    def __iter__(self):
+        for k in self.config.keys():
+            yield k
+
     def __contains__(self, key):
         return key in self.config
 
