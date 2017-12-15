@@ -240,5 +240,12 @@ class TextJudgment(object):
                     print('Accuracy: {:g}'.format(correct_predictions/float(len(y_test))))
                     
                     wrong_indexs = [i for i, j in enumerate(self.result == y_test) if j == False]
+                    vocab_list = self.vocab_processor.vocabulary_._reverse_mapping
                     for idx in wrong_indexs:
-                        print(x_test[idx])		
+                        strings=[]
+                        for ID in x_test[idx]:
+                            if ID !=0:
+                                strings.append(vocab_list[ID])
+                        wrong_text=''.join(strings)
+                        print('wrong predict text is:',wrong_text)
+                        		

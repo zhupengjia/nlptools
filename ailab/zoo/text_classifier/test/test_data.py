@@ -23,7 +23,7 @@ for text in x_text:
 	for voc in text:
 		if voc not in vocab:
 			vocab.append(voc)
-vocab_dict = vocab_processor.vocabulary_._mapping
+vocab_dict = vocab_processor.vocabulary_._reverse_mapping
 print('len of vocab is:', len(vocab))
 print('len of voab_processor is:', len(vocab_processor.vocabulary_))
 print('len of vocab_dict is:', len(vocab_dict))
