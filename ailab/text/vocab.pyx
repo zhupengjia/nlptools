@@ -34,6 +34,7 @@ class Vocab(object):
 
     def __get_cached_vocab(self, forceinit):
         ifinit = True
+        self._id_UNK = 0
         if os.path.exists(self.cfg['cached_vocab']) and not forceinit:
             try:
                 cached_vocab = zload(self.cfg['cached_vocab'])
@@ -69,8 +70,6 @@ class Vocab(object):
                 self._id2word[wordid] = word
                 self._id2tf[wordid] = 1
             else:
-                if self._vocab_max >= self.vocab_size - 5:
-                    self.addBE()
                 if self._vocab_max < self.vocab_size - 1:
                     self._vocab_max += 1
                     wordid = self._vocab_max
@@ -93,59 +92,59 @@ class Vocab(object):
     def __len__(self):
         return len(self._id2word)
 
-
     #reduce vocab size by tf
-    def reduce_vocab(self, vocab_size):
-        if vocab_size >= self.vocab_size:
+    def reduce_vocab(self, vocab_size=None):
+        if vocab_size is None:
+            self.vocab_size = self._vocab_max + 1
+            self._id2tf = self._id2tf[:self.vocab_size]
             return
-        self.addBE()
-        maxtf = self._id2tf.max()
-        for i in range(len(self._id_spec)):
-            self._id2tf[self._id_spec[i]] = maxtf + len(self._id_spec) - i #avoid remove spec vocab
-        sortedid = numpy.argsort(self._id2tf)[::-1]
-        for i in sortedid[vocab_size:]:
-            if not i in self._id2word:continue
-            word = self._id2word[i]
-            if self.cfg['outofvocab']=='random':
-                self._word2id[word] = random.randint(0, vocab_size-1)
-            else:
-                self._word2id[word] = self._id_UNK
-            del self._id2word[i]
-        self._vocab_max = max(self._id2word)
-        self.vocab_size = vocab_size
-        self.resort_vocab()
-    
-    #resort vocab size by tf
-    def resort_vocab(self):
-        if self.cfg['hashgenerate']:
-            #if hash generate, then do nothing
+        elif vocab_size >= self.vocab_size:
             return
         new_id2word = {}
         new_word2id = {}
         new_id2tf = numpy.zeros(self.vocab_size, 'int')
         new_id_ngrams = {}
         id_mapping = {}
-        if self.emb_ins is not None:
-            new_has_vec = numpy.zeros(self.vocab_size, numpy.bool_)
-        
-        maxtf = self._id2tf.max()
-        for i in range(len(self._id_spec)):
-            self._id2tf[self._id_spec[i]] = maxtf + len(self._id_spec) - i #make sure spec id in the front
-        sortedid = numpy.argsort(self._id2tf)[::-1]
-        for i, wordid_old in enumerate(sortedid[:self.vocab_size]):
-            if wordid_old not in self._id2word:continue
-            id_mapping[wordid_old] = i
-            word = self._id2word[wordid_old]
-            new_id2word[i] = word
-            new_word2id[word] = i
-            new_id2tf[i] = self._id2tf[wordid_old]
-        for wordid_old in self._id_ngrams:
-            new_id_ngrams[id_mapping[wordid_old]] = [id_mapping[i] for i in self._id_grams[wordid_old]] 
+        if self.cfg['hashgenerate']:
+            for old_id in self._id2word:
+                word = self._id2word[old_id]
+                new_id = old_id % self.vocab_size
+                new_id2word[new_id] = word
+                new_word2id[word] = new_id
+                new_id2tf[new_id] = self._id2tf[old_id]
+            for old_id in self._id_ngrams:
+                new_id = old_id % self.vocab_size
+                new_id_ngrams[new_id] = [i % self.vocab_size for i in self._id_ngrams[old_id]]
+        else:
+            maxtf = self._id2tf.max()
+            for i in range(len(self._id_spec)):
+                self._id2tf[self._id_spec[i]] = maxtf + len(self._id_spec) - i #avoid remove spec vocab
+            sortedid = numpy.argsort(self._id2tf)[::-1]
+            new_id_N = 0
+            for old_id in sortedid:
+                if not old_id in self._id2word: continue
+                word = self._id2word[old_id]
+                if new_id_N >= vocab_size:
+                    if self.cfg['outofvocab']=='random':
+                        new_id = random.randint(0, vocab_size-1)
+                    else:
+                        new_id = self._id_UNK
+                else:
+                    new_id = new_id_N
+                    new_id2tf[new_id] = self._id2tf[old_id]
+                    new_id2word[new_id] = word
+                    new_id_N += 1
+                id_mapping[old_id] = new_id
+                new_word2id[word] = new_id
+            for old_id in self._id_ngrams:
+                new_id_ngrams[id_mapping[old_id]] = [id_mapping[i] for i in self._id_ngrams[old_id]]
         self._id2word = new_id2word
         self._word2id = new_word2id
         self._id2tf = new_id2tf
         self._id_ngrams = new_id_ngrams
+        self.vocab_size = vocab_size
         self._vocab_max = max(self._id2word)
+    
  
     #call function, convert sentences to id
     def __call__(self, sentences):
@@ -252,7 +251,7 @@ class Vocab(object):
     def dense_vectors(self):
         self.get_id2vec()
         vectors = numpy.zeros((self._vocab_max+1, self.emb_ins.vec_len), 'float')
-        for k in self._id2vec:
+        for k in self._id2word:
             vectors[k] = self.id2vec(k)
         return vectors
 
