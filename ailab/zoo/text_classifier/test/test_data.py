@@ -3,8 +3,8 @@ from tensorflow.contrib import learn
 import numpy as np
 
 cfg = {'LANGUAGE':'cn'}
-positive_file = 'data/positive.gen'
-negative_file = 'data/negative.gen'
+positive_file = '../data/positive.gen'
+negative_file = '../data/negative.gen'
 
 #cfg = {'LANGUAGE': 'en'}
 #positive_file = 'data/rt-polaritydata/rt-polarity.pos'
@@ -23,12 +23,12 @@ for text in x_text:
 	for voc in text:
 		if voc not in vocab:
 			vocab.append(voc)
-vocab_dict = vocab_processor.vocabulary_._mapping
+vocab_dict = vocab_processor.vocabulary_._reverse_mapping
 print('len of vocab is:', len(vocab))
 print('len of voab_processor is:', len(vocab_processor.vocabulary_))
 print('len of vocab_dict is:', len(vocab_dict))
 print('type of vocab_dict is:', type(vocab_dict))
-print(vocab_dict.keys())
+print(vocab_dict)
 print(len(x_text))
 print(x_text[:6])
 print(len(y))

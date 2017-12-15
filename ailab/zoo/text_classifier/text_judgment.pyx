@@ -184,12 +184,14 @@ class TextJudgment(object):
 		
     
     def load_checkpoint(self):
+		# read model path directly from cfg
         if 'model_file' in self.cfg:
             vocab_path = os.path.join(self.cfg['model_file']['out_dir'], "vocab")
             self.vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
             
             self.checkpoint_file = tf.train.latest_checkpoint(self.cfg['model_file']['checkpoint_dir'])
         else:
+			# read model path from model_path file created by train process
             if 'model_path' in self.cfg:
                 with open('model_path.json', 'r') as f:
                     path_cfg = json.load(f)
@@ -235,4 +237,15 @@ class TextJudgment(object):
                 if y_test is not None and len(y_test) is not 0:
                     correct_predictions = float(sum(self.result == y_test))	
                     print('Total number of test_examples: {}'.format(len(y_test)))
-                    print('Accuracy: {:g}'.format(correct_predictions/float(len(y_test))))		
+                    print('Accuracy: {:g}'.format(correct_predictions/float(len(y_test))))
+                    
+                    wrong_indexs = [i for i, j in enumerate(self.result == y_test) if j == False]
+                    vocab_list = self.vocab_processor.vocabulary_._reverse_mapping
+                    for idx in wrong_indexs:
+                        strings=[]
+                        for ID in x_test[idx]:
+                            if ID !=0:
+                                strings.append(vocab_list[ID])
+                        wrong_text=''.join(strings)
+                        print('wrong predict text is:',wrong_text)
+                        		
