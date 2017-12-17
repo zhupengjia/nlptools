@@ -24,9 +24,7 @@ class Vocab(object):
         if self.seg_ins_emb: 
             del self.seg_ins
 
-    def addBE(self, forceadd=False):
-        if '<unk>' in self._word2id and not forceadd:
-            return
+    def addBE(self):
         self._word_spec = ['<pad>', '<eos>', '<bos>','<unk>']
         self._id_spec = [self.word2id(w) for w in self._word_spec]
         self.PAD, self.EOS, self.BOS, self.UNK = tuple(self._word_spec)
