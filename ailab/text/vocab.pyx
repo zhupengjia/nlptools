@@ -14,9 +14,9 @@ class Vocab(object):
         self.seg_ins_emb = seg_ins is None # if tokenizer embedded in Vocab or as a parameter input
         self.emb_ins = emb_ins
         self.sentences_hash = {} #check if sentence added
-        self.vocab_size = self.cfg['vocab_size']
+        self.vocab_size = int(self.cfg['vocab_size'])
         if self.vocab_size < 30:
-            self.vocab_size = 2**self.cfg['vocab_size']
+            self.vocab_size = 2**int(self.cfg['vocab_size'])
         self.__get_cached_vocab(forceinit)
 
     def __del__(self):
@@ -250,7 +250,10 @@ class Vocab(object):
         self.get_id2vec()
         vectors = numpy.zeros((self._vocab_max+1, self.emb_ins.vec_len), 'float')
         for k in self._id2word:
-            vectors[k] = self.id2vec(k)
+            if k == self._id_PAD:
+                vectors[k] = 0
+            else:
+                vectors[k] = self.id2vec(k)
         return vectors
 
 
