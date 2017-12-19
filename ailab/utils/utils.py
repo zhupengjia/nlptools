@@ -70,8 +70,9 @@ def normalize(text):
 #rest client post
 def restpost(url, data):
     import requests, json
-    return requests.post(url=url, data=json.dumps(data)).json()
-
+    data = requests.post(url=url, data=json.dumps(data))
+    try: return data.json()
+    except: return None
 
 #use environment variables to cover original environment
 def envread(keys):
