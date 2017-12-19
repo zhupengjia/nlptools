@@ -231,8 +231,9 @@ class TextJudgment(object):
 				
                 # Tensors to evaluate, outputs[0]输出为list
                 predictions = graph.get_operation_by_name("output/predictions").outputs[0]
+				score = graph.get_operation_by_name("output/classify_score").outputs[0]
 				
-                self.result = sess.run(predictions, {input_x:x_test, dropout_keep_prob: 1.0})	
+                self.result, self.scores = sess.run([predictions,score], {input_x:x_test, dropout_keep_prob: 1.0})	
 					
                 if y_test is not None and len(y_test) is not 0:
                     correct_predictions = float(sum(self.result == y_test))	
