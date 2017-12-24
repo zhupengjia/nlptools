@@ -10,4 +10,4 @@ from .translate import Translate
 from .searchkeyword import SearchKeyword
 from .vectfidf import VecTFIDF
 
-__all__ = ["Segment", 'Embedding', 'Vocab', 'DocSim', 'Translate', 'SearchKeyword', 'VecTFIDF']
+__all__ = ["Segment", 'Embedding', 'Vocab', 'DocSim', 'SearchKeyword', 'VecTFIDF']

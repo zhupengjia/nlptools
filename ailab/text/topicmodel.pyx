@@ -7,8 +7,8 @@ import numpy as np
 from gensim import corpora, models, similarities
 from ..utils import zload, zdump
 
-class TopicModel:
-    def __init__(self, question_db_tokens, cfg):
+class TopicModel(object):
+    def __init__(self, cfg, question_db_tokens):
         self.question_db = question_db_tokens
         self.dictionary = corpora.Dictionary(self.question_db)
         self.question = [self.dictionary.doc2bow(text) for text in self.question_db]
@@ -24,7 +24,11 @@ class TopicModel:
         #self.build_lda()
         self.build_lsi()
 
-    def build_lsi(self):
+class LSI(TopicModel):
+    def __init__(self, cfg, question_db_tokens):
+        TopicModel.__init__(self, cfg, question_db_tokens)
+
+    def build(self):
         if not os.path.exists(self.cfg["lsi_path"]):
             self.lsi = models.LsiModel(self.corpus_tf_idf,
                                    id2word=self.dictionary,
@@ -34,9 +38,18 @@ class TopicModel:
             zdump((self.lsi, self.lsi_index), self.cfg["lsi_path"])
         else:
             self.lsi, self.lsi_index = zload(self.cfg["lsi_path"])
+    
+    def query(self, question):
+        query_bow = self.dictionary.doc2bow(question)
+        query_lsi = self.lsi[query_bow]
+        scores = self.lsi_index[query_lsi]
+        return scores
 
+class LDA(TopicModel):
+    def __init__(self, cfg, question_db_tokens):
+        TopicModel.__init__(self, cfg, question_db_tokens)
 
-    def build_lda(self):
+    def build(self):
         if not os.path.exists(self.cfg["lda_path"]):
             self.lda = models.LdaMulticore(self.corpus_tf_idf,
                                        id2word=self.dictionary,
@@ -47,14 +60,7 @@ class TopicModel:
         else:
             self.lda, self.lda_index = zload(self.cfg["lda_path"])
 
-
-    def query_lsi(self, question):
-        query_bow = self.dictionary.doc2bow(question)
-        query_lsi = self.lsi[query_bow]
-        scores = self.lsi_index[query_lsi]
-        return scores
-
-    def query_lda(self, question):
+    def query(self, question):
         query_bow = self.dictionary.doc2bow(question)
         query_lda = self.lda[query_bow]
         scores = self.lda_index[query_lda]

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, zlib, numpy
+import os, zlib, numpy, re
 import pickle, unicodedata
 from collections import Counter
 from sklearn.utils import murmurhash3_32
@@ -83,8 +83,14 @@ def envread(keys):
     return cfg
 
 #language detection
-def lang_detect(string):
+def lang_detect(string, langfilter=None):
     from langdetect import detect
-    return detect(string)
-
+    import numpy
+    langs = []
+    for s in re.split('\n', string):
+        try: langs.append(detect(s))
+        except: continue
+    if len(langs) < 1: return None
+    langs, langsnum = numpy.unique(langs, return_counts=True)
+    return langs[numpy.argmax(langsnum)]
 
