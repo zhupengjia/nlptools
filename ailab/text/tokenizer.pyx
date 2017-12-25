@@ -393,6 +393,16 @@ class Segment_Rest(Segment_Base):
             for k in data: filtereddata[k].append(data[k][i])
         return filtereddata
 
+class Segment_Simple(Segment_Base):
+    def __init__(self, cfg):
+        Segment_Base.__init__(self, cfg)
+        self.re_punc = re.compile(ur'[\s\.\;\'\"\(\)\[\]\{\}\%\$\#\!\^\&\`\~（）《》【】「」；：‘“’”？／。，]')
+    
+    def seg(self, sentence, remove_stopwords = False):
+        tokens = [s for s in self.re_punc.split(sentence) if len(s)>0]
+        if remove_stopwords:
+            tokens = [s for s in tokens if s not in remove_stopwords]
+        return {'tokens': tokens}
 
 class Segment(object):
     def __new__(cls, cfg):
@@ -400,6 +410,7 @@ class Segment(object):
                       'spacy':Segment_Spacy, \
                       'jieba':Segment_Jieba, \
                       'ltp':Segment_LTP, \
+                      'simple':Segment_Simple,\
                       'mecab': Segment_Mecab}
         languages = {'cn':'jieba', \
                      'yue':'jieba', \

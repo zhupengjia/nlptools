@@ -1,21 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: UTF-8 -*-
-#
-# name:      ailab/test/test_tokenizer.py
-# author:    QIAO Nan <qiaonancn@gmail.com>
-# license:   GPL
-# created:   2017 Jul 22
-# modified:  2017 Jul 22
-#
+#!/usr/bin/env python3
+from ailab.text.tokenizer import Segment_Simple
+from ailab.utils import zload
+import sys
 
-import os, sys, argparse, glob, subprocess, logging, re
-from ailab.text import *
-import pytest
+cfg = {'TOKENIZER':'simple'}
+s = Segment_Simple(cfg)
+#print(s.seg(sys.argv[1]))
 
-def test_en():
-    cfg={}
-    cfg['LANGUAGE'] = 'en'
-    o_seg = Segment(cfg)
-    test_sen= "this is a test"
-    assert o_seg.seg(test_sen)= {"token":[]}
-    
+print(s.seg('浙江在线杭州4月25日讯（记者施宇翔 通讯员 方英）毒贩很“时髦”，用微信交易毒品. N is batch size; D_in is input dimension;'))
+

@@ -13,7 +13,7 @@ class Embedding_Base(object):
         self.cfg = {'vec_len':300, 'vec_type':'float64', 'cached_w2v':''}
         for k in cfg:self.cfg[k] = cfg[k]
         self.__get_cached_vec()
-        self.vec_len = self.cfg['vec_len'] + 1
+        self.vec_len = int(self.cfg['vec_len']) + 1
 
     def distance(self, word1, word2):
         vec1 = self.__getitem__(word1)
@@ -84,7 +84,7 @@ class Embedding_Redis(Embedding_Base):
 class Embedding_Random(Embedding_Base):
     def __init__(self, cfg):
         Embedding_Base.__init__(self, cfg)
-        self.vec_len = self.cfg['vec_len']
+        self.vec_len = int(self.cfg['vec_len'])
 
     def __getitem__(self, word):
         if word in self.cached_vec:
