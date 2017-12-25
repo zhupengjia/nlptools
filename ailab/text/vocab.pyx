@@ -30,6 +30,11 @@ class Vocab(object):
         self.PAD, self.EOS, self.BOS, self.UNK = tuple(self._word_spec)
         self._id_PAD, self._id_EOS, self._id_BOS, self._id_UNK = tuple(self._id_spec)
 
+    def doc2bow(self, wordlist):
+        ids = [self.word2id[w] for w in wordlist]
+        tfs = [self._id2tf[i] for i in ids]
+        return list(zip(ids, tfs))
+
     def __get_cached_vocab(self, forceinit):
         ifinit = True
         self._id_UNK = 0

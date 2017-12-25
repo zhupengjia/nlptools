@@ -16,7 +16,7 @@ def n_count_ids(ids):
     return row, col, data
 
 class VecTFIDF(object):
-    def __init__(self, cfg, vocab_ins=None):
+    def __init__(self, cfg, vocab_ins):
         self.cfg = {'freqwords_path':'', 'cached_index':''}
         for k in cfg: self.cfg[k] = cfg[k]
         self.logger = setLogger(self.cfg)
