@@ -103,7 +103,7 @@ class VecTFIDF(object):
     def tfidf(self, word_ids, sentence_ids, word_idfs):
         tf = self.tf(word_ids, sentence_ids)
         idf = word_idfs[word_ids]
-        self.logger.debug('VecTFIDF: word_ids, ' + str(word_ids) + ' sentence_ids' + str(sentence_ids) + ' tf,' + str(tf) + " idf," + str(idf))
+        #self.logger.debug('VecTFIDF: word_ids, ' + str(word_ids) + ' sentence_ids' + str(sentence_ids) + ' tf,' + str(tf) + " idf," + str(idf))
         return tf*idf
 
     #vec TF-IDF
