@@ -31,7 +31,12 @@ class Vocab(object):
         self._id_PAD, self._id_EOS, self._id_BOS, self._id_UNK = tuple(self._id_spec)
 
     def doc2bow(self, wordlist):
-        ids = [self.word2id[w] for w in wordlist]
+        if isinstance(wordlist, str):
+            wordlist = self.seg_ins.seg(wordlist)['tokens']
+        if isinstance(wordlist[0], int):
+            ids = wordlist
+        else:
+            ids = [self.word2id[w] for w in wordlist]
         tfs = [self._id2tf[i] for i in ids]
         return list(zip(ids, tfs))
 
