@@ -58,7 +58,7 @@ Text_Judge = TextJudgment(cfg)
 
 
 
-Text_Judge.train()
+#Text_Judge.train()
 
 #Text_Judge.load_checkpoint()
 #Text_Judge.predict(positive_file='../data/test-positive.gen', negative_file='../data/test-negative.gen')
