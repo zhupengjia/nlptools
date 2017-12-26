@@ -2,8 +2,7 @@
 import numpy, os, random
 import unicodedata
 from .tokenizer import Segment
-from ..utils import zload, zdump, hashword, normalize
-
+from ..utils import zload, zdump, hashword, normalize, flat_list
 
 # get TF of vocabs and vectors
 class Vocab(object):
@@ -33,6 +32,8 @@ class Vocab(object):
     def doc2bow(self, wordlist):
         if isinstance(wordlist, str):
             wordlist = self.seg_ins.seg(wordlist)['tokens']
+        if isinstance(wordlist[0], list):
+            wordlist = flat_list(wordlist)
         if isinstance(wordlist[0], int):
             ids = wordlist
         else:
