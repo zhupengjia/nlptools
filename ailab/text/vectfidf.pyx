@@ -116,9 +116,9 @@ class VecTFIDF(object):
         tfidf = corpus_ids.apply(lambda x: self.tfidf(word_ids, x, word_idfs).sum()).as_matrix()
         
         scores = numpy.argsort(tfidf)[::-1]
-        tfidf = tfidf[scores[:topN]]
         scores = [int(s) for s in scores[:topN]]
-        return list(zip([int(s) for s in scores[:topN]], tfidf[scores]))
+        tfidf = tfidf[scores]
+        return list(zip(scores, tfidf))
 
     
     #traditional TF-IDF algorithms
