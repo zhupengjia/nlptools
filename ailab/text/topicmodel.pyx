@@ -40,7 +40,7 @@ class LSI(TopicModel):
             self.lsi, self.lsi_index = zload(self.cfg["lsi_path"])
    
     def topic(self, question_db_tokens):
-
+        pass
 
     def query(self, question):
         query_bow = self.dictionary.doc2bow(question)

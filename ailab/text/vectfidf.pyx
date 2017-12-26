@@ -103,7 +103,7 @@ class VecTFIDF(object):
     def tfidf(self, word_ids, sentence_ids, word_idfs):
         tf = self.tf(word_ids, sentence_ids)
         idf = word_idfs[word_ids]
-        self.logger.debug('VecTFIDF: word_ids, ' + str(word_ids) + ' sentence_ids' + str(sentence_ids) + ' tf,' + str(tf) + " idf," + str(idf))
+        #self.logger.debug('VecTFIDF: word_ids, ' + str(word_ids) + ' sentence_ids' + str(sentence_ids) + ' tf,' + str(tf) + " idf," + str(idf))
         return tf*idf
 
     #vec TF-IDF
@@ -116,9 +116,9 @@ class VecTFIDF(object):
         tfidf = corpus_ids.apply(lambda x: self.tfidf(word_ids, x, word_idfs).sum()).as_matrix()
         
         scores = numpy.argsort(tfidf)[::-1]
-        tfidf = tfidf[scores[:topN]]
         scores = [int(s) for s in scores[:topN]]
-        return list(zip([int(s) for s in scores[:topN]], tfidf[scores]))
+        tfidf = tfidf[scores]
+        return list(zip(scores, tfidf))
 
     
     #traditional TF-IDF algorithms
