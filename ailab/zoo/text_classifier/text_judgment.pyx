@@ -10,6 +10,7 @@ from tensorflow.contrib import learn
 from ailab.text import Embedding
 from .data_helpers import Data_helpers
 import json
+import pandas as pd
 
 class TextJudgment(object):
     def __init__(self, cfg={}):
@@ -21,7 +22,7 @@ class TextJudgment(object):
 
     def data_process(self, positive_file, negative_file):
 		# load data
-        x_text, y = self.data_ins.load_data_and_labels(positive_file, negative_file)
+        x_raw, x_text, y = self.data_ins.load_data_and_labels(positive_file, negative_file)
 		
         # build vocabulary
         max_document_length = max([len(x.split(" ")) for x in x_text])
@@ -43,12 +44,15 @@ class TextJudgment(object):
 	
 
     def train_step(self, x_batch, y_batch):
+        class_weight = sum(np.array(y_batch))/len(y_batch)
+        class_weight = np.mat(class_weight)
         feed_dict = {
             self.cnn.input_x: x_batch,
             self.cnn.input_y: y_batch,
-            self.cnn.dropout_keep_prob: self.FLAGS['dropout_keep_prob']}
-        _, step, summaries, loss, accuracy = self.sess.run(
-			[self.train_op, self.global_step, self.train_summary_op, self.cnn.loss, self.cnn.accuracy],
+            self.cnn.dropout_keep_prob: self.FLAGS['dropout_keep_prob'],
+            self.cnn.class_weight: class_weight}
+        _, step, summaries, loss, accuracy, self.predictions, self.label = self.sess.run(
+			[self.train_op, self.global_step, self.train_summary_op, self.cnn.loss, self.cnn.accuracy, self.cnn.predictions, self.cnn.label],
 			feed_dict)
         time_str = datetime.datetime.now().isoformat()
         print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
@@ -58,10 +62,13 @@ class TextJudgment(object):
         """
         Evaluates model on a dev set
         """
+        class_weight = sum(np.array(y_batch))/len(y_batch)
+        class_weight = np.mat(class_weight)
         feed_dict = {
 		self.cnn.input_x: x_batch,
 		self.cnn.input_y: y_batch,
-		self.cnn.dropout_keep_prob: 1.0}
+		self.cnn.dropout_keep_prob: 1.0,
+         self.cnn.class_weight: class_weight}
         step, summaries, loss, accuracy = self.sess.run(
 			[self.global_step, self.dev_summary_op, self.cnn.loss, self.cnn.accuracy], feed_dict)
 	
@@ -107,7 +114,8 @@ class TextJudgment(object):
         # set model out put path
         self.model_path()
         print("Writing to {}\n".format(self.out_dir))
-	
+        
+        
         # Summaries for loss and accuracy
         loss_summary = tf.summary.scalar("loss", self.cnn.loss)
         acc_summary = tf.summary.scalar("accuracy", self.cnn.accuracy)
@@ -125,7 +133,7 @@ class TextJudgment(object):
         # set saver
         self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=self.FLAGS['num_checkpoints'])
     
-    def train(self):
+    def train(self, restore=False):
         #set parameters
         self.FLAGS = self.cfg['FLAGS']
         #emb_ins
@@ -134,12 +142,23 @@ class TextJudgment(object):
         # data process
         self.data_process(self.FLAGS['positive_data_file'], self.FLAGS['negative_data_file'])
         # train
-        with tf.Graph().as_default():
+        graph = tf.Graph()
+        with graph.as_default():
             session_conf = tf.ConfigProto(
 				allow_soft_placement = self.FLAGS['allow_soft_placement'],
 				log_device_placement = self.FLAGS['log_device_placement'])
             self.sess = tf.Session(config = session_conf)
-	
+            
+            # set metrics parameters
+            tf_label = tf.placeholder(dtype=tf.float32, shape=[None])
+            tf_prediction = tf.placeholder(dtype=tf.float32, shape=[None])
+            # define the metric and update operations
+            self.tf_recall, self.tf_recall_update = tf.metrics.recall(tf_label,
+                                                          tf_prediction,
+                                                          name='class_metric')
+            running_vars = tf.get_collection(tf.GraphKeys.LOCAL_VARIABLES, scope='class_metric')
+            self.running_vars_initializer = tf.variables_initializer(var_list=running_vars)
+            
             with self.sess.as_default():
                 self.cnn = TextCNN(
 				sequence_length = self.x_train.shape[1],
@@ -157,8 +176,11 @@ class TextJudgment(object):
                 self.vocab_processor.save(os.path.join(self.out_dir, "vocab"))			
 	
                 #initialize all variables
+                print('start initialize variables')
                 self.sess.run(tf.global_variables_initializer())
+                self.sess.run(self.running_vars_initializer)
                 #load pretrained embedding	
+                print('start embedding')
                 initW = np.random.uniform(-1, 1, (len(self.vocab_processor.vocabulary_), self.FLAGS['embedding_dim']))
                 words = self.vocab_processor.vocabulary_._mapping.keys()
                 for word in words:
@@ -167,12 +189,18 @@ class TextJudgment(object):
 				
                 self.sess.run(self.cnn.W.assign(initW))					
                 #Genearte batches
+                print('start generate batches')
                 batches = self.data_ins.batch_iter(
 					list(zip(self.x_train, self.y_train)), self.FLAGS['batch_size'], self.FLAGS['num_epochs'])
                 # Training loop. For each batch:
+                print('start training')
                 for batch in batches:
-                    x_batch, y_batch = zip(*batch)	
+                    x_batch, y_batch = zip(*batch)
                     self.train_step(x_batch, y_batch)
+                    
+                    feed_dict = {tf_label:self.label, tf_prediction:self.predictions}
+                    self.sess.run(self.tf_recall_update, feed_dict=feed_dict)
+                    
                     current_step = tf.train.global_step(self.sess, self.global_step)
                     if current_step % self.FLAGS['evaluate_every']	== 0:
                         print("\nEvaluation:")
@@ -181,6 +209,8 @@ class TextJudgment(object):
                     if current_step % self.FLAGS['checkpoint_every'] == 0:
                         path = self.saver.save(self.sess, self.checkpoint_prefix, global_step = current_step)
                         print('Saved model checkpoint to {}\n'.format(path))
+                score = self.sess.run(self.tf_recall)
+                print('recall of train data:', score)
 		
     
     def load_checkpoint(self):
@@ -202,18 +232,19 @@ class TextJudgment(object):
 
     
     def predict(self, query='', positive_file='', negative_file=''):
+        self.load_checkpoint()	
         # seg sentence and map to vocabulary
         if len(positive_file) !=0 and len(negative_file) !=0:
-            x_raw, y_test = self.data_ins.load_data_and_labels(positive_file, negative_file)
+            x_raw, x_text, y_test = self.data_ins.load_data_and_labels(positive_file, negative_file)
             y_test = np.argmax(y_test, axis=1)
         else:
             if len(query) is not 0:
-                x_raw = [self.data_ins.seg_sentence(query)]
+                x_text = [self.data_ins.seg_sentence(query)]
                 y_test = []				
 
-        x_test = np.array(list(self.vocab_processor.transform(x_raw))) #transform accept list as input
-		
-        # read model and predict					
+        x_test = np.array(list(self.vocab_processor.transform(x_text))) #transform accept list as input
+
+        # read model and predict
         graph = tf.Graph()
         with graph.as_default():
             session_conf = tf.ConfigProto(
@@ -224,7 +255,7 @@ class TextJudgment(object):
                 #load the saved meta graph and restore variables
                 saver = tf.train.import_meta_graph("{}.meta".format(self.checkpoint_file))
                 saver.restore(sess, self.checkpoint_file)
-				
+
                 #Get the placeholders from the graph by name
                 input_x = graph.get_operation_by_name("input_x").outputs[0]
                 dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]	
@@ -232,8 +263,8 @@ class TextJudgment(object):
                 # Tensors to evaluate, outputs[0]输出为list
                 predictions = graph.get_operation_by_name("output/predictions").outputs[0]
                 score = graph.get_operation_by_name("output/classify_score").outputs[0]
-				
-                self.result, self.scores = sess.run([predictions,score], {input_x:x_test, dropout_keep_prob: 1.0})	
+               				
+                self.result, self.scores = sess.run([predictions, score], {input_x:x_test, dropout_keep_prob: 1.0})	
 					
                 if y_test is not None and len(y_test) is not 0:
                     correct_predictions = float(sum(self.result == y_test))	
@@ -242,11 +273,20 @@ class TextJudgment(object):
                     
                     wrong_indexs = [i for i, j in enumerate(self.result == y_test) if j == False]
                     vocab_list = self.vocab_processor.vocabulary_._reverse_mapping
+                    df_result=pd.DataFrame()
+                    right_txt=[]; probability=[]; predict_class=[]
                     for idx in wrong_indexs:
                         strings=[]
                         for ID in x_test[idx]:
                             if ID !=0:
                                 strings.append(vocab_list[ID])
                         wrong_text=''.join(strings)
-                        print('wrong predict text is:',wrong_text)
-                        		
+                        right_txt.append(x_raw[idx])
+                        probability.append(max(self.scores[idx]))
+                        predict_class.append(self.result[idx])
+#                        print('right predict text is:', x_raw[idx])
+                    df_result['txt']=right_txt; df_result['class']=predict_class; df_result['score']=probability
+                    df_result.sort_values(by='score', axis=0, ascending=False, inplace=True)
+                    df_result = df_result.reset_index(drop=True)
+                    df_result.to_excel('wrong_predict.xls', encoding='utf-8')
+                                                                                                                                                                    		
