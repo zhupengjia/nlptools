@@ -51,6 +51,7 @@ class Vocab(object):
                 if len(self._id2word) > 0:
                     self._vocab_max = max(self._id2word)
                     ifinit = False
+                self.vocab_size = len(self._id2tf)
             except Exception as err:
                 print('warning!!! cached vocab read failed!!! ' + err)
         if ifinit:
@@ -209,7 +210,7 @@ class Vocab(object):
 
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
-    def sentence2id(self, sentence, ngrams=None, useBE=True, addforce=True):
+    def sentence2id(self, sentence, ngrams=None, useBE=True, update=True):
         if isinstance(sentence, str):
             if self.seg_ins is None:
                 self.seg_ins = Segment(self.cfg)
@@ -223,7 +224,12 @@ class Vocab(object):
         if ngrams is None:
             ngrams = self.cfg['ngrams']
         hash_sentence = hash(sentence)
-        if not hash_sentence in self.sentences_hash or addforce:
+        if update is None:
+            if not hash_sentence in self.sentences_hash:
+                func_add_word = self.add_word
+            else:
+                func_add_word = self.word2id
+        elif update:
             func_add_word = self.add_word
         else:
             func_add_word = self.word2id
