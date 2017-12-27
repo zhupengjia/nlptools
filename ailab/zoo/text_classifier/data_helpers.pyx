@@ -75,10 +75,9 @@ class Data_helpers(object):
         # Load data from files
         positive_examples = list(open(positive_data_file, "r").readlines())
         positive_examples = [s.strip() for s in positive_examples]
-        positive_examples = list(set(positive_examples))
         negative_examples = list(open(negative_data_file, "r").readlines())
         negative_examples = [s.strip() for s in negative_examples]
-        negative_examples = list(set(negative_examples))
+    
         # Split by words
         x_raw = positive_examples + negative_examples
 #       print('len of x_text is:', len(x_text))
