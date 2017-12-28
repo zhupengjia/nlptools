@@ -22,7 +22,7 @@ def read(fname):
 
 setup(
     name = "ailab",
-    version = "0.0.2",
+    version = "0.0.3",
     author = "Qiao, Nan",
     author_email = "qiaonancn@gmail.com",
     description = ("ailab"),
