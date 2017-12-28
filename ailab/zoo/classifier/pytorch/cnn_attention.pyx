@@ -9,7 +9,7 @@ class Classifier(nn.Module):
         self.cfg = {'cnn_kernel_num':20,\
                     'cnn_kernel_size':5,\
                     'pool_size':2,\
-                    'dropout':0.2,\
+                    'dropout':0.8,\
                     'max_seq_len':16\
                 }
         for k in cfg:
