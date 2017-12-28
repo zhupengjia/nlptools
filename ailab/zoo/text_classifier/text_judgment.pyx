@@ -230,8 +230,36 @@ class TextJudgment(object):
                 self.vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
                 self.checkpoint_file = tf.train.latest_checkpoint(path_cfg['checkpoint_dir'])
 
-    
-    def predict(self, query='', positive_file='', negative_file=''):
+    def predict(self, query=''):
+        self.load_checkpoint()
+        x_text = [self.data_ins.seg_sentence(query)]
+        x_test = np.array(list(self.vocab_processor.transform(x_text)))
+        
+        graph = tf.Graph()
+        with graph.as_default():
+            session_conf = tf.ConfigProto(
+				allow_soft_placement=True,
+				log_device_placement=False)
+            sess = tf.Session(config = session_conf)
+            with sess.as_default():
+                #load the saved meta graph and restore variables
+                saver = tf.train.import_meta_graph("{}.meta".format(self.checkpoint_file))
+                saver.restore(sess, self.checkpoint_file)
+
+                #Get the placeholders from the graph by name
+                input_x = graph.get_operation_by_name("input_x").outputs[0]
+                dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]	
+				
+                # Tensors to evaluate, outputs[0]输出为list
+                predictions = graph.get_operation_by_name("output/predictions").outputs[0]
+                score = graph.get_operation_by_name("output/classify_score").outputs[0]
+               				
+                self.result, self.scores = sess.run([predictions, score], {input_x:x_test, dropout_keep_prob: 1.0})	
+
+        
+        
+        
+    def predict_file(self, query='', positive_file='', negative_file=''):
         self.load_checkpoint()	
         # seg sentence and map to vocabulary
         if len(positive_file) !=0 and len(negative_file) !=0:
