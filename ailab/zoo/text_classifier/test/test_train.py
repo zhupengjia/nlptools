@@ -3,6 +3,9 @@ sys.path.append('..')
 from ailab.zoo.text_classifier.text_judgment import TextJudgment
 import json
 from ailab.zoo.text_classifier.data_helpers import Data_helpers
+from ailab.zoo.text_classifier.model import JudgementModel
+import time
+import numpy as np
 
 cfg = { 
 		'LANGUAGE': 'cn',
@@ -48,10 +51,10 @@ cfg = {
 #	cfg = json.load(f)
 #cfg = json.loads(cfg)
 
-Data_help = Data_helpers(cfg)
+#Data_help = Data_helpers(cfg)
 #Data_help.data_new(cfg['FLAGS']['positive_data_file'], cfg['FLAGS']['negative_data_file'], 2)
 
-Text_Judge = TextJudgment(cfg)
+#Text_Judge = TextJudgment(cfg)
 #Text_Judge.data_process(cfg['FLAGS']['positive_data_file'], cfg['FLAGS']['negative_data_file'])
 #print(Text_Judge.x_train)
 #batches = Data_help.batch_iter(list(zip(Text_Judge.x_train, Text_Judge.y_train)), cfg['FLAGS']['batch_size'], cfg'[FLAGS']['num_epochs'])
@@ -59,16 +62,28 @@ Text_Judge = TextJudgment(cfg)
 
 
 #Text_Judge.train()
-
+Model = JudgementModel(cfg)
 #Text_Judge.load_checkpoint()
 #Text_Judge.predict(positive_file='../data/test-positive.gen', negative_file='../data/test-negative.gen')
 
-Text_Judge.predict(positive_file='../data/yes.gen', negative_file='../data/no.gen')
+#Text_Judge.predict_file(positive_file='../data/yes.gen', negative_file='../data/no.gen')
 #print('scores are:', Text_Judge.scores)
-query = '对不起，没听清楚，不明白，不懂，不好意思'
-Text_Judge.predict(query)
-print('judgment of '+query+'is:', Text_Judge.result, 'score is:', max(Text_Judge.scores[0]))
 
-query = '明白了，谢谢'
-Text_Judge.predict(query)
-print('judgment of '+query+'is:', Text_Judge.result, 'score is:', max(Text_Judge.scores[0]))
+query = '不明白'
+t1=time.time()
+Model.predict(query)
+t2=time.time()
+t = t2-t1
+print('judgment of '+query+'is:', Model.result, 'score is:', max(Model.scores[0]))
+print('time cost is:', t)
+
+t_list =[]
+for i in range(100):
+	t3 = time.time()
+	query = '明白了，谢谢'
+	Model.predict(query)
+	t4 = time.time()
+	t_list.append(t4-t3)
+t_list = np.array(t_list)
+print('avg of cost is:', t_list.mean())
+print('judgment of '+query+'is:', Model.result, 'score is:', max(Model.scores[0]))
