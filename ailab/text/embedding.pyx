@@ -135,12 +135,16 @@ class Embedding_Rest(Embedding_Base):
         self.rest_url = cfg['embedding_restapi']
     
     def __getitem__(self, word):
+        if word in self.cached_vec:
+            return self.cached_vec[word]
         vector_binary = restpost(self.rest_url, {'text':word})
         if 'RETURNBASE64' in self.cfg:
+            self.cached_vec[word] = vector_binary
             return vector_binary
         vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.cfg['vec_type'])
         if len(vector) == self.vec_len - 1:
             vector = np.concatenate((vector, np.zeros(1)))
+        self.cached_vec[word] = vector
         return vector
 
     def __contains(self, word):
