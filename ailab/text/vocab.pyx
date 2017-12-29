@@ -210,11 +210,11 @@ class Vocab(object):
 
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
-    def sentence2id(self, sentence, ngrams=None, useBE=True, update=True):
+    def sentence2id(self, sentence, ngrams=None, useBE=True, update=True, remove_stopwords=True):
         if isinstance(sentence, str):
             if self.seg_ins is None:
                 self.seg_ins = Segment(self.cfg)
-            sentence_seg = self.seg_ins.seg(sentence)['tokens']
+            sentence_seg = self.seg_ins.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
         elif numpy.isnan(sentence):
             return []
         else:
