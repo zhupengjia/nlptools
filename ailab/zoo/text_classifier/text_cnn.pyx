@@ -39,15 +39,15 @@ class TextCNN(object):
                 conv = tf.nn.conv2d(
                     self.embedded_chars_expanded,
                     W,
-                    strides=[1, 1, 1, 1],
-                    padding="VALID",
+                    strides=[1, 1, embedding_size, 1],
+                    padding="SAME",
                     name="conv")
                 # Apply nonlinearity
                 h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
                 # Maxpooling over the outputs
                 pooled = tf.nn.max_pool(
                     h,
-                    ksize=[1, sequence_length - filter_size + 1, 1, 1],
+                    ksize=[1, sequence_length, 1, 1],
                     strides=[1, 1, 1, 1],
                     padding='VALID',
                     name="pool")

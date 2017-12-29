@@ -6,6 +6,7 @@ from ailab.zoo.text_classifier.data_helpers import Data_helpers
 from ailab.zoo.text_classifier.model import JudgementModel
 import time
 import numpy as np
+import pandas as pd
 
 cfg = { 
 		'LANGUAGE': 'cn',
@@ -54,7 +55,7 @@ cfg = {
 #Data_help = Data_helpers(cfg)
 #Data_help.data_new(cfg['FLAGS']['positive_data_file'], cfg['FLAGS']['negative_data_file'], 2)
 
-#Text_Judge = TextJudgment(cfg)
+Text_Judge = TextJudgment(cfg)
 #Text_Judge.data_process(cfg['FLAGS']['positive_data_file'], cfg['FLAGS']['negative_data_file'])
 #print(Text_Judge.x_train)
 #batches = Data_help.batch_iter(list(zip(Text_Judge.x_train, Text_Judge.y_train)), cfg['FLAGS']['batch_size'], cfg'[FLAGS']['num_epochs'])
@@ -63,11 +64,18 @@ cfg = {
 
 #Text_Judge.train()
 Model = JudgementModel(cfg)
-#Text_Judge.load_checkpoint()
-#Text_Judge.predict(positive_file='../data/test-positive.gen', negative_file='../data/test-negative.gen')
 
-#Text_Judge.predict_file(positive_file='../data/yes.gen', negative_file='../data/no.gen')
-#print('scores are:', Text_Judge.scores)
+
+Text_Judge.predict_file(positive_file='../data/yes.gen', negative_file='../data/no.gen')
+
+txt_file = pd.read_csv('test.txt', sep=' ')
+tests = txt_file['词']; predicts=[]
+for item in tests:
+	Model.predict(item)
+	predicts.append(Model.result)
+txt_file['预测']=predicts
+acc = sum(txt_file['预测']==txt_file['分类'])/len(tests)
+print('test accuracy is:', acc)
 
 query = '不明白'
 t1=time.time()
