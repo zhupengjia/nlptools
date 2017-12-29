@@ -24,9 +24,6 @@ class TextCNN(object):
             self.W = tf.Variable(
                 tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0),
                 name="W")
-#            self.W = tf.Variable(tf.constant(0.0, shape=[vocab_size, embedding_size]), trainable=False, name='W')
-#            self.embedding_placeholder = tf.placeholder(tf.float32, [vocab_size, embedding_size])
-#            self.embedding_init = self.W.assign(self.embedding_placeholder)
 
             self.embedded_chars = tf.nn.embedding_lookup(self.W, self.input_x)
             self.embedded_chars_expanded = tf.expand_dims(self.embedded_chars, -1)
