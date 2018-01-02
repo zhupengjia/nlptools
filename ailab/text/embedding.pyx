@@ -71,7 +71,7 @@ class Embedding_Redis(Embedding_Base):
         if v is not None:
             v = np.concatenate((np.fromstring(v),np.zeros(1)))
         else:
-            v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1)))
+            v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1))).astype(self.cfg['vec_type'])
         self.cached_vec[word] = v
         if 'RETURNBASE64' in self.cfg:
             v = base64.b64encode(v.tostring()).decode()
@@ -118,7 +118,7 @@ class Embedding_Dynamodb(Embedding_Base):
                 vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.cfg['vec_type'])
                 v = np.concatenate((vector, np.zeros(1)))
         else:
-            v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1)))
+            v = np.concatenate((np.random.randn(self.vec_len - 1),np.ones(1))).astype(self.cfg['vec_type'])
             if 'RETURNBASE64' in self.cfg:
                 v = base64.b64encode(v.tostring()).decode()
         self.cached_vec[word] = v
@@ -143,7 +143,7 @@ class Embedding_Rest(Embedding_Base):
             return vector_binary
         vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.cfg['vec_type'])
         if len(vector) == self.vec_len - 1:
-            vector = np.concatenate((vector, np.zeros(1)))
+            vector = np.concatenate((vector, np.zeros(1))).astype(self.cfg['vec_type'])
         self.cached_vec[word] = vector
         return vector
 
