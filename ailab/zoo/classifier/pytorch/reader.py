@@ -4,7 +4,7 @@ from ailab.text import Segment, Embedding, Vocab
 import os, pandas, sys, numpy, math, torch
 from torch.autograd import Variable
 
-class DataReader(object):
+class Reader(object):
     def __init__(self, cfg, gpu=False, vocab=None):
         self.cfg = cfg
         self.gpu = gpu
