@@ -69,6 +69,7 @@ class Vocab(object):
 
 
     def accumword(self, word, fulfill=True, tfaccum = True):
+        if word is None: return None
         if word in self._word2id:
             if tfaccum: self._id2tf[self._word2id[word]] += 1
             return self._word2id[word]
@@ -236,6 +237,7 @@ class Vocab(object):
 
         self.sentences_hash[hash_sentence] = 0
         ids = [func_add_word(t) for t in sentence_seg]
+        ids = [i for i in ids if i is not None]
         #ngrams
         if ngrams > 1:
             if useBE:
