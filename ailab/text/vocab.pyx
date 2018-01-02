@@ -211,7 +211,7 @@ class Vocab(object):
 
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
-    def sentence2id(self, sentence, ngrams=None, useBE=True, update=True, remove_stopwords=True):
+    def sentence2id(self, sentence, ngrams=None, useBE=True, update=True, remove_stopwords=True, fulfill=True):
         if isinstance(sentence, str):
             if self.seg_ins is None:
                 self.seg_ins = Segment(self.cfg)
