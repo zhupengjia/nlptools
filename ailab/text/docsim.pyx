@@ -65,7 +65,7 @@ class DocSim(object):
         vectors = self.vocab.senid2vec(words)
         distance_matrix = cosine_distances(vectors)
         if np.sum(distance_matrix) == 0.0:
-            return float('inf')
+            return 0
         len_words = len(words)
 
         word2id = dict(zip(words, range(len_words)))
