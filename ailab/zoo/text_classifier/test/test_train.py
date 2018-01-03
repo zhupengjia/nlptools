@@ -7,6 +7,8 @@ from ailab.zoo.text_classifier.model import JudgementModel
 import time
 import numpy as np
 import pandas as pd
+from ailab.text import Segment
+
 
 cfg = { 
 		'LANGUAGE': 'cn',
@@ -54,7 +56,7 @@ cfg = {
 
 #Data_help = Data_helpers(cfg)
 #Data_help.data_new(cfg['FLAGS']['positive_data_file'], cfg['FLAGS']['negative_data_file'], 2)
-
+seg_ins = Segment(cfg)
 Text_Judge = TextJudgment(cfg)
 #Text_Judge.data_process(cfg['FLAGS']['positive_data_file'], cfg['FLAGS']['negative_data_file'])
 #print(Text_Judge.x_train)
@@ -77,7 +79,13 @@ txt_file['预测']=predicts
 acc = sum(txt_file['预测']==txt_file['分类'])/len(tests)
 print('test accuracy is:', acc)
 
-query = '不明白'
+query = '?'
+x_text = (seg_ins.seg_sentence(query))['tokens']
+x_text = [' '.join(x_text)]
+#print(x_text)
+#print('type of x_text is:', type(x_text))
+#print('lenght of x_text is:', len(x_text))
+#print("x_text[0]==' ' is:", x_text[0]=='')
 t1=time.time()
 Model.predict(query)
 t2=time.time()
