@@ -7,7 +7,6 @@ import time
 import datetime
 from tensorflow.contrib import learn
 from ailab.text import Embedding
-from .data_helpers import Data_helpers
 from ailab.text import Segment
 import json
 import pandas as pd
@@ -15,7 +14,6 @@ import pandas as pd
 class JudgementModel(object):
     def __init__(self, cfg={}):
         self.cfg = cfg
-        self.data_ins = Data_helpers(self.cfg)
         self.load_checkpoint()
         self.seg_ins = Segment(self.cfg)
         self.graph = tf.Graph()
@@ -42,8 +40,8 @@ class JudgementModel(object):
         if 'model_file' in self.cfg:
             vocab_path = os.path.join(self.cfg['model_file']['out_dir'], "vocab")
             self.vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
-            
             self.checkpoint_file = tf.train.latest_checkpoint(self.cfg['model_file']['checkpoint_dir'])
+            self.vocab_list = self.vocab_processor.vocabulary_._reverse_mapping
         else:
 			# read model path from model_path file created by train process
             if 'model_path' in self.cfg:
