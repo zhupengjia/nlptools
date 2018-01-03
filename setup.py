@@ -2,11 +2,7 @@
 # -*- coding: UTF-8 -*-
 #
 # name:      setup.py
-# author:    QIAO Nan <qiaonancn@gmail.com>
-# license:   GPL
-# created:   2016 Dec 17
-# modified:  2017 Aug 03
-#
+# author:    Pengjia Zhu <zhupengjia@gmail.com>
 
 import os
 from setuptools import setup, find_packages
@@ -22,9 +18,9 @@ def read(fname):
 
 setup(
     name = "ailab",
-    version = "0.0.3",
-    author = "Qiao, Nan",
-    author_email = "qiaonancn@gmail.com",
+    version = "0.0.4",
+    author = "Pengjia Zhu",
+    author_email = "zhupengjia@gmail.com",
     description = ("ailab"),
     license = "Commercial",
     keywords = "ailab",

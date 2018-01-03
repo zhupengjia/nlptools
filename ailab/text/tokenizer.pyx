@@ -60,7 +60,7 @@ class Segment_CoreNLP(Segment_Base):
             pass
         return output
 
-    def seg(self, sentence, remove_stopwords = False, entities_filter = None, pos_filter = None):
+    def seg(self, sentence, remove_stopwords = True, entities_filter = None, pos_filter = None):
         txts, tokens, entities, pos= [], [], [], []
         for idx, sentence in enumerate(self.annotate(sentence, properties={'annotators': 'tokenize, pos, lemma, ner', 'outputFormat':'json'})['sentences']):
             for token in sentence['tokens']:
@@ -93,7 +93,7 @@ class Segment_Spacy(Segment_Base):
         else:
             self.nlp = spacy.load(cfg['LANGUAGE'])
 
-    def seg(self, sentence, remove_stopwords = False, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
+    def seg(self, sentence, remove_stopwords = True, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
         txts, tokens, tags, entities, pos, dep= [], [], [], [], [], []
         for token in self.nlp(sentence):
             if remove_stopwords and token.text in self.stopwords:
@@ -134,7 +134,7 @@ class Segment_Jieba(Segment_Base):
             jieba.load_userdict(cfg['seg_dict_path'])
         self.nlp = jieba
 
-    def seg(self, sentence, remove_stopwords=False):
+    def seg(self, sentence, remove_stopwords=True):
         #sentence = re.sub(r"[\s\u0020-\u007f\u2000-\u206f\u3000-\u303f\uff00-\uffef]+", " ", sentence)
         sentence = re.sub(r"[^\w\d]+", " ", sentence)
         tokens = []
@@ -370,7 +370,7 @@ class Segment_Rest(Segment_Base):
         Segment_Base.__init__(self, cfg)
         self.rest_url = cfg['TOKENIZER']
     
-    def seg(self, sentence, remove_stopwords = False, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
+    def seg(self, sentence, remove_stopwords = True, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
         txts, tokens, entities, pos= [], [], [], []
         data = restpost(self.rest_url, {'text':sentence})
         filtereddata = {}
@@ -398,7 +398,7 @@ class Segment_Simple(Segment_Base):
         Segment_Base.__init__(self, cfg)
         self.re_punc = re.compile(ur'[\s\.\;\'\"\(\)\[\]\{\}\%\$\#\!\^\&\`\~（）《》【】「」；：‘“’”？／。，]')
     
-    def seg(self, sentence, remove_stopwords = False):
+    def seg(self, sentence, remove_stopwords = True):
         tokens = [s for s in self.re_punc.split(sentence) if len(s)>0]
         if remove_stopwords:
             tokens = [s for s in tokens if s not in remove_stopwords]
