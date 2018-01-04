@@ -190,14 +190,13 @@ class Vocab(object):
         return None
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
-    def sentence2id(self, sentence, ngrams=None, useBE=True, update=True, charid=False, remove_stopwords=True, fulfill=True):
+    def sentence2id(self, sentence, ngrams=None, useBE=True, update=True, charlevel=False, charngram=False, remove_stopwords=True, fulfill=True):
         if isinstance(sentence, str):
             if self.seg_ins is None:
                 self.seg_ins = Segment(self.cfg)
             sentence_seg = self.seg_ins.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
-            if charid:
+            if charlevel and charngram:
                 sentence_seg += self.seg_char.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
-                
         elif numpy.isnan(sentence):
             return []
         else:
@@ -229,6 +228,12 @@ class Vocab(object):
             for d in zip(ids_gram, ids_gram_tuple):
                 if not d[0] in self._id_ngrams:
                     self._id_ngrams[d[0]] = d[1]
+        #charlevel
+        if charlevel and not charngram:
+            sentence_char = self.seg_char.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
+            charids = [func_add_word(t) for t in sentence_char]
+            charids = [i for i in charids if i is not None]
+            ids += charids
         return ids
 
     #used to cache word2vec
