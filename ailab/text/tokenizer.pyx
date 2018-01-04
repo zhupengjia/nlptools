@@ -393,6 +393,7 @@ class Segment_Rest(Segment_Base):
             for k in data: filtereddata[k].append(data[k][i])
         return filtereddata
 
+# natural segment
 class Segment_Simple(Segment_Base):
     def __init__(self, cfg):
         Segment_Base.__init__(self, cfg)
@@ -401,8 +402,25 @@ class Segment_Simple(Segment_Base):
     def seg(self, sentence, remove_stopwords = True):
         tokens = [s for s in self.re_punc.split(sentence) if len(s)>0]
         if remove_stopwords:
-            tokens = [s for s in tokens if s not in remove_stopwords]
+            tokens = [s for s in tokens if s not in self.stopwords]
         return {'tokens': tokens}
+
+
+# character level segment
+class Segment_Char(Segment_Base):
+    def __init__(self, cfg):
+        Segment_Base.__init__(self, cfg)
+
+    def seg(self, sentence, remove_stopwords = True):
+        tokens = []
+        for s in sentence:
+            s = s.strip()
+            if len(s) < 1: continue
+            if remove_stopwords and s in self.stopwords:
+                continue
+            tokens.append(s)
+        return {'tokens': tokens}
+
 
 class Segment(object):
     def __new__(cls, cfg):
@@ -410,8 +428,9 @@ class Segment(object):
                       'spacy':Segment_Spacy, \
                       'jieba':Segment_Jieba, \
                       'ltp':Segment_LTP, \
+                      'mecab': Segment_Mecab, \
                       'simple':Segment_Simple,\
-                      'mecab': Segment_Mecab}
+                      'char': Segment_Char}
         languages = {'cn':'jieba', \
                      'yue':'jieba', \
                      'en':'spacy', \
@@ -423,7 +442,7 @@ class Segment(object):
                 return Segment_Rest(cfg) 
         if 'LANGUAGE' in cfg and cfg['LANGUAGE'] in languages:
             return tokenizers[languages[cfg['LANGUAGE']]](cfg)
-        print('Error! %s language is not supported'%cfg['LANGUAGE'])
+        return Segment_Simple(cfg)
 
 
 

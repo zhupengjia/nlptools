@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import numpy, os, random
 import unicodedata
-from .tokenizer import Segment
+from .tokenizer import Segment, Segment_Char
 from ..utils import zload, zdump, hashword, normalize, flat_list
 
 # get TF of vocabs and vectors
@@ -11,8 +11,8 @@ class Vocab(object):
         for k in cfg: self.cfg[k] = cfg[k]
         self.seg_ins = seg_ins
         self.seg_ins_emb = seg_ins is None # if tokenizer embedded in Vocab or as a parameter input
+        self.seg_char = Segment_Char(cfg)
         self.emb_ins = emb_ins
-        self.sentences_hash = {} #check if sentence added
         self.vocab_size = int(self.cfg['vocab_size'])
         if self.vocab_size < 30:
             self.vocab_size = 2**int(self.cfg['vocab_size'])
@@ -29,15 +29,19 @@ class Vocab(object):
         self.PAD, self.EOS, self.BOS, self.UNK = tuple(self._word_spec)
         self._id_PAD, self._id_EOS, self._id_BOS, self._id_UNK = tuple(self._id_spec)
 
-    def doc2bow(self, wordlist):
-        if isinstance(wordlist, str):
-            wordlist = self.seg_ins.seg(wordlist)['tokens']
-        if isinstance(wordlist[0], list):
-            wordlist = flat_list(wordlist)
-        if isinstance(wordlist[0], int):
-            ids = wordlist
+    def doc2bow(self, wordlist = None, idlist=None):
+        if wordlist is None and idlist is None: 
+            return []
+        if idlist is not None:
+            ids = idlist
         else:
+            if isinstance(wordlist, str):
+                wordlist = self.sentence2id(wordlist, update=False)
+            if isinstance(wordlist[0], list):
+                wordlist = flat_list(wordlist)
             ids = [self.word2id[w] for w in wordlist]
+        if isinstance(ids[0], list):
+            ids = flat_list(ids)
         tfs = [self._id2tf[i] for i in ids]
         return list(zip(ids, tfs))
 
@@ -164,38 +168,9 @@ class Vocab(object):
             ids.append(self.sentence2id(sentence))
         return ids
   
-    #get id from word, or word from id
+    #get word from id
     def __getitem__(self, key):
-        if isinstance(key, int):
-            if key in self._id2word:
-                return self._id2word[key]
-            else:
-                return None
-        return self.word2id(key)
-
-    #set id for word or word for id manually, be careful!
-    def __setitem__(self, key, item):
-        if isinstance(key, int):
-            word, wordid = item, key
-        else:
-            word, wordid = key, item
-        wordid_outofvocab = False
-        if self.cfg['hashgenerate']:
-            wordid = wordid % self.vocab_size
-        else:
-            if wordid >= self.vocab_size:
-                wordid_outofvocab = True
-                if self.cfg['outofvocab']=='random':
-                    word2id = random.randint(0, self.vocab_size-1)
-                else:
-                    word2id = self._id_UNK
-                wordid = self._id_UNK
-        if wordid > self._vocab_max:
-            self._vocab_max = wordid
-        self._word2id[word] = wordid
-        if not wordid_outofvocab:
-            self._id2word[wordid] = word
-            self._id2tf[wordid] = 0
+        return self.word2id(key, fulfill=False)
 
     def __contains__(self, key):
         if isinstance(key, int):
@@ -209,33 +184,32 @@ class Vocab(object):
     def word2id(self, word, fulfill=True):
         return self.accumword(word, fulfill, False)
 
+    def id2word(self, i):
+        if i in self._id2word:
+            return self._id2word[i]
+        return None
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
-    def sentence2id(self, sentence, ngrams=None, useBE=True, update=True, remove_stopwords=True, fulfill=True):
+    def sentence2id(self, sentence, ngrams=None, useBE=True, update=True, charid=False, remove_stopwords=True, fulfill=True):
         if isinstance(sentence, str):
             if self.seg_ins is None:
                 self.seg_ins = Segment(self.cfg)
             sentence_seg = self.seg_ins.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
+            if charid:
+                sentence_seg += self.seg_char.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
+                
         elif numpy.isnan(sentence):
             return []
         else:
             sentence_seg = sentence
-            sentence = ''.join(sentence_seg)
 
         if ngrams is None:
             ngrams = self.cfg['ngrams']
-        hash_sentence = hash(sentence)
-        if update is None:
-            if not hash_sentence in self.sentences_hash:
-                func_add_word = self.add_word
-            else:
-                func_add_word = self.word2id
-        elif update:
+        if update:
             func_add_word = self.add_word
         else:
             func_add_word = self.word2id
 
-        self.sentences_hash[hash_sentence] = 0
         ids = [func_add_word(t) for t in sentence_seg]
         ids = [i for i in ids if i is not None]
         #ngrams
