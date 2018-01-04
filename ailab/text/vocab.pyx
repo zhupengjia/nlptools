@@ -211,6 +211,9 @@ class Vocab(object):
 
         ids = [func_add_word(t) for t in sentence_seg]
         ids = [i for i in ids if i is not None]
+        if len(ids) < 1:
+            return []
+
         #ngrams
         if ngrams > 1:
             if useBE:
