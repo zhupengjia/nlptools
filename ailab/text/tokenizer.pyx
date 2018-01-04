@@ -414,7 +414,7 @@ class Segment_Char(Segment_Base):
     def seg(self, sentence, remove_stopwords = True):
         tokens = []
         for s in sentence:
-            s = s.strip()
+            s = s.strip().lower()
             if len(s) < 1: continue
             if remove_stopwords and s in self.stopwords:
                 continue
