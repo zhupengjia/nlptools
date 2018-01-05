@@ -7,16 +7,15 @@ import time
 import datetime
 from tensorflow.contrib import learn
 from ailab.text import Embedding
-from .data_helpers import Data_helpers
+from ailab.text import Segment
 import json
 import pandas as pd
 
 class JudgementModel(object):
     def __init__(self, cfg={}):
         self.cfg = cfg
-        self.data_ins = Data_helpers(self.cfg)
         self.load_checkpoint()
-        
+        self.seg_ins = Segment(self.cfg)
         self.graph = tf.Graph()
         
         with self.graph.as_default():
@@ -41,8 +40,8 @@ class JudgementModel(object):
         if 'model_file' in self.cfg:
             vocab_path = os.path.join(self.cfg['model_file']['out_dir'], "vocab")
             self.vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
-            
             self.checkpoint_file = tf.train.latest_checkpoint(self.cfg['model_file']['checkpoint_dir'])
+            self.vocab_list = self.vocab_processor.vocabulary_._reverse_mapping
         else:
 			# read model path from model_path file created by train process
             if 'model_path' in self.cfg:
@@ -52,12 +51,22 @@ class JudgementModel(object):
                 vocab_path = os.path.join(path_cfg['out_dir'], "vocab")
                 self.vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
                 self.checkpoint_file = tf.train.latest_checkpoint(path_cfg['checkpoint_dir'])
+                self.vocab_list = self.vocab_processor.vocabulary_._reverse_mapping
 
         
 
     def predict(self, query=''):
-        x_text = [self.data_ins.seg_sentence(query)]
-        x_test = np.array(list(self.vocab_processor.transform(x_text)))
+        x_text = (self.seg_ins.seg_sentence(query))['tokens']
+        if len(x_text)>0:
+            for txt in x_text:
+                if txt not in self.vocab_list:
+                    x_text.remove(txt)
+        x_text = [' '.join(x_text)]
         
-        # Tensors to evaluate, outputs[0]输出为list
-        self.result, self.scores = self.sess.run([self.predictions, self.score], {self.input_x:x_test, self.dropout_keep_prob: 1.0})	
+        if len(x_text)==1 and x_text[0] =='':
+            self.result = [0.5]; self.scores = [[0.5, 0.5]]
+        else:
+            x_test = np.array(list(self.vocab_processor.transform(x_text)))
+
+            # Tensors to evaluate, outputs[0]输出为list
+            self.result, self.scores = self.sess.run([self.predictions, self.score], {self.input_x:x_test, self.dropout_keep_prob: 1.0})	
