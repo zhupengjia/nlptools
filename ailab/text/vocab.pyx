@@ -6,9 +6,10 @@ from ..utils import zload, zdump, hashword, normalize, flat_list
 
 # get TF of vocabs and vectors
 class Vocab(object):
-    def __init__(self, cfg={}, seg_ins=None, emb_ins=None, forceinit=False):
+    def __init__(self, cfg=None, seg_ins=None, emb_ins=None, forceinit=False):
         self.cfg = {'cached_vocab': '', 'vocab_size': 2**15, 'ngrams':1, 'outofvocab':'unk', 'hashgenerate':0}
-        for k in cfg: self.cfg[k] = cfg[k]
+        if cfg is not None:
+            for k in cfg: self.cfg[k] = cfg[k]
         self.seg_ins = seg_ins
         self.seg_ins_emb = seg_ins is None # if tokenizer embedded in Vocab or as a parameter input
         self.seg_char = Segment_Char(cfg)
