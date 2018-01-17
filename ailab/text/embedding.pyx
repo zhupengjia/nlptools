@@ -39,7 +39,7 @@ class Embedding_File(Embedding_Base):
     def __load_vec(self):
         if self.word2idx is None:
             self.word2idx = zload(self.cfg['w2v_word2idx'])
-            self.idx2vec = np.load(self.cfg['w2v_idx2vec'])
+            self.idx2vec = np.load(self.cfg['w2v_idx2vec']).astype('float')
 
     def __getitem__(self, word):
         if word in self.cached_vec:
