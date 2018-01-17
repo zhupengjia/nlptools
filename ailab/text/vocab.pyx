@@ -92,7 +92,10 @@ class Vocab(object):
                     self._id2word[wordid] = word
                     self._id2tf[wordid] = 1
                 else:
-                    wordid = self._id_UNK
+                    if self.cfg['outofvocab']=='random':
+                        wordid = random.randint(0, self.vocab_size-1)
+                    else:
+                        wordid = self._id_UNK
                     self._id2tf[wordid] += 1
             self._word2id[word] = wordid
             return wordid
