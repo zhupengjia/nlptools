@@ -1,22 +1,34 @@
 #!/usr/bin/env python
 import os,yaml
 
-class Config:
+class Config(dict):
     def __init__(self, yamlfile):
-        with open(yamlfile) as f:
-            self.config = yaml.load(f)
+        if isinstance(yamlfile, dict):
+            config = yamlfile
+        else:
+            with open(yamlfile) as f:
+                config = yaml.load(f)
+        for k in config:
+            if isinstance(config[k], dict):
+                config[k] = Config(config[k])
+        super().__init__(config)
 
-    def __setitem__(self, key, item):
-        self.config[key] = item
+    # dir(object)
+    def __dir__(self):
+        return tuple(self)
 
-    def __getitem__(self, key):
-        return self.config[key]
+    def __getattr__(self, key):
+        try:
+            return self[key]
+        except KeyError:
+            raise AttributeError("config has no attribute '{}'".format(key))
 
-    def __iter__(self):
-        for k in self.config.keys():
-            yield k
+    def __setattr__(self, key, item):
+        self[key] = item
 
-    def __contains__(self, key):
-        return key in self.config
+    def __delattr__(self, key):
+        del self[key]
+
+
 
 
