@@ -13,7 +13,7 @@ common tools
 #### ailab/utils/qnaread.py
 table read from mysql, xls, csv, etc.
 #### ailab/utils/config.py
-read yaml config
+parse yaml config
 #### ailab/utils/logger.py
 create logger
 ### ailab/text
@@ -21,15 +21,19 @@ some nlp tools
 #### ailab/text/docsim.pyx
 calculate distance between vectors
 #### ailab/text/embedding.pyx
-read word2vec from redis/dynamodb/file
+read word2vec from redis/dynamodb/file/api
 #### ailab/text/tokenizer.pyx
-tokenizer, support cn/jp/en/yue
+tokenizer, support jieba/mecab/ltp/corenlp/spacy/simple
+#### ailab/text/ner.pyx
+ner training class
 #### ailab/text/translate.pyx
 google api to translate
 #### ailab/text/vocab.pyx
-class to convert word/charactor to id, vector, build dictionary, etc
+dictionary class, word/character <-> id, vec, bow 
 #### ailab/text/topicmodel.pyx
 lsi, lda model
+### ailab/zoo
+some models
 
 ## Version
 

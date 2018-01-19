@@ -1,17 +1,23 @@
 #!/usr/bin/env python
 import os,yaml
 
+#input can be dictionary or yaml filename
 class Config(dict):
-    def __init__(self, yamlfile):
-        if isinstance(yamlfile, dict):
-            config = yamlfile
+    def __init__(self, cfginput):
+        config = Config.initconfig(cfginput)
+        super().__init__(config)
+
+    @staticmethod
+    def initconfig(cfginput):
+        if isinstance(cfginput, dict):
+            config = cfginput
         else:
-            with open(yamlfile) as f:
+            with open(cfginput) as f:
                 config = yaml.load(f)
         for k in config:
             if isinstance(config[k], dict):
                 config[k] = Config(config[k])
-        super().__init__(config)
+        return config
 
     # dir(object)
     def __dir__(self):
@@ -29,6 +35,8 @@ class Config(dict):
     def __delattr__(self, key):
         del self[key]
 
-
-
+    def update(self, cfginput):
+        config = Config.initconfig(cfginput)
+        for k in config:
+            self[k] = config[k]
 
