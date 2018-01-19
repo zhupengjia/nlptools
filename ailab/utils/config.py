@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os,yaml
+import os,yaml,argparse
 
 #input can be dictionary or yaml filename
 class Config(dict):
@@ -11,11 +11,13 @@ class Config(dict):
     def initconfig(cfginput):
         if isinstance(cfginput, dict):
             config = cfginput
+        elif isinstance(cfginput, argparse.Namespace):
+            config = vars(cfginput)
         else:
             with open(cfginput) as f:
                 config = yaml.load(f)
         for k in config:
-            if isinstance(config[k], dict):
+            if isinstance(config[k], (dict, argparse.Namespace)):
                 config[k] = Config(config[k])
         return config
 
