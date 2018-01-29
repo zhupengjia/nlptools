@@ -118,6 +118,7 @@ class Vocab(object):
         if vocab_size is None:
             self.vocab_size = self._vocab_max + 1
             self._id2tf = self._id2tf[:self.vocab_size]
+            vocab_size = self.vocab_size
             if not reorder:
                 return
         elif vocab_size >= self.vocab_size:
