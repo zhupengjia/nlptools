@@ -7,9 +7,11 @@ from ..utils import zload, zdump, hashword, normalize, flat_list
 # get TF of vocabs and vectors
 class Vocab(object):
     def __init__(self, cfg=None, seg_ins=None, emb_ins=None, forceinit=False):
-        self.cfg = {'cached_vocab': '', 'vocab_size': 2**15, 'ngrams':1, 'outofvocab':'unk', 'hashgenerate':0}
+        self.cfg = {'cached_vocab': '', 'vocab_size': 2**24, 'ngrams':1, 'outofvocab':'unk', 'hashgenerate':0}
         if cfg is not None:
             for k in cfg: self.cfg[k] = cfg[k]
+        if isinstance(self.cfg['ngrams'], int):
+            self.cfg['ngrams'] = list(range(1, self.cfg['ngrams']+1))
         self.seg_ins = seg_ins
         self.seg_ins_emb = seg_ins is None # if tokenizer embedded in Vocab or as a parameter input
         self.seg_char = Segment_Char(cfg)
@@ -65,7 +67,7 @@ class Vocab(object):
             self._id2tf = numpy.zeros(self.vocab_size, 'int')
             self._vocab_max = -1
             self._id_ngrams = {}
-        if self.cfg['ngrams']>1:
+        if any([n>1 for n in self.cfg['ngrams']]):
             self.addBE()
 
     def save(self):
@@ -111,12 +113,13 @@ class Vocab(object):
     def __len__(self):
         return len(self._id2word)
 
-    #reduce vocab size by tf
-    def reduce_vocab(self, vocab_size=None):
+    #reduce vocab size by tf. Parameter of reorder only usable when vocab_size is None
+    def reduce_vocab(self, vocab_size=None, reorder=False):
         if vocab_size is None:
             self.vocab_size = self._vocab_max + 1
             self._id2tf = self._id2tf[:self.vocab_size]
-            return
+            if not reorder:
+                return
         elif vocab_size >= self.vocab_size:
             return
         new_id2word = {}
@@ -194,7 +197,7 @@ class Vocab(object):
         return None
 
     #sentence to vocab id, useBE is the switch for adding BOS and EOS in prefix and suffix
-    def sentence2id(self, sentence, ngrams=None, useBE=True, update=True, charlevel=False, charngram=False, remove_stopwords=True, fulfill=True):
+    def sentence2id(self, sentence, ngrams=None, useBE=True, update=True, charlevel=False, charngram=False, remove_stopwords=True, fulfill=True, flatresult=True):
         if isinstance(sentence, str):
             if self.seg_ins is None:
                 self.seg_ins = Segment(self.cfg)
@@ -208,40 +211,50 @@ class Vocab(object):
 
         if ngrams is None:
             ngrams = self.cfg['ngrams']
+        elif isinstance(ngrams, int):
+            ngrams = list(range(1, ngrams+1))
+            
         if update:
             func_add_word = self.add_word
         else:
             func_add_word = self.word2id
-
-        ids = [func_add_word(t) for t in sentence_seg]
-        ids = [i for i in ids if i is not None]
-        if len(ids) < 1:
+        
+        ids = {}
+        ids[1] = [func_add_word(t) for t in sentence_seg]
+        ids[1] = [i for i in ids[1] if i is not None]
+        if len(ids[1]) < 1:
             return []
 
+        ngrams2 = [n for n in ngrams if n > 1]
         #ngrams
-        if ngrams > 1:
+        if len(ngrams2) > 0:
             if useBE:
-                ids_BE = [self._id_BOS] + ids + [self._id_EOS]
+                ids_BE = [self._id_BOS] + ids[1] + [self._id_EOS]
                 words_BE = [self.BOS] + sentence_seg + [self.EOS]
             else:
-                ids_BE = ids
+                ids_BE = ids[1]
                 words_BE = sentence_seg
-        for n in range(1, ngrams):
+        for n in ngrams2:
             if len(ids_BE) < n: break
-            ids_gram_tuple = [ids_BE[i:i+n+1] for i in range(len(ids_BE)-n)]
-            ids_gram_word = [''.join(words_BE[i:i+n+1]) for i in range(len(words_BE)-n)]
-            ids_gram = [func_add_word(x) for x in ids_gram_word]
-            ids += ids_gram
-            for d in zip(ids_gram, ids_gram_tuple):
+            ids_gram_tuple = [ids_BE[i:i+n] for i in range(len(ids_BE)-n+1)]
+            ids_gram_word = [''.join(words_BE[i:i+n]) for i in range(len(words_BE)-n+1)]
+            ids[n] = [func_add_word(x) for x in ids_gram_word]
+            for d in zip(ids[n], ids_gram_tuple):
                 if not d[0] in self._id_ngrams:
                     self._id_ngrams[d[0]] = d[1]
         #charlevel
+        if charlevel:
+            ngrams.append('char')
         if charlevel and not charngram:
             sentence_char = self.seg_char.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
-            charids = [func_add_word(t) for t in sentence_char]
-            charids = [i for i in charids if i is not None]
-            ids += charids
-        return ids
+            ids['char'] = [func_add_word(t) for t in sentence_char]
+            ids['char'] = [i for i in ids['char'] if i is not None]
+        
+        ids = {n:ids[n] for n in ngrams}
+        if flatresult:
+            return flat_list(ids.values())
+        else:
+            return ids
 
     #used to cache word2vec
     def get_id2vec(self):

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-import os, zlib, numpy, re
-import pickle, unicodedata
+import os, zlib, numpy, re, pickle
 from collections import Counter
 from sklearn.utils import murmurhash3_32
 
@@ -60,6 +59,7 @@ def hashword(word, hashsize=16777216):
 
 #resolve different type of unicode encodings
 def normalize(text):
+    import unicodedata
     try:
         return unicodedata.normalize('NFD', text)
     except Exception as err:

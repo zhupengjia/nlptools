@@ -397,10 +397,14 @@ class Segment_Rest(Segment_Base):
 class Segment_Simple(Segment_Base):
     def __init__(self, cfg):
         Segment_Base.__init__(self, cfg)
-        self.re_punc = re.compile(ur'[\s\.\;\'\"\(\)\[\]\{\}\%\$\#\!\^\&\`\~（）《》【】「」；：‘“’”？／。，]')
+        if not 'TOKENIZER_REGEX' in self.cfg:
+            tokenizer_regex = ur'[\s\.\;\'\"\(\)\[\]\{\}\%\$\#\!\^\&\`\~（）《》【】「」；：‘“’”？／。，]'
+        else:
+            tokenizer_regex = self.cfg['TOKENIZER_REGEX']
+        self.re_punc = re.compile(tokenizer_regex)
     
     def seg(self, sentence, remove_stopwords = True):
-        tokens = [s for s in self.re_punc.split(sentence) if len(s)>0]
+        tokens = [s.lower() for s in self.re_punc.split(sentence) if len(s)>0]
         if remove_stopwords:
             tokens = [s for s in tokens if s not in self.stopwords]
         return {'tokens': tokens}

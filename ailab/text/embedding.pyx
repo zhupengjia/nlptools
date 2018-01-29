@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #word2vec
 
-import time, redis, boto3, base64, os
+import time, base64, os
 import numpy as np
 from scipy.spatial.distance import cosine
 from ..utils import zload, zdump, restpost
@@ -61,6 +61,7 @@ class Embedding_File(Embedding_Base):
 
 class Embedding_Redis(Embedding_Base):
     def __init__(self, cfg):
+        import redis
         Embedding_Base.__init__(self, cfg)
         self.redis_ins = redis.Redis(connection_pool = redis.ConnectionPool(host=cfg["redis_host"], port=cfg["redis_port"], db=cfg["redis_db"]))
 
@@ -100,11 +101,13 @@ class Embedding_Random(Embedding_Base):
 
 class Embedding_Dynamodb(Embedding_Base):
     def __init__(self, cfg):
+        import boto3
         Embedding_Base.__init__(self, cfg)
         self.client = boto3.resource('dynamodb')
         self.table = self.client.Table(cfg['dynamodb'])
 
     def __getitem__(self, word):
+        import boto3
         if word in self.cached_vec:
             return self.cached_vec[word]
         v = self.table.get_item(Key={"word":word})
