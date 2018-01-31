@@ -168,7 +168,25 @@ class Vocab(object):
         self.vocab_size = vocab_size
         self._vocab_max = max(self._id2word)
     
- 
+
+    #merge another vocab
+    def __add__(self, other):
+        id_mapping = {}
+        for w in other._word2id:
+            _id_other = other._word2id[w]
+            if w in self._word2id:
+                _id = self._word2id[w]
+                self._id2tf[_id] += other._id2tf[_id_other]
+            else:
+                _id = self.add_word(w)
+                self._id2tf[_id] = other._id2tf[_id_other]
+            id_mapping[_id_other] = _id
+        for _id_other in other._id_ngrams:
+            if _id_other in self._id_ngrams:
+                continue
+            self._id_ngrams[id_mapping[_id_other]] = [id_mapping[i] for i in other._id_ngrams[_id_other]]
+
+
     #call function, convert sentences to id
     def __call__(self, sentences):
         ids = []
