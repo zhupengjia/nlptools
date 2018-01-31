@@ -175,7 +175,7 @@ class Segment_LTP(Segment_Base):
         for n in self.ner_ins:
             n.release()
 
-    def seg(self, sentence, tags_filter = None, entities_filter = None, entityjoin=True):
+    def seg(self, sentence, remove_stopwords = True, tags_filter = None, entities_filter = None, entityjoin=True):
         words_ = self.seg_ins.segment(sentence)
         postags_ = self.pos_ins.postag(words_)
         entities__ = []
@@ -193,6 +193,8 @@ class Segment_LTP(Segment_Base):
         words, postags, entities = [],[],[]
         word_tmp, postag_tmp, entity_tmp = '', [], []
         for i,w in enumerate(words_):
+            if remove_stopwords and w in self.stopwords:
+                continue
             entity = re.split('-', entities_[i])
             if len(entity) > 1:
                 entity_loc, entity = entity[0], entity[1]
