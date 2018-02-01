@@ -185,7 +185,7 @@ class Vocab(object):
             if _id_other in self._id_ngrams:
                 continue
             self._id_ngrams[id_mapping[_id_other]] = [id_mapping[i] for i in other._id_ngrams[_id_other]]
-
+        return self
 
     #call function, convert sentences to id
     def __call__(self, sentences):
