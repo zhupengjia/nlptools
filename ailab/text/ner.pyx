@@ -7,7 +7,62 @@ from .tokenizer import *
 class NER_Base(object):
     def __init__(self, cfg):
         self.cfg = cfg
+        self.custom_regex = {}
+        self.replace_blacklist = list(set(cfg['ner'] + list(cfg['regex'].keys()))) 
     
+    def get_regex(self, sentence, replace = False, entities=None):
+        if entities is None:
+            entities = {}
+        replaced = sentence
+        regex = dict(**self.cfg['regex'], **self.custom_regex) 
+        for reg in list(regex.keys()):
+            for entity in re.finditer(regex[reg], replaced):
+                if reg in entities:
+                    entities[reg].append(entity.group(0))
+                else:
+                    entities[reg] = [entity.group(0)]
+            replaced = re.sub(regex[reg], '{'+reg.upper()+'}', replaced)
+        if replace:
+            return entities, replaced
+        else:
+            return entities
+
+    
+    def get(self, sentence, entities = None):
+        if entities is None:
+            entities = {}
+        entities, replace_regex = self.get_regex(sentence, True, entities)
+        entities, tokens = self.get_ner(replace_regex, True, entities)
+        return entities, tokens
+    
+    
+    def get_ner(self, sentence, replace = False, entities=None):
+        if entities is None:
+            entities = {}
+        replace_blacklist = list(set(list(entities.keys()) + self.replace_blacklist))
+        tokens = self.seg(sentence)
+        for i, e in enumerate(tokens['entities']):
+            if len(e) > 0 and e in self.cfg['ner'] and  not tokens['tokens'][i] in replace_blacklist:
+                if e in entities:
+                    entities[e].append(tokens['tokens'][i])
+                else:
+                    entities[e] = [tokens['tokens'][i]]
+        if replace:
+            replaced = []
+            for i, e in enumerate(tokens['entities']):
+                if len(tokens['tokens'][i]) < 1:continue
+                elif tokens['tokens'][i] in ['{', '}']:
+                    continue
+                if i > 0 and i < len(tokens['tokens'])-1 and tokens['tokens'][i-1] == '{' and tokens['tokens'][i+1] == '}':
+                    replaced.append('{' + tokens['tokens'][i].upper() + '}')
+                elif e not in self.cfg['ner'] or len(e) < 1:
+                    replaced.append( tokens['tokens'][i] )
+                else:
+                    replaced.append( '{' + e.upper() + '}' )
+            return entities, replaced
+
+        else:
+            return entities
 
 
 class NER_CoreNLP(NER_Base, Segment_CoreNLP):
@@ -23,6 +78,14 @@ class NER_Spacy(NER_Base, Segment_Spacy):
     def __init__(self, cfg):
         NER_Base.__init__(self, cfg)
         Segment_Spacy.__init__(self, cfg)
+        prefix_re = re.compile(r'''[\[\{\<\(\"\']''')
+        suffix_re = re.compile(r'''[\]\}\>\)\"\'\:\,\.\!\?]''')
+        infix_re = re.compile(r'''[\<\>\{\}\/\-~\'\’]''')
+        from spacy.tokenizer import Tokenizer
+        self.nlp.tokenizer = Tokenizer(self.nlp.vocab, \
+                prefix_search=prefix_re.search, \
+                suffix_search=suffix_re.search, \
+                infix_finditer=infix_re.finditer)
 
     def train(self, entities, data, n_iter = 50):
         import random
@@ -45,12 +108,13 @@ class NER_Spacy(NER_Base, Segment_Spacy):
                 for text, annotations in data:
                     self.nlp.update([text], [annotations], sgd = optimizer, losses=losses)
         self.nlp.to_disk(self.cfg['cached_ner'])
-
+    
 
 class NER_LTP(NER_Base, Segment_LTP):
     def __init__(self, cfg):
         NER_Base.__init__(self, cfg)
         Segment_LTP.__init__(self, cfg)
+
     
     def train_predeal(self, data):
         point = 0

@@ -223,8 +223,9 @@ class Vocab(object):
             sentence_seg = self.seg_ins.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
             if charlevel and charngram:
                 sentence_seg += self.seg_char.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
-        elif numpy.isnan(sentence):
-            return []
+        elif sentence == None:
+            if flatresult: return []
+            else: return {}
         else:
             sentence_seg = sentence
 
@@ -242,7 +243,8 @@ class Vocab(object):
         ids[1] = [func_add_word(t) for t in sentence_seg]
         ids[1] = [i for i in ids[1] if i is not None]
         if len(ids[1]) < 1:
-            return []
+            if flatresult: return []
+            else: return {}
 
         ngrams2 = [n for n in ngrams if n > 1]
         #ngrams

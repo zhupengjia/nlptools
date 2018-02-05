@@ -400,7 +400,7 @@ class Segment_Simple(Segment_Base):
     def __init__(self, cfg):
         Segment_Base.__init__(self, cfg)
         if not 'TOKENIZER_REGEX' in self.cfg:
-            tokenizer_regex = ur'[\s\.\:\;\'\"\/\\\(\)\[\]\{\}\%\$\#\!\?\^\&\+\`\~（）《》【】「」；：‘“’”？／。、，]'
+            tokenizer_regex = ur'[\s\.\:\;\&\'\"\/\\\(\)\[\]\{\}\%\$\#\!\?\^\&\+\`\~（）《》【】「」；：‘“’”？／。、，]'
         else:
             tokenizer_regex = self.cfg['TOKENIZER_REGEX']
         self.re_punc = re.compile(tokenizer_regex)
