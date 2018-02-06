@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-import os, numpy, re, uuid, shutil, glob
+import os, numpy, re, uuid, shutil, glob, sys
 from .tokenizer import *
 
 
@@ -8,13 +8,32 @@ class NER_Base(object):
     def __init__(self, cfg):
         self.cfg = cfg
         self.custom_regex = {}
-        self.replace_blacklist = list(set(cfg['ner'] + list(cfg['regex'].keys()))) 
-    
+        self.keywords_regex = {}
+        if 'keywords' not in self.cfg or self.cfg['keywords'] is None:
+            self.cfg['keywords'] = {}
+        if 'ner' not in self.cfg or self.cfg['ner'] is None:
+            self.cfg['ner'] = []
+        if 'regex' not in self.cfg or self.cfg['regex'] is None:
+            self.cfg['regex'] = {}
+        self.replace_blacklist = list(set(list(self.cfg['keywords'].keys()) + self.cfg['ner'] + list(self.cfg['regex'].keys()))) 
+        self.get_keywords()
+   
+    def get_keywords(self):
+        for k in self.cfg['keywords']:
+            if not os.path.exists(self.cfg['keywords'][k]):
+                continue
+            with open(self.cfg['keywords'][k]) as f:
+                keywords = [l.strip() for l in f]
+                keywords = list(set([l.lower() for l in keywords if len(l) > 0]))
+                keywords.sort(key=len, reverse=True)
+                keywords = ['('+l+')' for l in keywords]
+                self.keywords_regex[k] = '|'.join(keywords)
+
     def get_regex(self, sentence, replace = False, entities=None):
         if entities is None:
             entities = {}
         replaced = sentence
-        regex = dict(**self.cfg['regex'], **self.custom_regex) 
+        regex = dict(**self.keywords_regex, **self.cfg['regex'], **self.custom_regex)
         for reg in list(regex.keys()):
             for entity in re.finditer(regex[reg], replaced):
                 if reg in entities:
@@ -59,6 +78,9 @@ class NER_Base(object):
                     replaced.append( tokens['tokens'][i] )
                 else:
                     replaced.append( '{' + e.upper() + '}' )
+            for i in range(len(replaced)-1, 0, -1):
+                if replaced[i] == replaced[i-1]:
+                    del replaced[i]
             return entities, replaced
 
         else:
@@ -78,9 +100,9 @@ class NER_Spacy(NER_Base, Segment_Spacy):
     def __init__(self, cfg):
         NER_Base.__init__(self, cfg)
         Segment_Spacy.__init__(self, cfg)
-        prefix_re = re.compile(r'''[\[\{\<\(\"\']''')
-        suffix_re = re.compile(r'''[\]\}\>\)\"\'\:\,\.\!\?]''')
-        infix_re = re.compile(r'''[\<\>\{\}\/\-~\'\’]''')
+        prefix_re = re.compile(r'''^[\‘\[\{\<\(\"\']''')
+        suffix_re = re.compile(r'''[\]\}\>\)\"\'\,\.\!\?]$''')
+        infix_re = re.compile(r'''[\<\>\{\}\(\)\/\-~\:\,\!\'\’]''')
         from spacy.tokenizer import Tokenizer
         self.nlp.tokenizer = Tokenizer(self.nlp.vocab, \
                 prefix_search=prefix_re.search, \

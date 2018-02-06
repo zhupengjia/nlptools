@@ -311,9 +311,9 @@ class Segment_Keras(Segment_Base):
     
     def simple_cut(self, s):
         if s:
-            s_id = numpy.array([self.v_word.word2id(ss) for ss in s], 'int')
+            s_id = numpy.array([self.v_word.word2id(ss) for ss in s], 'int32')
             if len(s_id) > self.max_seq_len: s_id = s_id[:self.max_seq_len]
-            s_id = numpy.concatenate((s_id, numpy.zeros(self.max_seq_len-len(s_id), 'int')))
+            s_id = numpy.concatenate((s_id, numpy.zeros(self.max_seq_len-len(s_id), 'int32')))
             
             r = self.model.predict(s_id.reshape((1, len(s_id))))[0][:len(s)]
             r = numpy.log(r)
@@ -400,7 +400,7 @@ class Segment_Simple(Segment_Base):
     def __init__(self, cfg):
         Segment_Base.__init__(self, cfg)
         if not 'TOKENIZER_REGEX' in self.cfg:
-            tokenizer_regex = '[\s\d\.\:\;\'\"\/\\\$\@\<\>\(\)\[\]\|\{\}\-\_\*\=\%\$\#\!\?\^\&\+\`\~（）《》【】「」；：‘“’”？／。、，]'
+            tokenizer_regex = ur'[\s\.\:\;\&\'\"\/\\\(\)\[\]\{\}\%\$\#\!\?\^\&\+\`\~（）《》【】「」；：‘“’”？／。、，]'
         else:
             tokenizer_regex = self.cfg['TOKENIZER_REGEX']
         self.re_punc = re.compile(tokenizer_regex)
