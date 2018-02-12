@@ -9,6 +9,8 @@ class NER_Base(object):
         self.cfg = cfg
         self.custom_regex = {}
         self.keywords_regex = {}
+        self.keywords_index = None
+        self.entity_replace = {}
         if 'keywords' not in self.cfg or self.cfg['keywords'] is None:
             self.cfg['keywords'] = {}
         if 'ner' not in self.cfg or self.cfg['ner'] is None:
@@ -16,19 +18,90 @@ class NER_Base(object):
         if 'regex' not in self.cfg or self.cfg['regex'] is None:
             self.cfg['regex'] = {}
         self.replace_blacklist = list(set(list(self.cfg['keywords'].keys()) + self.cfg['ner'] + list(self.cfg['regex'].keys()))) 
-        self.get_keywords()
-   
-    def get_keywords(self):
+        self.build_keywords_regex()
+
+
+    def __read_keywords(self):
+        keywords = {}
         for k in self.cfg['keywords']:
             if not os.path.exists(self.cfg['keywords'][k]):
                 continue
+            keywords[k] = []
             with open(self.cfg['keywords'][k]) as f:
-                keywords = [l.strip() for l in f]
-                keywords = list(set([l.lower() for l in keywords if len(l) > 0]))
-                keywords.sort(key=len, reverse=True)
-                keywords = ['('+l+')' for l in keywords]
-                self.keywords_regex[k] = '|'.join(keywords)
+                for l in f:
+                    l = l.strip()
+                    if len(l) < 1 or l[0] == '#':
+                        continue
+                    l_split = [x.strip() for x in re.split(':', l, maxsplit=1)]
+                    l_split = [x for x in l_split if len(x) > 0]
+                    if len(l_split) < 1:
+                        continue
+                    entity = l_split[0].lower()
+                    keywords[k].append(entity)
+                    if len(l_split) == 2 and not entity in self.entity_replace:
+                        self.entity_replace[entity] = l_split[1].lower()
 
+            keywords[k] = list(set(keywords[k]))
+            keywords[k].sort(key=len, reverse=True)
+        return keywords
+
+
+    #keywords to regex
+    def build_keywords_regex(self):
+        keywords = self.__read_keywords() 
+        for k in keywords:
+            keywords_temp = keywords[k]
+            for kwd in keywords_temp:
+                if kwd in self.entity_replace and not self.entity_replace[kwd] in keywords_temp:
+                    keywords_temp.append(self.entity_replace[kwd])
+            keywords_temp.sort(key=len, reverse=True)
+            keyword = ['('+l+')' for l in keywords_temp]
+            self.keywords_regex[k] = '|'.join(keyword)
+
+
+    #keywords to annoy index
+    def build_keywords_index(self, emb_ins):
+        from .annoysearch import AnnoySearch
+        keywords = self.__read_keywords()
+        self.keywords_index = AnnoySearch(self.cfg, emb_ins)
+        self.keywords_kw2e = {}
+        for k in keywords:
+            for kw in keywords[k]:
+                self.keywords_kw2e[kw] = k
+            
+        keywords = list(self.keywords_kw2e.keys())
+        keywords.sort(key=len, reverse=True)
+        self.keywords_index.load_index(keywords)
+
+
+    def get_keywords(self, sentence, replace = False, entities=None):
+        if isinstance(sentence, str):
+            tokens = self.seg(sentence)['tokens']
+        else:
+            tokens = sentence
+        if entities is None:
+            entities = {}
+        entity = self.keywords_index.find(tokens, location=True)
+        if len(entity) > 0:
+            entity, loc = tuple(zip(*entity))
+            for i, il in enumerate(loc):
+                if tokens[il][0] == '{' and tokens[il][-1] == '}':
+                    continue
+                k = self.keywords_kw2e[entity[i]]
+                if not k in entities:entities[k] = []
+                if entity[i] in self.entity_replace:
+                    entities[k].append(self.entity_replace[entity[i]])
+                else:
+                    entities[k].append(entity[i])
+                if replace:
+                    tokens[il] = '{' + k.upper() + '}'
+        if replace:
+            return entities, tokens
+        else:
+            return entities
+
+
+    #get entities via regex
     def get_regex(self, sentence, replace = False, entities=None):
         if entities is None:
             entities = {}
@@ -36,10 +109,13 @@ class NER_Base(object):
         regex = dict(**self.keywords_regex, **self.cfg['regex'], **self.custom_regex)
         for reg in list(regex.keys()):
             for entity in re.finditer(regex[reg], replaced):
-                if reg in entities:
-                    entities[reg].append(entity.group(0))
+                if not reg in entities:
+                    entities[reg] = []
+                e = entity.group(0)
+                if e in self.entity_replace:
+                    entities[reg].append(self.entity_replace[e])
                 else:
-                    entities[reg] = [entity.group(0)]
+                    entities[reg].append(e)
             replaced = re.sub(regex[reg], '{'+reg.upper()+'}', replaced)
         if replace:
             return entities, replaced
@@ -51,15 +127,22 @@ class NER_Base(object):
         if entities is None:
             entities = {}
         entities, replace_regex = self.get_regex(sentence, True, entities)
-        entities, tokens = self.get_ner(replace_regex, True, entities)
+        tokens = self.seg(replace_regex)
+        if self.keywords_index is not None:
+            entities, tokens['tokens'] = self.get_keywords(tokens['tokens'], True, entities)
+        entities, tokens = self.get_ner(tokens, True, entities)
         return entities, tokens
     
     
+    #get entities via ner
     def get_ner(self, sentence, replace = False, entities=None):
         if entities is None:
             entities = {}
         replace_blacklist = list(set(list(entities.keys()) + self.replace_blacklist))
-        tokens = self.seg(sentence)
+        if isinstance(sentence, str):
+            tokens = self.seg(sentence)
+        else:
+            tokens = sentence
         for i, e in enumerate(tokens['entities']):
             if len(e) > 0 and e in self.cfg['ner'] and  not tokens['tokens'][i] in replace_blacklist:
                 if e in entities:

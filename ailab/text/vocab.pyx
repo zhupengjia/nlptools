@@ -277,6 +277,11 @@ class Vocab(object):
         else:
             return ids
 
+    #convert id back to sentence
+    def id2sentence(self, ids):
+        return ' '.join([self._id2word[i] for i in ids])
+
+    
     #used to cache word2vec
     def get_id2vec(self):
         if self.emb_ins is None:

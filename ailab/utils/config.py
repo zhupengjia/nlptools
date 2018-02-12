@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os,yaml,argparse
+import os,argparse,yaml
 
 #input can be dictionary or yaml filename
 class Config(dict):

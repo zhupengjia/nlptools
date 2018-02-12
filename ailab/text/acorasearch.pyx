@@ -1,25 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-#
-# name:      split_sentence.py
-# author:    Yao zhiqiang <yaozhq.sh@gmail.com>
-# license:   GPL
-# created:   2017 Mar 6
-# modified:  2017 Jul 22
-#
+#search keyword using acora
 
 from itertools import groupby
 from operator import itemgetter
-from acora import AcoraBuilder
 
-class SearchKeyword:
-    def __init__(self, keywords, keyids=None):
+
+class AcoraSearch:
+    def __init__(self, keywords, vocab=None):
+        from acora import AcoraBuilder
         builder = AcoraBuilder()
         #assert isinstance(keywords, (list,tuple))
-        if keyids is not None:
-            self.word2id = dict(zip(keywords, keyids))
-        else:
-            self.word2id = None
+        self.vocab = vocab
         for i in keywords:
             builder.add(i)
 
@@ -28,11 +20,11 @@ class SearchKeyword:
 
     def find(self, input):
         result =  self.engine.findall(input)
-        if self.word2id is None:
+        if self.vocab is None:
             return result
         else:
             word, pos = zip(*result)
-            wordid = [self.word2id[w] for w in word]
+            wordid = [self.vocab.word2id(w) for w in word]
             
             return list(zip(word, wordid, pos))
 
@@ -70,8 +62,8 @@ class SearchKeyword:
 
 if __name__ == '__main__':
     from acora import AcoraBuilder
-    bc = SearchKeyword(['死亡','death', '内服全般が難しくなってきた為内服を中止した'])
-    bc2 = SearchKeyword(['Vaccination site pruritus','staphylococcus aureus','cataract'], [1,2,3])
+    bc = AcoraSearch(['死亡','death', '内服全般が難しくなってきた為内服を中止した'])
+    #bc2 = AcoraSearch(['Vaccination site pruritus','staphylococcus aureus','cataract'], [1,2,3])
     for i in bc.find_max_match(
             'cataract,からstaphylococcus aureus同定,尿培養検査よりklebsiella pneumoniae staphylococcus aureus 同定\
 death高令の患者、Vaccination site pruritus故に嚥下能力が徐々に低下し、その他、内服全般が難しくなってきた為内服を中止した。その後、少しずつ全身状態の悪化がすすみ、死亡に至った。よって、ネキシウムカプセルとの直接的な因果関係はないと考えられる。'):
