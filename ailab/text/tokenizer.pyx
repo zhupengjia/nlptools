@@ -68,7 +68,7 @@ class Segment_CoreNLP(Segment_Base):
                     continue
                 if pos_filter is not None and token['pos'] not in pos_filter:
                     continue
-                if token['ner'] in self.cfg['ner_name_replace']:
+                if self.cfg['ner_name_replace'] is not None and token['ner'] in self.cfg['ner_name_replace']:
                     token['ner'] = self.cfg['ner_name_replace'][token['ner']]
                 if entities_filter is not None and token['ner'] not in entities_filter:
                     continue
@@ -105,7 +105,7 @@ class Segment_Spacy(Segment_Base):
             if dep_filter is not None and token.dep_ not in dep_filter:
                 continue
             entity = token.ent_type_
-            if entity in self.cfg['ner_name_replace']:
+            if self.cfg['ner_name_replace'] is not None and entity in self.cfg['ner_name_replace']:
                 entitiy = self.cfg['ner_name_replace'][entity]
             if entities_filter is not None and entity not in entities_filter:
                 continue
@@ -200,7 +200,7 @@ class Segment_LTP(Segment_Base):
                 entity_loc, entity = entity[0], entity[1]
             else:
                 entity_loc, entity = 'O', 'O'
-            if entity in self.cfg['ner_name_replace']:
+            if self.cfg['ner_name_replace'] is not None and entity in self.cfg['ner_name_replace']:
                 entity = self.cfg['ner_name_replace'][entity]
             if tags_filter is not None and postags_[i] not in tags_filter:
                 continue
@@ -388,7 +388,7 @@ class Segment_Rest(Segment_Base):
                 continue
             if 'entities' in data:
                 entity = data['entities'][i]
-                if data['entities'][i] in self.cfg['ner_name_replace']:
+                if self.cfg['ner_name_replace'] is not None and data['entities'][i] in self.cfg['ner_name_replace']:
                     data['entities'][i] = self.cfg['ner_name_replace'][data['entities'][i]]
                 if entities_filter is not None and 'entities' in data and data['entities'][i] not in entities_filter:
                     continue

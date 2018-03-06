@@ -9,6 +9,8 @@ def setLogger(cfg_input):
             'LogFormat': '%(asctime)s | %(levelname)s: %(message)s'}
     for k in cfg_input: cfg[k] = cfg_input[k]
     logger = logging.getLogger(cfg["APPNAME"])
+    if len(logger.handlers) > 0:
+        return logger
     formatter = logging.Formatter(cfg["LogFormat"])
     logger.setLevel(10)
     # setup console logging

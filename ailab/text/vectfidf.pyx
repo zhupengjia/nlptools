@@ -3,7 +3,7 @@ import numpy, sys, multiprocessing, time, os, pandas, scipy
 from collections import Counter
 from sklearn.metrics.pairwise import pairwise_distances
 from functools import partial
-from ailab.utils import zload, zdump, setLogger
+from ..utils import zload, zdump, setLogger
 
 
 #calculate n_count for each id in ids, output a sparse matrix

@@ -106,8 +106,8 @@ class NER_Base(object):
         if entities is None:
             entities = {}
         replaced = sentence
-        regex = dict(**self.keywords_regex, **self.cfg['regex'], **self.custom_regex)
-        for reg in list(regex.keys()):
+        regex = dict(**self.cfg['regex'], **self.custom_regex, **self.keywords_regex)
+        for reg in list(self.cfg['regex'].keys()) + list(self.custom_regex.keys()) + list(self.keywords_regex.keys()):
             for entity in re.finditer(regex[reg], replaced):
                 if not reg in entities:
                     entities[reg] = []
