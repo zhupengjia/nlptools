@@ -25,18 +25,22 @@ read word2vec from redis/dynamodb/file/api
 #### ailab/text/tokenizer.pyx
 tokenizer, support jieba/mecab/ltp/corenlp/spacy/simple
 #### ailab/text/ner.pyx
-ner training class
+ner training and predict class, also included keyword/regex entity extraction 
 #### ailab/text/translate.pyx
 google api to translate
 #### ailab/text/vocab.pyx
 dictionary class, word/character <-> id, vec, bow 
 #### ailab/text/topicmodel.pyx
 lsi, lda model
+#### ailab/text/acorasearch.pyx
+search using acora, a keyword search engine
+#### ailab/text/annoysearch.pyx
+use annoy for fast vector based search
 ### ailab/zoo
 some models
 
 ## Version
 
-### v0.0.2 [Download link](http://54.65.195.194/acn.ai/ailab/ailab/blob/c3bafaf0da809a0773e4e726ba1aead316e3c52a/dist/ailab-0.0.2-cp27-cp27mu-linux_x86_64.whl)
+### v0.1.1 [Download link](http://about:blank)
 1. Build as wheel;
-1. Adopted to iSupport iPV
+
