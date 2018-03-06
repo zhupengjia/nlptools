@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import logging
 
+#LogLevel:
+#0 NOTSET, 10 DEBUG, 20 INFO, 30 WARNING, 40 ERROR, 50 CRITICAL
 def setLogger(cfg_input):
     cfg = {'APPNAME': 'NLPLAB',\
             'LogLevel_Console': 10, \
