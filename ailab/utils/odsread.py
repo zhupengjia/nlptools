@@ -93,4 +93,4 @@ if __name__ == '__main__':
     ods=odsread(bcmconstfile)
     ods.parse("bcm")
     for col in ods.getvalbycol(14):
-        print col
+        print(col)
