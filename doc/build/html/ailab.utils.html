@@ -1,0 +1,786 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ailab.utils package &mdash; ailab alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ailab alpha documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ailab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">ailab.utils package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ailab.utils.config">ailab.utils.config module</a></li>
+<li><a class="reference internal" href="#module-ailab.utils.graph">ailab.utils.graph module</a></li>
+<li><a class="reference internal" href="#module-ailab.utils.logger">ailab.utils.logger module</a></li>
+<li><a class="reference internal" href="#module-ailab.utils.odsread">ailab.utils.odsread module</a></li>
+<li><a class="reference internal" href="#module-ailab.utils.qnaread">ailab.utils.qnaread module</a></li>
+<li><a class="reference internal" href="#module-ailab.utils.utils">ailab.utils.utils module</a></li>
+<li><a class="reference internal" href="#module-ailab.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ailab</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>ailab.utils package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ailab.utils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="ailab-utils-package">
+<h1>ailab.utils package<a class="headerlink" href="#ailab-utils-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ailab.utils.config">
+<span id="ailab-utils-config-module"></span><h2>ailab.utils.config module<a class="headerlink" href="#module-ailab.utils.config" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.utils.config.Config">
+<em class="property">class </em><code class="descclassname">ailab.utils.config.</code><code class="descname">Config</code><span class="sig-paren">(</span><em>cfginput</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/config.html#Config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.config.Config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">dict</span></code></a></p>
+<p>Configuration file read from yaml, inherit from python dictionary</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>cfginput: yaml filepath, python dictionary, argparse.namespace</li>
+</ul>
+</dd>
+<dt>Usage:</dt>
+<dd><ul class="first last simple">
+<li>cfg.a.b</li>
+<li>cfg[‘a’][‘b’]</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.utils.config.Config.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>cfginput</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/config.html#Config.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.config.Config.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>update configurations from other configurations</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>cfginput: Config object for python dictionary</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.utils.graph">
+<span id="ailab-utils-graph-module"></span><h2>ailab.utils.graph module<a class="headerlink" href="#module-ailab.utils.graph" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.utils.graph.Graph">
+<em class="property">class </em><code class="descclassname">ailab.utils.graph.</code><code class="descname">Graph</code><span class="sig-paren">(</span><em>connections=None</em>, <em>directed=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/graph.html#Graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.graph.Graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Create a graph structure with node and edge. Support directed graph and undirected graph</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>connections: one can input existed connections, default is [], format is [[node1, node2], …]</li>
+<li>directed: True or False, directed or undirected, default is False</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.utils.graph.Graph.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>node1</em>, <em>node2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/graph.html#Graph.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.graph.Graph.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>add a connection for two nodes</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>node1: string</li>
+<li>node2: string</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.utils.graph.Graph.add_connections">
+<code class="descname">add_connections</code><span class="sig-paren">(</span><em>connections</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/graph.html#Graph.add_connections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.graph.Graph.add_connections" title="Permalink to this definition">¶</a></dt>
+<dd><p>add connections</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>connections: [[node1, node2], …]</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.utils.logger">
+<span id="ailab-utils-logger-module"></span><h2>ailab.utils.logger module<a class="headerlink" href="#module-ailab.utils.logger" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ailab.utils.logger.setLogger">
+<code class="descclassname">ailab.utils.logger.</code><code class="descname">setLogger</code><span class="sig-paren">(</span><em>cfg_input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/logger.html#setLogger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.logger.setLogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a logging object</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg_input: a python dictionary or a ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>config keys:</dt>
+<dd><ul class="first last">
+<li>APPNAME: string, default is ‘NLPLAB’</li>
+<li>LogLevel_Console: console loglevel, default is 10</li>
+<li>LogLevel_File: file loglevel, default is 0</li>
+<li>LogFile: log file path, default is empty</li>
+<li>LogFormat: log format, default is ‘%(asctime)s | %(levelname)s: %(message)s’</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>logging object</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.utils.odsread">
+<span id="ailab-utils-odsread-module"></span><h2>ailab.utils.odsread module<a class="headerlink" href="#module-ailab.utils.odsread" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.utils.odsread.odsread">
+<em class="property">class </em><code class="descclassname">ailab.utils.odsread.</code><code class="descname">odsread</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/odsread.html#odsread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.odsread.odsread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>read ods file</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>filename: ods filepath</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.utils.odsread.odsread.getvalbycol">
+<code class="descname">getvalbycol</code><span class="sig-paren">(</span><em>col</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/odsread.html#odsread.getvalbycol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.odsread.odsread.getvalbycol" title="Permalink to this definition">¶</a></dt>
+<dd><p>get value for special col</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>row: col number</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>value list</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.utils.odsread.odsread.getvalbyrow">
+<code class="descname">getvalbyrow</code><span class="sig-paren">(</span><em>row</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/odsread.html#odsread.getvalbyrow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.odsread.odsread.getvalbyrow" title="Permalink to this definition">¶</a></dt>
+<dd><p>get value for special row</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>row: row number</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>value list</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.utils.odsread.odsread.getvalue">
+<code class="descname">getvalue</code><span class="sig-paren">(</span><em>row</em>, <em>col</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/odsread.html#odsread.getvalue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.odsread.odsread.getvalue" title="Permalink to this definition">¶</a></dt>
+<dd><p>get value with row and col number</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>row: row number</li>
+<li>col: col number</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>value</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.utils.odsread.odsread.parse">
+<code class="descname">parse</code><span class="sig-paren">(</span><em>tablename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/odsread.html#odsread.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.odsread.odsread.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>parse the ods table</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>tablename: string</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.utils.qnaread">
+<span id="ailab-utils-qnaread-module"></span><h2>ailab.utils.qnaread module<a class="headerlink" href="#module-ailab.utils.qnaread" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.utils.qnaread.QnARead">
+<em class="property">class </em><code class="descclassname">ailab.utils.qnaread.</code><code class="descname">QnARead</code><span class="sig-paren">(</span><em>cfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/qnaread.html#QnARead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.qnaread.QnARead" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="ailab.utils.qnaread.QnARead.readQnA">
+<code class="descname">readQnA</code><span class="sig-paren">(</span><em>subset=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/qnaread.html#QnARead.readQnA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.qnaread.QnARead.readQnA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Auto read QnA from different sources</p>
+<dl class="docutils">
+<dt>Config keys needed:</dt>
+<dd><ul class="first last simple">
+<li>question_db_type: mysql or xls or csv</li>
+<li>question_header: needed table header, list of string</li>
+<li>other keys needed for different sources</li>
+</ul>
+</dd>
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>subset: array-like, Labels along other axis to consider, e.g. if you are dropping rows these would be a list of columns to include. More details please check <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.dropna.html">pandas.dropna</a></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.utils.qnaread.QnARead.readQnA_csv">
+<code class="descname">readQnA_csv</code><span class="sig-paren">(</span><em>subset=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/qnaread.html#QnARead.readQnA_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.qnaread.QnARead.readQnA_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read QnA from csv</p>
+<dl class="docutils">
+<dt>Config keys needed:</dt>
+<dd><ul class="first last simple">
+<li>question_file: csv filename</li>
+<li>question_sep: csv separate symbol</li>
+</ul>
+</dd>
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>subset: array-like, Labels along other axis to consider, e.g. if you are dropping rows these would be a list of columns to include. More details please check <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.dropna.html">pandas.dropna</a></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.utils.qnaread.QnARead.readQnA_mysql">
+<code class="descname">readQnA_mysql</code><span class="sig-paren">(</span><em>subset=None</em>, <em>limit=0</em>, <em>offset=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/qnaread.html#QnARead.readQnA_mysql"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.qnaread.QnARead.readQnA_mysql" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read QnA from MySQL</p>
+<dl class="docutils">
+<dt>Config keys needed:</dt>
+<dd><ul class="first last simple">
+<li>question_host: MySQL host</li>
+<li>question_database: MySQL database</li>
+<li>question_tbname: MySQL table name</li>
+<li>question_port: MySQL port</li>
+<li>question_user: MySQL username</li>
+<li>question_password: MySQL password</li>
+</ul>
+</dd>
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>subset: array-like, Labels along other axis to consider, e.g. if you are dropping rows these would be a list of columns to include. More details please check <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.dropna.html">pandas.dropna</a></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.utils.qnaread.QnARead.readQnA_xls">
+<code class="descname">readQnA_xls</code><span class="sig-paren">(</span><em>subset=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/qnaread.html#QnARead.readQnA_xls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.qnaread.QnARead.readQnA_xls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read QnA from excel</p>
+<dl class="docutils">
+<dt>Config keys needed:</dt>
+<dd><ul class="first last simple">
+<li>question_file: xls filename</li>
+<li>question_sheetname: xls tablename</li>
+</ul>
+</dd>
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>subset: array-like, Labels along other axis to consider, e.g. if you are dropping rows these would be a list of columns to include. More details please check <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.dropna.html">pandas.dropna</a></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.utils.utils">
+<span id="ailab-utils-utils-module"></span><h2>ailab.utils.utils module<a class="headerlink" href="#module-ailab.utils.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ailab.utils.utils.envread">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">envread</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#envread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.envread" title="Permalink to this definition">¶</a></dt>
+<dd><p>use environment variables to cover original environment</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>keys: a key list need to read from environment</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>python dictionary {key:value, …}</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.flat_list">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">flat_list</code><span class="sig-paren">(</span><em>l</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#flat_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.flat_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>flatten a 2-d list to 1-d list</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>l: 2-d list</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>1-d list</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.hashword">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">hashword</code><span class="sig-paren">(</span><em>word</em>, <em>hashsize=16777216</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#hashword"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.hashword" title="Permalink to this definition">¶</a></dt>
+<dd><p>hash the word using murmurhash3_32 to a positive int value</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>word: string format word</li>
+<li>hashsize: maximum number, default is 16777216</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>int</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.lang_detect">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">lang_detect</code><span class="sig-paren">(</span><em>string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#lang_detect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.lang_detect" title="Permalink to this definition">¶</a></dt>
+<dd><p>language detection using langdetect</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>string</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>most possible language</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.ldumps">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">ldumps</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#ldumps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.ldumps" title="Permalink to this definition">¶</a></dt>
+<dd><p>serialize and compress variable to string using lzo and pickle</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>value: python variable</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>serialized string</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.lloads">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">lloads</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#lloads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.lloads" title="Permalink to this definition">¶</a></dt>
+<dd><p>load serialized string from ldumps</p>
+<dl class="docutils">
+<dt>input: </dt>
+<dd><ul class="first last simple">
+<li>value: serialized string</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>python variable</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.normalize">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">normalize</code><span class="sig-paren">(</span><em>text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>resolve different type of unicode encodings using unicodedata.normalize</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>text: string</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>string</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.restpost">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">restpost</code><span class="sig-paren">(</span><em>url</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#restpost"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.restpost" title="Permalink to this definition">¶</a></dt>
+<dd><p>rest client post using requests</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>url: restapi’s url</li>
+<li>data: python dictionary</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>json format post return, if failed will return None</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.status_check">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">status_check</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#status_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.status_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>load a status string from file</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>filename: file path</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>status string</li>
+<li>if filename not existed, return 0</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.status_save">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">status_save</code><span class="sig-paren">(</span><em>filename</em>, <em>status</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#status_save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.status_save" title="Permalink to this definition">¶</a></dt>
+<dd><p>save a status string to file</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>filename: file path</li>
+<li>status: status string</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.zdump">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">zdump</code><span class="sig-paren">(</span><em>value</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#zdump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.zdump" title="Permalink to this definition">¶</a></dt>
+<dd><p>serialize compress variable to file using zlib and pickle</p>
+<dl class="docutils">
+<dt>input: </dt>
+<dd><ul class="first last simple">
+<li>value: python variable</li>
+<li>filename: saved file path</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.zdumps">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">zdumps</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#zdumps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.zdumps" title="Permalink to this definition">¶</a></dt>
+<dd><p>serialize and compress variable to string using zlib and pickle</p>
+<dl class="docutils">
+<dt>input:</dt>
+<dd><ul class="first last simple">
+<li>value: python variable</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>serialized string</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.zload">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">zload</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#zload"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.zload" title="Permalink to this definition">¶</a></dt>
+<dd><p>load compressed pkl file from zdump</p>
+<dl class="docutils">
+<dt>input: </dt>
+<dd><ul class="first last simple">
+<li>filename: saved file path</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>python variable</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.utils.utils.zloads">
+<code class="descclassname">ailab.utils.utils.</code><code class="descname">zloads</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/utils/utils.html#zloads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.utils.utils.zloads" title="Permalink to this definition">¶</a></dt>
+<dd><p>load serialized string from zdumps</p>
+<dl class="docutils">
+<dt>input: </dt>
+<dd><ul class="first last simple">
+<li>value: serialized string</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>python variable</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ailab.utils" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Pengjia Zhu.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,591 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ailab.zoo.comprehension.DrQA package &mdash; ailab alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ailab alpha documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ailab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">ailab.zoo.comprehension.DrQA package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ailab.zoo.comprehension.DrQA.drqa">ailab.zoo.comprehension.DrQA.drqa module</a></li>
+<li><a class="reference internal" href="#module-ailab.zoo.comprehension.DrQA.layers">ailab.zoo.comprehension.DrQA.layers module</a></li>
+<li><a class="reference internal" href="#module-ailab.zoo.comprehension.DrQA.model">ailab.zoo.comprehension.DrQA.model module</a></li>
+<li><a class="reference internal" href="#module-ailab.zoo.comprehension.DrQA.rnn_reader">ailab.zoo.comprehension.DrQA.rnn_reader module</a></li>
+<li><a class="reference internal" href="#module-ailab.zoo.comprehension.DrQA">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ailab</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>ailab.zoo.comprehension.DrQA package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ailab.zoo.comprehension.DrQA.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="ailab-zoo-comprehension-drqa-package">
+<h1>ailab.zoo.comprehension.DrQA package<a class="headerlink" href="#ailab-zoo-comprehension-drqa-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ailab.zoo.comprehension.DrQA.drqa">
+<span id="ailab-zoo-comprehension-drqa-drqa-module"></span><h2>ailab.zoo.comprehension.DrQA.drqa module<a class="headerlink" href="#module-ailab.zoo.comprehension.DrQA.drqa" title="Permalink to this headline">¶</a></h2>
+<p>Functions for putting examples into torch format.</p>
+<dl class="class">
+<dt id="ailab.zoo.comprehension.DrQA.drqa.DrQA">
+<em class="property">class </em><code class="descclassname">ailab.zoo.comprehension.DrQA.drqa.</code><code class="descname">DrQA</code><span class="sig-paren">(</span><em>cfg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/drqa.html#DrQA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.drqa.DrQA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.drqa.DrQA.batchify">
+<code class="descname">batchify</code><span class="sig-paren">(</span><em>batch</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/drqa.html#DrQA.batchify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.drqa.DrQA.batchify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gather a batch of individual examples into one batch.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.drqa.DrQA.build_index">
+<code class="descname">build_index</code><span class="sig-paren">(</span><em>documents</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/drqa.html#DrQA.build_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.drqa.DrQA.build_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.drqa.DrQA.load_reader">
+<code class="descname">load_reader</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/drqa.html#DrQA.load_reader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.drqa.DrQA.load_reader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.drqa.DrQA.search">
+<code class="descname">search</code><span class="sig-paren">(</span><em>query</em>, <em>prefilter=5</em>, <em>topN=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/drqa.html#DrQA.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.drqa.DrQA.search" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.drqa.DrQA.search_reader">
+<code class="descname">search_reader</code><span class="sig-paren">(</span><em>query</em>, <em>documents</em>, <em>topN=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/drqa.html#DrQA.search_reader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.drqa.DrQA.search_reader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.drqa.DrQA.tokenize">
+<code class="descname">tokenize</code><span class="sig-paren">(</span><em>doc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/drqa.html#DrQA.tokenize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.drqa.DrQA.tokenize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.drqa.DrQA.vectorize">
+<code class="descname">vectorize</code><span class="sig-paren">(</span><em>eid</em>, <em>query</em>, <em>documents</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/drqa.html#DrQA.vectorize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.drqa.DrQA.vectorize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.zoo.comprehension.DrQA.layers">
+<span id="ailab-zoo-comprehension-drqa-layers-module"></span><h2>ailab.zoo.comprehension.DrQA.layers module<a class="headerlink" href="#module-ailab.zoo.comprehension.DrQA.layers" title="Permalink to this headline">¶</a></h2>
+<p>Definitions of model layers/NN modules</p>
+<dl class="class">
+<dt id="ailab.zoo.comprehension.DrQA.layers.BilinearSeqAttn">
+<em class="property">class </em><code class="descclassname">ailab.zoo.comprehension.DrQA.layers.</code><code class="descname">BilinearSeqAttn</code><span class="sig-paren">(</span><em>x_size</em>, <em>y_size</em>, <em>identity=False</em>, <em>normalize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/layers.html#BilinearSeqAttn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.layers.BilinearSeqAttn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>A bilinear attention layer over a sequence X w.r.t y:</p>
+<ul class="simple">
+<li>o_i = softmax(x_i’Wy) for x_i in X.</li>
+</ul>
+<p>Optionally don’t normalize output weights.</p>
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.layers.BilinearSeqAttn.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>x_mask</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/layers.html#BilinearSeqAttn.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.layers.BilinearSeqAttn.forward" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>x: batch * len * hdim1
+y: batch * hdim2
+x_mask: batch * len (1 for padding, 0 for true)</dd>
+<dt>Output:</dt>
+<dd>alpha = batch * len</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.zoo.comprehension.DrQA.layers.LinearSeqAttn">
+<em class="property">class </em><code class="descclassname">ailab.zoo.comprehension.DrQA.layers.</code><code class="descname">LinearSeqAttn</code><span class="sig-paren">(</span><em>input_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/layers.html#LinearSeqAttn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.layers.LinearSeqAttn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>Self attention over a sequence:</p>
+<ul class="simple">
+<li>o_i = softmax(Wx_i) for x_i in X.</li>
+</ul>
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.layers.LinearSeqAttn.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>x</em>, <em>x_mask</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/layers.html#LinearSeqAttn.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.layers.LinearSeqAttn.forward" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>x: batch * len * hdim
+x_mask: batch * len (1 for padding, 0 for true)</dd>
+<dt>Output:</dt>
+<dd>alpha: batch * len</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.zoo.comprehension.DrQA.layers.SeqAttnMatch">
+<em class="property">class </em><code class="descclassname">ailab.zoo.comprehension.DrQA.layers.</code><code class="descname">SeqAttnMatch</code><span class="sig-paren">(</span><em>input_size</em>, <em>identity=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/layers.html#SeqAttnMatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.layers.SeqAttnMatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>Given sequences X and Y, match sequence Y to each element in X.</p>
+<ul class="simple">
+<li>o_i = sum(alpha_j * y_j) for i in X</li>
+<li>alpha_j = softmax(y_j * x_i)</li>
+</ul>
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.layers.SeqAttnMatch.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>y_mask</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/layers.html#SeqAttnMatch.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.layers.SeqAttnMatch.forward" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>x: batch * len1 * hdim
+y: batch * len2 * hdim
+y_mask: batch * len2 (1 for padding, 0 for true)</dd>
+<dt>Output:</dt>
+<dd>matched_seq: batch * len1 * hdim</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.zoo.comprehension.DrQA.layers.StackedBRNN">
+<em class="property">class </em><code class="descclassname">ailab.zoo.comprehension.DrQA.layers.</code><code class="descname">StackedBRNN</code><span class="sig-paren">(</span><em>input_size</em>, <em>hidden_size</em>, <em>num_layers</em>, <em>dropout_rate=0</em>, <em>dropout_output=False</em>, <em>rnn_type=&lt;class 'torch.nn.modules.rnn.LSTM'&gt;</em>, <em>concat_layers=False</em>, <em>padding=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/layers.html#StackedBRNN"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.layers.StackedBRNN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>Stacked Bi-directional RNNs.</p>
+<p>Differs from standard PyTorch library in that it has the option to save
+and concat the hidden states between layers. (i.e. the output hidden size
+for each sequence input is num_layers * hidden_size).</p>
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.layers.StackedBRNN.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>x</em>, <em>x_mask</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/layers.html#StackedBRNN.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.layers.StackedBRNN.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode either padded or non-padded sequences.</p>
+<p>Can choose to either handle or ignore variable length sequences.
+Always handle padding in eval.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>x: batch * len * hdim
+x_mask: batch * len (1 for padding, 0 for true)</dd>
+<dt>Output:</dt>
+<dd>x_encoded: batch * len * hdim_encoded</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.zoo.comprehension.DrQA.layers.uniform_weights">
+<code class="descclassname">ailab.zoo.comprehension.DrQA.layers.</code><code class="descname">uniform_weights</code><span class="sig-paren">(</span><em>x</em>, <em>x_mask</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/layers.html#uniform_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.layers.uniform_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return uniform weights over non-masked x (a sequence of vectors).</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>x: batch * len * hdim
+x_mask: batch * len (1 for padding, 0 for true)</dd>
+<dt>Output:</dt>
+<dd>x_avg: batch * hdim</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.zoo.comprehension.DrQA.layers.weighted_avg">
+<code class="descclassname">ailab.zoo.comprehension.DrQA.layers.</code><code class="descname">weighted_avg</code><span class="sig-paren">(</span><em>x</em>, <em>weights</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/layers.html#weighted_avg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.layers.weighted_avg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a weighted average of x (a sequence of vectors).</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>x: batch * len * hdim
+weights: batch * len, sum(dim = 1) = 1</dd>
+<dt>Output:</dt>
+<dd>x_avg: batch * hdim</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.zoo.comprehension.DrQA.model">
+<span id="ailab-zoo-comprehension-drqa-model-module"></span><h2>ailab.zoo.comprehension.DrQA.model module<a class="headerlink" href="#module-ailab.zoo.comprehension.DrQA.model" title="Permalink to this headline">¶</a></h2>
+<p>DrQA Document Reader model</p>
+<dl class="class">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader">
+<em class="property">class </em><code class="descclassname">ailab.zoo.comprehension.DrQA.model.</code><code class="descname">DocReader</code><span class="sig-paren">(</span><em>cfg</em>, <em>vocab</em>, <em>feature_dict</em>, <em>state_dict=None</em>, <em>normalize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>High level model that handles intializing the underlying network
+architecture, saving, updating examples, and predicting examples.</p>
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.checkpoint">
+<code class="descname">checkpoint</code><span class="sig-paren">(</span><em>filename</em>, <em>epoch</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.checkpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.checkpoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.cpu">
+<code class="descname">cpu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.cpu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.cpu" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.cuda">
+<code class="descname">cuda</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.cuda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.cuda" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.decode">
+<em class="property">static </em><code class="descname">decode</code><span class="sig-paren">(</span><em>score_s</em>, <em>score_e</em>, <em>top_n=1</em>, <em>max_len=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.decode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.decode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take argmax of constrained score_s * score_e.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>score_s: independent start predictions
+score_e: independent end predictions
+top_n: number of top scored pairs to take
+max_len: max span length to consider</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.decode_candidates">
+<em class="property">static </em><code class="descname">decode_candidates</code><span class="sig-paren">(</span><em>score_s</em>, <em>score_e</em>, <em>candidates</em>, <em>top_n=1</em>, <em>max_len=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.decode_candidates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.decode_candidates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take argmax of constrained score_s * score_e. Except only consider
+spans that are in the candidates list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.expand_dictionary">
+<code class="descname">expand_dictionary</code><span class="sig-paren">(</span><em>words</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.expand_dictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.expand_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add words to the DocReader dictionary if they do not exist. The
+underlying embedding matrix is also expanded (with random embeddings).</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>words: iterable of tokens to add to the dictionary.</dd>
+<dt>Output:</dt>
+<dd>added: set of tokens that were added.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.init_optimizer">
+<code class="descname">init_optimizer</code><span class="sig-paren">(</span><em>state_dict=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.init_optimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.init_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize an optimizer for the free parameters of the network.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>state_dict: network parameters</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.load">
+<em class="property">static </em><code class="descname">load</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.load_checkpoint">
+<em class="property">static </em><code class="descname">load_checkpoint</code><span class="sig-paren">(</span><em>filename</em>, <em>normalize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.load_checkpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.load_checkpoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.load_embeddings">
+<code class="descname">load_embeddings</code><span class="sig-paren">(</span><em>words</em>, <em>embedding_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.load_embeddings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.load_embeddings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load pretrained embeddings for a given list of words, if they exist.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>words: iterable of tokens. Only those that are indexed in the</dt>
+<dd>dictionary are kept.</dd>
+</dl>
+<p class="last">embedding_file: path to text file of embeddings, space separated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.parallelize">
+<code class="descname">parallelize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.parallelize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.parallelize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use data parallel to copy the model across several gpus.
+This will take all gpus visible with CUDA_VISIBLE_DEVICES.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>ex</em>, <em>candidates=None</em>, <em>top_n=1</em>, <em>async_pool=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward a batch of examples only to get predictions.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">ex: the batch
+candidates: batch * variable length list of string answer options.</p>
+<blockquote>
+<div>The model will only consider exact spans contained in this list.</div></blockquote>
+<p>top_n: Number of predictions to return per batch element.
+async_pool: If provided, non-gpu post-processing will be offloaded</p>
+<blockquote class="last">
+<div>to this CPU process pool.</div></blockquote>
+</dd>
+<dt>Output:</dt>
+<dd>pred_s: batch * top_n predicted start indices
+pred_e: batch * top_n predicted end indices
+pred_score: batch * top_n prediction scores</dd>
+</dl>
+<p>If async_pool is given, these will be AsyncResult handles.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.reset_parameters">
+<code class="descname">reset_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.reset_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.reset_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset any partially fixed parameters to original states.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.tune_embeddings">
+<code class="descname">tune_embeddings</code><span class="sig-paren">(</span><em>words</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.tune_embeddings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.tune_embeddings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unfix the embeddings of a list of words. This is only relevant if
+only some of the embeddings are being tuned (tune_partial = N).</p>
+<p>Shuffles the N specified words to the front of the dictionary, and saves
+the original vectors of the other N + 1:vocab words in a fixed buffer.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>words: iterable of tokens contained in dictionary.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.model.DocReader.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>ex</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/model.html#DocReader.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.model.DocReader.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward a batch of examples; step the optimizer to update weights.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.zoo.comprehension.DrQA.rnn_reader">
+<span id="ailab-zoo-comprehension-drqa-rnn-reader-module"></span><h2>ailab.zoo.comprehension.DrQA.rnn_reader module<a class="headerlink" href="#module-ailab.zoo.comprehension.DrQA.rnn_reader" title="Permalink to this headline">¶</a></h2>
+<p>Implementation of the RNN based DrQA reader.</p>
+<dl class="class">
+<dt id="ailab.zoo.comprehension.DrQA.rnn_reader.RnnDocReader">
+<em class="property">class </em><code class="descclassname">ailab.zoo.comprehension.DrQA.rnn_reader.</code><code class="descname">RnnDocReader</code><span class="sig-paren">(</span><em>args</em>, <em>normalize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/rnn_reader.html#RnnDocReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.rnn_reader.RnnDocReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="attribute">
+<dt id="ailab.zoo.comprehension.DrQA.rnn_reader.RnnDocReader.RNN_TYPES">
+<code class="descname">RNN_TYPES</code><em class="property"> = {'lstm': &lt;class 'torch.nn.modules.rnn.LSTM'&gt;, 'gru': &lt;class 'torch.nn.modules.rnn.GRU'&gt;, 'rnn': &lt;class 'torch.nn.modules.rnn.RNN'&gt;}</em><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.rnn_reader.RnnDocReader.RNN_TYPES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.zoo.comprehension.DrQA.rnn_reader.RnnDocReader.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>x1</em>, <em>x1_f</em>, <em>x1_mask</em>, <em>x2</em>, <em>x2_mask</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ailab/zoo/comprehension/DrQA/rnn_reader.html#RnnDocReader.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ailab.zoo.comprehension.DrQA.rnn_reader.RnnDocReader.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inputs:
+x1 = document word indices             [batch * len_d]
+x1_f = document word features indices  [batch * len_d * nfeat]
+x1_mask = document padding mask        [batch * len_d]
+x2 = question word indices             [batch * len_q]
+x2_mask = question padding mask        [batch * len_q]</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.zoo.comprehension.DrQA">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ailab.zoo.comprehension.DrQA" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Pengjia Zhu.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

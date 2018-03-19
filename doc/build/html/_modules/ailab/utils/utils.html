@@ -1,0 +1,447 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ailab.utils.utils &mdash; ailab alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="ailab alpha documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> ailab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ailab</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>ailab.utils.utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ailab.utils.utils</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">zlib</span><span class="o">,</span> <span class="nn">numpy</span><span class="o">,</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">murmurhash3_32</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Author: Pengjia Zhu (zhupengjia@gmail.com)</span>
+<span class="sd">    Some tool functions</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+
+<div class="viewcode-block" id="zdump"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.zdump">[docs]</a><span class="k">def</span> <span class="nf">zdump</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">        serialize compress variable to file using zlib and pickle</span>
+<span class="sd">        </span>
+<span class="sd">        input: </span>
+<span class="sd">            - value: python variable</span>
+<span class="sd">            - filename: saved file path</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s2">&quot;wb&quot;</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">fpz</span><span class="p">:</span>
+        <span class="n">fpz</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">zlib</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="mi">9</span><span class="p">))</span></div>
+
+
+<span class="c1">#load compressed pkl file from zdump</span>
+<div class="viewcode-block" id="zload"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.zload">[docs]</a><span class="k">def</span> <span class="nf">zload</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">        load compressed pkl file from zdump</span>
+<span class="sd">        </span>
+<span class="sd">        input: </span>
+<span class="sd">            - filename: saved file path</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - python variable</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fpz</span><span class="p">:</span>
+        <span class="n">value</span><span class="o">=</span><span class="n">fpz</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span><span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span><span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="zdumps"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.zdumps">[docs]</a><span class="k">def</span> <span class="nf">zdumps</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        serialize and compress variable to string using zlib and pickle</span>
+<span class="sd">        </span>
+<span class="sd">        input:</span>
+<span class="sd">            - value: python variable</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - serialized string</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">zlib</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="mi">9</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="zloads"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.zloads">[docs]</a><span class="k">def</span> <span class="nf">zloads</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">        load serialized string from zdumps</span>
+<span class="sd">        </span>
+<span class="sd">        input: </span>
+<span class="sd">            - value: serialized string</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - python variable</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span><span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span><span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ldumps"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.ldumps">[docs]</a><span class="k">def</span> <span class="nf">ldumps</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        serialize and compress variable to string using lzo and pickle</span>
+<span class="sd">        </span>
+<span class="sd">        input:</span>
+<span class="sd">            - value: python variable</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - serialized string</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">import</span> <span class="nn">lzo</span>
+    <span class="k">return</span> <span class="n">lzo</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="mi">9</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="lloads"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.lloads">[docs]</a><span class="k">def</span> <span class="nf">lloads</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">        load serialized string from ldumps</span>
+<span class="sd">        </span>
+<span class="sd">        input: </span>
+<span class="sd">            - value: serialized string</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - python variable</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">import</span> <span class="nn">lzo</span>
+    <span class="k">try</span><span class="p">:</span><span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">lzo</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span><span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="status_save"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.status_save">[docs]</a><span class="k">def</span> <span class="nf">status_save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">status</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        save a status string to file</span>
+<span class="sd">        </span>
+<span class="sd">        input:</span>
+<span class="sd">            - filename: file path</span>
+<span class="sd">            - status: status string</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">status</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="status_check"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.status_check">[docs]</a><span class="k">def</span> <span class="nf">status_check</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        load a status string from file</span>
+<span class="sd">        </span>
+<span class="sd">        input:</span>
+<span class="sd">            - filename: file path</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - status string</span>
+<span class="sd">            - if filename not existed, return 0</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="flat_list"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.flat_list">[docs]</a><span class="k">def</span> <span class="nf">flat_list</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        flatten a 2-d list to 1-d list</span>
+<span class="sd">        </span>
+<span class="sd">        input:</span>
+<span class="sd">            - l: 2-d list</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - 1-d list</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">l</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="hashword"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.hashword">[docs]</a><span class="k">def</span> <span class="nf">hashword</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">hashsize</span><span class="o">=</span><span class="mi">16777216</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        hash the word using murmurhash3_32 to a positive int value</span>
+<span class="sd">        </span>
+<span class="sd">        input:</span>
+<span class="sd">            - word: string format word</span>
+<span class="sd">            - hashsize: maximum number, default is 16777216</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - int</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">murmurhash3_32</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">positive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">hashsize</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="normalize"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.normalize">[docs]</a><span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        resolve different type of unicode encodings using unicodedata.normalize</span>
+<span class="sd">        </span>
+<span class="sd">        input:</span>
+<span class="sd">            - text: string</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - string</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">import</span> <span class="nn">unicodedata</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s1">&#39;NFD&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+        <span class="k">raise</span><span class="p">(</span><span class="n">err</span><span class="p">)</span></div>
+
+
+<span class="c1">#rest client post</span>
+<div class="viewcode-block" id="restpost"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.restpost">[docs]</a><span class="k">def</span> <span class="nf">restpost</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        rest client post using requests</span>
+<span class="sd">        </span>
+<span class="sd">        input:</span>
+<span class="sd">            - url: restapi&#39;s url</span>
+<span class="sd">            - data: python dictionary</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - json format post return, if failed will return None</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">import</span> <span class="nn">requests</span><span class="o">,</span> <span class="nn">json</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span> <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="envread"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.envread">[docs]</a><span class="k">def</span> <span class="nf">envread</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        use environment variables to cover original environment</span>
+<span class="sd">        </span>
+<span class="sd">        input:</span>
+<span class="sd">            - keys: a key list need to read from environment</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - python dictionary {key:value, ...}</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">cfg</span></div>
+
+
+<span class="c1">#language detection</span>
+<div class="viewcode-block" id="lang_detect"><a class="viewcode-back" href="../../../ailab.utils.html#ailab.utils.utils.lang_detect">[docs]</a><span class="k">def</span> <span class="nf">lang_detect</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        language detection using langdetect</span>
+<span class="sd">        </span>
+<span class="sd">        input:</span>
+<span class="sd">            - string</span>
+<span class="sd">        </span>
+<span class="sd">        output:</span>
+<span class="sd">            - most possible language</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">from</span> <span class="nn">langdetect</span> <span class="k">import</span> <span class="n">detect</span>
+    <span class="kn">import</span> <span class="nn">numpy</span>
+    <span class="n">langs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span> <span class="n">langs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">detect</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span> <span class="k">continue</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">langs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">langs</span><span class="p">,</span> <span class="n">langsnum</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">langs</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">langs</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">langsnum</span><span class="p">)]</span></div>
+
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Pengjia Zhu.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

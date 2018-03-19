@@ -42,6 +42,6 @@ some models
 
 ## Version
 
-### v0.1.1 [Download link](http://about:blank)
+### v0.1.2 [Download link](http://about:blank)
 1. Build as wheel;
 

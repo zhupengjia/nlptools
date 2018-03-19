@@ -1,0 +1,2935 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ailab.text package &mdash; ailab alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ailab alpha documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ailab
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">ailab.text package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ailab.text.acorasearch">ailab.text.acorasearch module</a></li>
+<li><a class="reference internal" href="#module-ailab.text.annoysearch">ailab.text.annoysearch module</a></li>
+<li><a class="reference internal" href="#module-ailab.text.docsim">ailab.text.docsim module</a></li>
+<li><a class="reference internal" href="#module-ailab.text.embedding">ailab.text.embedding module</a></li>
+<li><a class="reference internal" href="#module-ailab.text.ner">ailab.text.ner module</a></li>
+<li><a class="reference internal" href="#module-ailab.text.tokenizer">ailab.text.tokenizer module</a></li>
+<li><a class="reference internal" href="#module-ailab.text.topicmodel">ailab.text.topicmodel module</a></li>
+<li><a class="reference internal" href="#module-ailab.text.translate">ailab.text.translate module</a></li>
+<li><a class="reference internal" href="#module-ailab.text.vectfidf">ailab.text.vectfidf module</a></li>
+<li><a class="reference internal" href="#module-ailab.text.vocab">ailab.text.vocab module</a></li>
+<li><a class="reference internal" href="#module-ailab.text">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ailab</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>ailab.text package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ailab.text.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="ailab-text-package">
+<h1>ailab.text package<a class="headerlink" href="#ailab-text-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ailab.text.acorasearch">
+<span id="ailab-text-acorasearch-module"></span><h2>ailab.text.acorasearch module<a class="headerlink" href="#module-ailab.text.acorasearch" title="Permalink to this headline">¶</a></h2>
+<p>Author: Zhiqiang Yao</p>
+<dl class="class">
+<dt id="ailab.text.acorasearch.AcoraSearch">
+<em class="property">class </em><code class="descclassname">ailab.text.acorasearch.</code><code class="descname">AcoraSearch</code><a class="headerlink" href="#ailab.text.acorasearch.AcoraSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>search keyword using acora, please check <a class="reference external" href="https://pypi.python.org/pypi/acora/">Acora</a> for more details</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>keywords: a keywords list to build an index</li>
+<li>vocab: ailab.text.vocab object, used to convert word to id, default is None(avoid converting word to id)</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.acorasearch.AcoraSearch.find">
+<code class="descname">find</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.acorasearch.AcoraSearch.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find keywords from input, search for all occurrences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>input: string</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>list, if vocab=None format like [(word, wordpos), …], if vocab existed, format like [(word, wordid and word position), …]</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.acorasearch.AcoraSearch.find_longest">
+<code class="descname">find_longest</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.acorasearch.AcoraSearch.find_longest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the longest match from input</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>input: string</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>list, if vocab=None format like (word, wordpos), if vocab existed, format like (word, wordid and word position)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.acorasearch.AcoraSearch.find_max_match">
+<code class="descname">find_max_match</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.acorasearch.AcoraSearch.find_max_match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the max match from input</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>input: string</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>list, if vocab=None format like (word, wordpos), if vocab existed, format like (word, wordid and word position)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.text.annoysearch">
+<span id="ailab-text-annoysearch-module"></span><h2>ailab.text.annoysearch module<a class="headerlink" href="#module-ailab.text.annoysearch" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.text.annoysearch.AnnoySearch">
+<em class="property">class </em><code class="descclassname">ailab.text.annoysearch.</code><code class="descname">AnnoySearch</code><a class="headerlink" href="#ailab.text.annoysearch.AnnoySearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Search keyword using annoy, via word vectors, please check <a class="reference external" href="https://github.com/spotify/annoy">spotify/annoy</a> for more details</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>annoy_ntree: int, builds a forest of annoy_ntree trees, default is 10</li>
+<li>annoy_cache: string, cached index file path, default is ‘’</li>
+<li>annoy_filter: float, similarity threshold, default is 0.5</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>emb_ins: ailab.utils.embedding object, for word2vec source</li>
+<li>seg_ins: ailab.utils.segment object, for tokenizer</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.annoysearch.AnnoySearch.find">
+<code class="descname">find</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.annoysearch.AnnoySearch.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search keywords from sentence</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string</li>
+<li>remove_stopwords: bool, if remove stopwords or not, default is False</li>
+<li>location: bool, if return keyword location or not, default is False</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>list, format like [(keyword, location), …]</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.annoysearch.AnnoySearch.load_index">
+<code class="descname">load_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.annoysearch.AnnoySearch.load_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build or load index(if annoy_cache existed)</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>keywords: list of string</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.text.docsim">
+<span id="ailab-text-docsim-module"></span><h2>ailab.text.docsim module<a class="headerlink" href="#module-ailab.text.docsim" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.text.docsim.DocSim">
+<em class="property">class </em><code class="descclassname">ailab.text.docsim.</code><code class="descname">DocSim</code><a class="headerlink" href="#ailab.text.docsim.DocSim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Calculate similarities between sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>vocab: ailab.text.vocab object</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.docsim.DocSim.distance">
+<code class="descname">distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.docsim.DocSim.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cosine distance between two vectors</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>vec1: first vector</li>
+<li>vec2: second vector</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.docsim.DocSim.idf_weighted_distance">
+<code class="descname">idf_weighted_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.docsim.DocSim.idf_weighted_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>IDF weighted distance between two sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id1: word_id list for sentence1</li>
+<li>sentence_id2: word_id list for sentence2</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.docsim.DocSim.min_word_distance">
+<code class="descname">min_word_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.docsim.DocSim.min_word_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimum word distance between two sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id1: word_id list for sentence1</li>
+<li>sentence_id2: word_id list for sentence2</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.docsim.DocSim.rwmd_distance">
+<code class="descname">rwmd_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.docsim.DocSim.rwmd_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Relaxation word mover’s distance between two sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id1: word_id list for sentence1</li>
+<li>sentence_id2: word_id list for sentence2</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.docsim.DocSim.wcd_distance">
+<code class="descname">wcd_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.docsim.DocSim.wcd_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Word center distance between two sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id1: word_id list for sentence1</li>
+<li>sentence_id2: word_id list for sentence2</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.docsim.DocSim.wmd_distance">
+<code class="descname">wmd_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.docsim.DocSim.wmd_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Word mover’s distance between two sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id1: word_id list for sentence1</li>
+<li>sentence_id2: word_id list for sentence2</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.text.embedding">
+<span id="ailab-text-embedding-module"></span><h2>ailab.text.embedding module<a class="headerlink" href="#module-ailab.text.embedding" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.text.embedding.Embedding">
+<em class="property">class </em><code class="descclassname">ailab.text.embedding.</code><code class="descname">Embedding</code><a class="headerlink" href="#ailab.text.embedding.Embedding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Read the word vectors from different database sources</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys: Please check other Embedding_* classes for detailed needed keys for different sources. The choice of  source will look for the config key in sequential order below:</dt>
+<dd><ol class="first last arabic">
+<li><em>w2v_word2idx</em> <em>w2v_idx2vec</em> read the wordvec from file</li>
+<li><em>dynamodb</em> read the wordvec from amazon’s dynamodb</li>
+<li><em>redis_host</em> read from redis</li>
+<li><em>embedding_restapi</em> read from restapi</li>
+<li>default: random generated</li>
+</ol>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Example usage:</dt>
+<dd><ul class="first last simple">
+<li>emb = Embedding(cfg); embedding[word]</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.embedding.Embedding_Base">
+<em class="property">class </em><code class="descclassname">ailab.text.embedding.</code><code class="descname">Embedding_Base</code><a class="headerlink" href="#ailab.text.embedding.Embedding_Base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Parent class for other embedding classes to read the word vectors, please don’t use this class directly</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>vec_len: int, vector length, default is 300</li>
+<li>vec_type: type of saved vector, default is float64</li>
+<li>cached_w2v: the cache path in local, default is ‘’</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.embedding.Embedding_Base.distance">
+<code class="descname">distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.embedding.Embedding_Base.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the cosine distance for two words</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word1: string</li>
+<li>word2: string</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.embedding.Embedding_Base.save">
+<code class="descname">save</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.embedding.Embedding_Base.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the word vectors in memory to <em>cached_w2v</em></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.embedding.Embedding_Dynamodb">
+<em class="property">class </em><code class="descclassname">ailab.text.embedding.</code><code class="descname">Embedding_Dynamodb</code><a class="headerlink" href="#ailab.text.embedding.Embedding_Dynamodb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.embedding.Embedding_Base" title="ailab.text.embedding.Embedding_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.embedding.Embedding_Base</span></code></a></p>
+<p>Read the word vectors from aws dynamodb, please make sure you have related credential files for enviroments.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>all keys mentioned in Embedding_Base</li>
+<li>dynamodb: dynamodb database name</li>
+<li>RETURNBASE64: if this config exists, will return BASE64 instead of vector</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Usage:</dt>
+<dd><ul class="first last simple">
+<li>emb_ins[word]: return the vector or BASE64 format vector</li>
+<li>word in emb_ins: check if word existed in database</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.embedding.Embedding_File">
+<em class="property">class </em><code class="descclassname">ailab.text.embedding.</code><code class="descname">Embedding_File</code><a class="headerlink" href="#ailab.text.embedding.Embedding_File" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.embedding.Embedding_Base" title="ailab.text.embedding.Embedding_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.embedding.Embedding_Base</span></code></a></p>
+<p>Read the word vectors from local files</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>all keys mentioned in Embedding_Base</li>
+<li>w2v_word2idx: pickle filepath for word-idx mapping</li>
+<li>w2v_idx2vec: numpy dump for idx-vector mapping</li>
+<li>RETURNBASE64: if this config exists, will return BASE64 instead of vector</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Usage:</dt>
+<dd><ul class="first last simple">
+<li>emb_ins[word]: return the vector or BASE64 format vector</li>
+<li>word in emb_ins: check if word existed in file</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.embedding.Embedding_Random">
+<em class="property">class </em><code class="descclassname">ailab.text.embedding.</code><code class="descname">Embedding_Random</code><a class="headerlink" href="#ailab.text.embedding.Embedding_Random" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.embedding.Embedding_Base" title="ailab.text.embedding.Embedding_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.embedding.Embedding_Base</span></code></a></p>
+<p>Randomly generate the vector for word</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>all keys mentioned in Embedding_Base</li>
+<li>redis_host: redis host</li>
+<li>redis port: redis port</li>
+<li>redis_db: database in redis</li>
+<li>RETURNBASE64: if this config exists, will return BASE64 instead of vector</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Usage:</dt>
+<dd><ul class="first last simple">
+<li>emb_ins[word]: return the vector or BASE64 format vector</li>
+<li>word in emb_ins: check if word existed in cache</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.embedding.Embedding_Redis">
+<em class="property">class </em><code class="descclassname">ailab.text.embedding.</code><code class="descname">Embedding_Redis</code><a class="headerlink" href="#ailab.text.embedding.Embedding_Redis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.embedding.Embedding_Base" title="ailab.text.embedding.Embedding_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.embedding.Embedding_Base</span></code></a></p>
+<p>Read the word vectors from redis</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>all keys mentioned in Embedding_Base</li>
+<li>redis_host: redis host</li>
+<li>redis port: redis port</li>
+<li>redis_db: database in redis</li>
+<li>RETURNBASE64: if this config exists, will return BASE64 instead of vector</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Usage:</dt>
+<dd><ul class="first last simple">
+<li>emb_ins[word]: return the vector or BASE64 format vector</li>
+<li>word in emb_ins: check if word existed in database</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.embedding.Embedding_Rest">
+<em class="property">class </em><code class="descclassname">ailab.text.embedding.</code><code class="descname">Embedding_Rest</code><a class="headerlink" href="#ailab.text.embedding.Embedding_Rest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.embedding.Embedding_Base" title="ailab.text.embedding.Embedding_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.embedding.Embedding_Base</span></code></a></p>
+<p>Read the word vectors from restapi</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>vec_type: the type of vector used in restapi, float64, float32, float</li>
+<li>embedding_restapi: string, restapi url</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Usage:</dt>
+<dd><ul class="first last simple">
+<li>emb_ins[word]: return the vector or BASE64 format vector</li>
+<li>word in emb_ins: check if word existed in database</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.text.ner">
+<span id="ailab-text-ner-module"></span><h2>ailab.text.ner module<a class="headerlink" href="#module-ailab.text.ner" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.text.ner.NER">
+<em class="property">class </em><code class="descclassname">ailab.text.ner.</code><code class="descname">NER</code><a class="headerlink" href="#ailab.text.ner.NER" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Entity recognition tool, integrate with several tools</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys: </dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>TOKENIZER: string, choose for NER class:</dt>
+<dd><ol class="first arabic simple">
+<li><em>corenlp</em>: will use NER_CoreNLP</li>
+<li><em>spacy</em>: will use NER_Spacy</li>
+</ol>
+<p class="last">3. <em>ltp</em>: will use NER_LTP
+8. <em>http://*</em>: will use NER_Rest</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>LANGUAGE: if <em>TOKENIZER</em> not exists, will check the <em>LANGUAGE</em> config:</dt>
+<dd><p class="first last">1. cn: will use NER_LTP
+3. en: will use NER_Spacy</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Example Usage:</dt>
+<dd><ul class="first last simple">
+<li>ner = NER(cfg); ner.get(sentence)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.ner.NER_Base">
+<em class="property">class </em><code class="descclassname">ailab.text.ner.</code><code class="descname">NER_Base</code><a class="headerlink" href="#ailab.text.ner.NER_Base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Parent class for other NER classes, please don’t use this class directly</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>keywords: dictionary of {entityname: keywords list file path}, entity recognition via keywords list</li>
+<li>ner: list, entity recognition via NER, will only remain the entity names in list</li>
+<li>regex: dictionary of {entityname: regex}, entity recognition via REGEX.</li>
+<li>stopwords_path: the path of stopwords</li>
+<li>ner_name_replace: dictionary, replace the entity name to the mapped name</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.ner.NER_Base.build_keywords_index">
+<code class="descname">build_keywords_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.ner.NER_Base.build_keywords_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the keywords index via annoy search(word vector search). Any available cfg keys please check ailab.text.annoysearch</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>emb_ins: instant of ailab.text.embedding</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.ner.NER_Base.build_keywords_regex">
+<code class="descname">build_keywords_regex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.ner.NER_Base.build_keywords_regex" title="Permalink to this definition">¶</a></dt>
+<dd><p>build keywords to regex, so the behavior of the keywords recongition will be the same as regex</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.ner.NER_Base.get">
+<code class="descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.ner.NER_Base.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the entities from keywords, regex, ner</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string or token list</li>
+<li>entities: the existed entity dictionary. will append the found entities to this dictionary</li>
+</ul>
+</dd>
+<dt>Output: a tuple of (entities, tokens)</dt>
+<dd><ul class="first last simple">
+<li>entities: a dictionary of entity with format of {entity name: entitiy value, …}</li>
+<li>tokens: the token list, note the entity values are replaced to entity names</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.ner.NER_Base.get_keywords">
+<code class="descname">get_keywords</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.ner.NER_Base.get_keywords" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the keyword entities from sentence</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><blockquote class="first">
+<div><ul class="simple">
+<li>sentence: string or a token list</li>
+<li>replace: to replace the token to entity name in tokens list, default is False</li>
+<li>entities: the existed entity dictionary. will append the found entities to this dictionary</li>
+</ul>
+</div></blockquote>
+<dl class="last docutils">
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>if the replace is True, will return (entities, tokens)</li>
+<li>if the replace is False, will return entities</li>
+<li>entities: a dictionary of entity with format of {entity name: entitiy value, …}</li>
+<li>tokens: the token list</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.ner.NER_Base.get_ner">
+<code class="descname">get_ner</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.ner.NER_Base.get_ner" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the entities viaNER</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string or token list</li>
+<li>replace: to replace the token to entity name in tokens list, default is False</li>
+<li>entities: the existed entity dictionary. will append the found entities to this dictionary</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>if the replace is True, will return (entities, tokens)</li>
+<li>if the replace is False, will return entities</li>
+<li>entities: a dictionary of entity with format of {entity name: entitiy value, …}</li>
+<li>tokens: the token list</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.ner.NER_Base.get_regex">
+<code class="descname">get_regex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.ner.NER_Base.get_regex" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the entities from regex</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string</li>
+<li>replace: to replace the token to entity name in sentence, default is False</li>
+<li>entities: the existed entity dictionary. will append the found entities to this dictionary</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>if the replace is True, will return (entities, replaced sentence)</li>
+<li>if the replace is False, will return entities</li>
+<li>entities: a dictionary of entity with format of {entity name: entitiy value, …}</li>
+<li>replaced: replaced sentence (the entity value in sentence will be replaced to entity name)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.ner.NER_CoreNLP">
+<em class="property">class </em><code class="descclassname">ailab.text.ner.</code><code class="descname">NER_CoreNLP</code><a class="headerlink" href="#ailab.text.ner.NER_CoreNLP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.ner.NER_Base" title="ailab.text.ner.NER_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.ner.NER_Base</span></code></a>, <a class="reference internal" href="#ailab.text.tokenizer.Segment_CoreNLP" title="ailab.text.tokenizer.Segment_CoreNLP"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_CoreNLP</span></code></a></p>
+<p>The NER part uses stanford CoreNLP. The class inherit from NER_Base and ailab.text.Segment_CoreNLP</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li>needed keys: please check the needed keys from NER_Base and ailab.text.Segment_CoreNLP</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.ner.NER_CoreNLP.train">
+<code class="descname">train</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.ner.NER_CoreNLP.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train the corenlp user defined model, not implemented</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.ner.NER_LTP">
+<em class="property">class </em><code class="descclassname">ailab.text.ner.</code><code class="descname">NER_LTP</code><a class="headerlink" href="#ailab.text.ner.NER_LTP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.ner.NER_Base" title="ailab.text.ner.NER_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.ner.NER_Base</span></code></a>, <a class="reference internal" href="#ailab.text.tokenizer.Segment_LTP" title="ailab.text.tokenizer.Segment_LTP"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_LTP</span></code></a></p>
+<p>The NER part uses PyLTP. The class inherit from NER_Base and ailab.text.Segment_LTP</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li>needed keys: please check the needed keys from NER_Base and ailab.text.Segment_LTP</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.ner.NER_LTP.train">
+<code class="descname">train</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.ner.NER_LTP.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train model via LTP</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>data: the output from train_predeal</li>
+<li>maxiter: iteration number</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.ner.NER_LTP.train_predeal">
+<code class="descname">train_predeal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.ner.NER_LTP.train_predeal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predeal the training data to LTP training data format</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>data: format of [(text, annotations), …], same as spacy. Please check <a class="reference external" href="https://spacy.io/usage/training">spacy document</a> for more details</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.ner.NER_Rest">
+<em class="property">class </em><code class="descclassname">ailab.text.ner.</code><code class="descname">NER_Rest</code><a class="headerlink" href="#ailab.text.ner.NER_Rest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.ner.NER_Base" title="ailab.text.ner.NER_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.ner.NER_Base</span></code></a>, <a class="reference internal" href="#ailab.text.tokenizer.Segment_Rest" title="ailab.text.tokenizer.Segment_Rest"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_Rest</span></code></a></p>
+<p>The NER part uses restapi. The class inherit from NER_Base and ailab.text.Segment_Rest</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li>needed keys: please check the needed keys from NER_Base and ailab.text.Segment_Rest</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.ner.NER_Rest.train">
+<code class="descname">train</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.ner.NER_Rest.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Training the user defined NER model, not implemented.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.ner.NER_Spacy">
+<em class="property">class </em><code class="descclassname">ailab.text.ner.</code><code class="descname">NER_Spacy</code><a class="headerlink" href="#ailab.text.ner.NER_Spacy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.ner.NER_Base" title="ailab.text.ner.NER_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.ner.NER_Base</span></code></a>, <a class="reference internal" href="#ailab.text.tokenizer.Segment_Spacy" title="ailab.text.tokenizer.Segment_Spacy"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_Spacy</span></code></a></p>
+<p>The NER part uses Spacy. The class inherit from NER_Base and Spacy</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li>needed keys: please check the needed keys from NER_Base and ailab.text.Segment_Spacy</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.ner.NER_Spacy.train">
+<code class="descname">train</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.ner.NER_Spacy.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train user defined NER model via spacy api.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>entities: entity name list</li>
+<li>data: format of [(text, annotations), …]. Please check <a class="reference external" href="https://spacy.io/usage/training">spacy document</a> for more details</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.text.tokenizer">
+<span id="ailab-text-tokenizer-module"></span><h2>ailab.text.tokenizer module<a class="headerlink" href="#module-ailab.text.tokenizer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.text.tokenizer.Segment">
+<em class="property">class </em><code class="descclassname">ailab.text.tokenizer.</code><code class="descname">Segment</code><a class="headerlink" href="#ailab.text.tokenizer.Segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Tokenizer tool, integrate with several tools</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys: </dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>TOKENIZER: string, choose for tokenizer tool:</dt>
+<dd><ol class="first last arabic">
+<li><em>corenlp</em>: stanford CoreNLP</li>
+<li><em>spacy</em>: spacy</li>
+<li><em>jieba</em>: jieba</li>
+<li><em>ltp</em>: HIT-SCIR pyltp</li>
+<li><em>mecab</em>: mecab</li>
+<li><em>simple</em>: regex</li>
+<li><em>char</em>: will split to char level</li>
+<li><em>http://*</em>: will use restapi</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>LANGUAGE: if <em>TOKENIZER</em> not exists, will check the <em>LANGUAGE</em> config:</dt>
+<dd><ol class="first last arabic">
+<li>cn: will use jieba</li>
+<li>yue: will use jieba</li>
+<li>en: will use spacy</li>
+<li>jp: will use mecab</li>
+</ol>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Example Usage:</dt>
+<dd><ul class="first last simple">
+<li>seg = Segment(cfg); seg.seg(sentence)</li>
+<li>support __call__ method: seg(sentence)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.tokenizer.Segment_Base">
+<em class="property">class </em><code class="descclassname">ailab.text.tokenizer.</code><code class="descname">Segment_Base</code><a class="headerlink" href="#ailab.text.tokenizer.Segment_Base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Parent class for other tokenizer classes, please don’t use this class directly</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>stopwords_path: the path of stopwords</li>
+<li>ner_name_replace: dictionary, replace the entity name to the mapped name</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.tokenizer.Segment_Char">
+<em class="property">class </em><code class="descclassname">ailab.text.tokenizer.</code><code class="descname">Segment_Char</code><a class="headerlink" href="#ailab.text.tokenizer.Segment_Char" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.tokenizer.Segment_Base" title="ailab.text.tokenizer.Segment_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_Base</span></code></a></p>
+<p>Split sentence to character list</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>all keys mentioned in Segment_Base</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_Char.seg">
+<code class="descname">seg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_Char.seg" title="Permalink to this definition">¶</a></dt>
+<dd><p>segment sentence to characters</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string</li>
+<li>remove_stopwords: bool, default is True</li>
+</ul>
+</dd>
+<dt>Output: dictionary with keys:</dt>
+<dd><ul class="first last simple">
+<li>tokens: list of characters</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.tokenizer.Segment_CoreNLP">
+<em class="property">class </em><code class="descclassname">ailab.text.tokenizer.</code><code class="descname">Segment_CoreNLP</code><a class="headerlink" href="#ailab.text.tokenizer.Segment_CoreNLP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.tokenizer.Segment_Base" title="ailab.text.tokenizer.Segment_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_Base</span></code></a></p>
+<p>Stanford CoreNLP wrapper, Please check <a class="reference external" href="https://stanfordnlp.github.io/CoreNLP/">stanford CoreNLP</a> for more details</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>all keys mentioned in Segment_Base</li>
+<li>CORENLP_URL: corenlp api url</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_CoreNLP.regex">
+<code class="descname">regex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_CoreNLP.regex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_CoreNLP.seg">
+<code class="descname">seg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_CoreNLP.seg" title="Permalink to this definition">¶</a></dt>
+<dd><p>segment sentence to words</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string</li>
+<li>remove_stopwords: bool, default is True</li>
+<li>entities_filter: string list, will only remain the entity tokens, default is None</li>
+<li>pos_filter: string list, will only remain special pos tokens, default is None</li>
+</ul>
+</dd>
+<dt>Output: dictionary with keys:</dt>
+<dd><ul class="first last simple">
+<li>tokens: list of tokens</li>
+<li>texts: list of raw texts</li>
+<li>entities: list of entities from NER</li>
+<li>pos: list of pos tags</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_CoreNLP.semgrex">
+<code class="descname">semgrex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_CoreNLP.semgrex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_CoreNLP.tokensregex">
+<code class="descname">tokensregex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_CoreNLP.tokensregex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.tokenizer.Segment_Jieba">
+<em class="property">class </em><code class="descclassname">ailab.text.tokenizer.</code><code class="descname">Segment_Jieba</code><a class="headerlink" href="#ailab.text.tokenizer.Segment_Jieba" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.tokenizer.Segment_Base" title="ailab.text.tokenizer.Segment_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_Base</span></code></a></p>
+<p>Jieba wrapper, Please check <a class="reference external" href="https://github.com/fxsjy/jieba">Jieba</a> for more details</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>all keys mentioned in Segment_Base</li>
+<li>seg_dict_path: if the key existed, will load the user definded model</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_Jieba.seg">
+<code class="descname">seg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_Jieba.seg" title="Permalink to this definition">¶</a></dt>
+<dd><p>segment sentence to words</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string</li>
+<li>remove_stopwords: bool, default is True</li>
+</ul>
+</dd>
+<dt>Output: dictionary with keys:</dt>
+<dd><ul class="first last simple">
+<li>tokens: list of tokens</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.tokenizer.Segment_Keras">
+<em class="property">class </em><code class="descclassname">ailab.text.tokenizer.</code><code class="descname">Segment_Keras</code><a class="headerlink" href="#ailab.text.tokenizer.Segment_Keras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.tokenizer.Segment_Base" title="ailab.text.tokenizer.Segment_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_Base</span></code></a></p>
+<p>Tokenizer wrote by Keras, use bi-lstm + crf, not finished, please don’t use it</p>
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_Keras.seg">
+<code class="descname">seg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_Keras.seg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_Keras.seg_bak">
+<code class="descname">seg_bak</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_Keras.seg_bak" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_Keras.simple_cut">
+<code class="descname">simple_cut</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_Keras.simple_cut" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_Keras.viterbi">
+<code class="descname">viterbi</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_Keras.viterbi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.tokenizer.Segment_LTP">
+<em class="property">class </em><code class="descclassname">ailab.text.tokenizer.</code><code class="descname">Segment_LTP</code><a class="headerlink" href="#ailab.text.tokenizer.Segment_LTP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.tokenizer.Segment_Base" title="ailab.text.tokenizer.Segment_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_Base</span></code></a></p>
+<p>HIT-SCIR pyltp wrapper, Please check <a class="reference external" href="https://github.com/HIT-SCIR/pyltp">pyltp</a> for more details</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>all keys mentioned in Segment_Base</li>
+<li>cws_model_path: path of cws model</li>
+<li>pos_model_path: path of pos model</li>
+<li>ner_model_path: path of ner model</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_LTP.seg">
+<code class="descname">seg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_LTP.seg" title="Permalink to this definition">¶</a></dt>
+<dd><p>segment sentence to words</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string</li>
+<li>remove_stopwords: bool, default is True</li>
+<li>tags_filter: string list, will only main special tag tokens, default is None</li>
+<li>entities_filter: string list, will only remain the entity tokens, default is None</li>
+<li>entityjoin: bool, will join the tokens with same entity and next to each other, default is True</li>
+</ul>
+</dd>
+<dt>Output: dictionary with keys:</dt>
+<dd><ul class="first last simple">
+<li>tokens: list of tokens</li>
+<li>tags: list of detailed part-of-speech tags</li>
+<li>entities: list of entities from NER</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.tokenizer.Segment_Mecab">
+<em class="property">class </em><code class="descclassname">ailab.text.tokenizer.</code><code class="descname">Segment_Mecab</code><a class="headerlink" href="#ailab.text.tokenizer.Segment_Mecab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.tokenizer.Segment_Base" title="ailab.text.tokenizer.Segment_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_Base</span></code></a></p>
+<p>Mecab wrapper, Please check <a class="reference external" href="https://taku910.github.io/mecab/">Mecab</a> for more details</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>all keys mentioned in Segment_Base</li>
+<li>seg_dict_path: mecab model path</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_Mecab.seg">
+<code class="descname">seg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_Mecab.seg" title="Permalink to this definition">¶</a></dt>
+<dd><p>segment sentence to words</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string</li>
+<li>remove_stopwords: bool, default is True</li>
+<li>tags_filter: string list, will only main special tag tokens, default is None. Some available tags are “名詞”, “動詞”, “助動詞”, “形容詞”, “助詞”, “係助詞”…</li>
+</ul>
+</dd>
+<dt>Output: dictionary with keys:</dt>
+<dd><ul class="first last simple">
+<li>tokens: list of tokens</li>
+<li>tags: list of detailed part-of-speech tags</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.tokenizer.Segment_Rest">
+<em class="property">class </em><code class="descclassname">ailab.text.tokenizer.</code><code class="descname">Segment_Rest</code><a class="headerlink" href="#ailab.text.tokenizer.Segment_Rest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.tokenizer.Segment_Base" title="ailab.text.tokenizer.Segment_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_Base</span></code></a></p>
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_Rest.seg">
+<code class="descname">seg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_Rest.seg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.tokenizer.Segment_Simple">
+<em class="property">class </em><code class="descclassname">ailab.text.tokenizer.</code><code class="descname">Segment_Simple</code><a class="headerlink" href="#ailab.text.tokenizer.Segment_Simple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.tokenizer.Segment_Base" title="ailab.text.tokenizer.Segment_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_Base</span></code></a></p>
+<p>Tokenizer use regex</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>all keys mentioned in Segment_Base</li>
+<li>TOKENIZER REGEX: regex string, default is [s.:;&amp;’”/\()[]{}%$#!?^&amp;+`~（）《》【】「」；：‘“’”？／。、，]</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_Simple.seg">
+<code class="descname">seg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_Simple.seg" title="Permalink to this definition">¶</a></dt>
+<dd><p>segment sentence to words</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string</li>
+<li>remove_stopwords: bool, default is True</li>
+</ul>
+</dd>
+<dt>Output: dictionary with keys:</dt>
+<dd><ul class="first last simple">
+<li>tokens: list of tokens</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.tokenizer.Segment_Spacy">
+<em class="property">class </em><code class="descclassname">ailab.text.tokenizer.</code><code class="descname">Segment_Spacy</code><a class="headerlink" href="#ailab.text.tokenizer.Segment_Spacy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.tokenizer.Segment_Base" title="ailab.text.tokenizer.Segment_Base"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.tokenizer.Segment_Base</span></code></a></p>
+<p>Spacy wrapper, Please check <a class="reference external" href="https://spacy.io/">Spacy</a> for more details</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>all keys mentioned in Segment_Base</li>
+<li>cached_ner: if the key existed, will load the user defined model instead of default model.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.tokenizer.Segment_Spacy.seg">
+<code class="descname">seg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.tokenizer.Segment_Spacy.seg" title="Permalink to this definition">¶</a></dt>
+<dd><p>segment sentence to words</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string</li>
+<li>remove_stopwords: bool, default is True</li>
+<li>tags_filter: string list, will only main special tag tokens, default is None</li>
+<li>entities_filter: string list, will only remain the entity tokens, default is None</li>
+<li>pos_filter: string list, will only remain special pos tokens, default is None</li>
+<li>dep_filter: string list, will only remain special dep tokens, default is None</li>
+</ul>
+</dd>
+<dt>Output: dictionary with keys:</dt>
+<dd><ul class="first last simple">
+<li>tokens: list of tokens</li>
+<li>tags: list of detailed part-of-speech tags</li>
+<li>texts: list of raw texts</li>
+<li>entities: list of entities from NER</li>
+<li>pos: list of simple part-of-speech tags</li>
+<li>dep: list of syntactic dependency</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.text.topicmodel">
+<span id="ailab-text-topicmodel-module"></span><h2>ailab.text.topicmodel module<a class="headerlink" href="#module-ailab.text.topicmodel" title="Permalink to this headline">¶</a></h2>
+<p>Author: Pengjia Zhu (<a class="reference external" href="mailto:zhupengjia&#37;&#52;&#48;gmail&#46;com">zhupengjia<span>&#64;</span>gmail<span>&#46;</span>com</a>)</p>
+<dl class="class">
+<dt id="ailab.text.topicmodel.Corpus">
+<em class="property">class </em><code class="descclassname">ailab.text.topicmodel.</code><code class="descname">Corpus</code><a class="headerlink" href="#ailab.text.topicmodel.Corpus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">gensim.interfaces.CorpusABC</span></code></p>
+<p>Corpus class inherit from gensim.interfaces.CorpusABC</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>docbow: format of [(id, tf), …], can be the output from ailab.text.vocab.doc2bow</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.topicmodel.LDA">
+<em class="property">class </em><code class="descclassname">ailab.text.topicmodel.</code><code class="descname">LDA</code><a class="headerlink" href="#ailab.text.topicmodel.LDA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.topicmodel.TopicModel" title="ailab.text.topicmodel.TopicModel"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.topicmodel.TopicModel</span></code></a></p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>lda_path: saved path for lda model</li>
+<li>N_topic: topic number</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.topicmodel.LDA.build">
+<code class="descname">build</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.topicmodel.LDA.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.topicmodel.LSI">
+<em class="property">class </em><code class="descclassname">ailab.text.topicmodel.</code><code class="descname">LSI</code><a class="headerlink" href="#ailab.text.topicmodel.LSI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ailab.text.topicmodel.TopicModel" title="ailab.text.topicmodel.TopicModel"><code class="xref py py-class docutils literal"><span class="pre">ailab.text.topicmodel.TopicModel</span></code></a></p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>lsi_path: saved path for lsi model</li>
+<li>N_topic: topic number</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.topicmodel.LSI.build">
+<code class="descname">build</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.topicmodel.LSI.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.topicmodel.TopicModel">
+<em class="property">class </em><code class="descclassname">ailab.text.topicmodel.</code><code class="descname">TopicModel</code><a class="headerlink" href="#ailab.text.topicmodel.TopicModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Parent class for LDA and LSI, please don’t use this class directly</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.text.translate">
+<span id="ailab-text-translate-module"></span><h2>ailab.text.translate module<a class="headerlink" href="#module-ailab.text.translate" title="Permalink to this headline">¶</a></h2>
+<p>Author: Pengjia Zhu (<a class="reference external" href="mailto:zhupengjia&#37;&#52;&#48;gmail&#46;com">zhupengjia<span>&#64;</span>gmail<span>&#46;</span>com</a>)</p>
+<dl class="class">
+<dt id="ailab.text.translate.Translate">
+<em class="property">class </em><code class="descclassname">ailab.text.translate.</code><code class="descname">Translate</code><a class="headerlink" href="#ailab.text.translate.Translate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Translate module using google translate api</p>
+<dl class="docutils">
+<dt>Method:</dt>
+<dd><dl class="first last docutils">
+<dt>__getitem__:</dt>
+<dd><ul class="first last simple">
+<li>text: string</li>
+<li>target: target language, default is ‘en’</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.text.vectfidf">
+<span id="ailab-text-vectfidf-module"></span><h2>ailab.text.vectfidf module<a class="headerlink" href="#module-ailab.text.vectfidf" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.text.vectfidf.VecTFIDF">
+<em class="property">class </em><code class="descclassname">ailab.text.vectfidf.</code><code class="descname">VecTFIDF</code><a class="headerlink" href="#ailab.text.vectfidf.VecTFIDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Modified TF-IDF algorithm with wordvector</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>freqwords_path: path of freqword list, will force set the count of each word in the list to a large number</li>
+<li>cached_index: path of cached index file</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>vocab_ins: instance of ailab.text.vocab</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.vectfidf.VecTFIDF.get_count_matrix">
+<code class="descname">get_count_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vectfidf.VecTFIDF.get_count_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>count bag of words in corpus_ids</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>corpus_ids: corpus ids, format of [[id, id, …],…]</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>count matrix (scipy.sparse.csr_matrix)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vectfidf.VecTFIDF.get_doc_freqs">
+<code class="descname">get_doc_freqs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vectfidf.VecTFIDF.get_doc_freqs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return word –&gt; # of docs it appears in.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>count matrix</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vectfidf.VecTFIDF.load_index">
+<code class="descname">load_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vectfidf.VecTFIDF.load_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build or load index for corpus_ids</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>corpus_ids: a list of sentence_ids. Will only be used when the index is needed to train. default is None.</li>
+<li>retrain: bool, check if index need to rebuild, default is False</li>
+<li>local_use: bool, check if return count_matrix or word_idfs. If not, they will be saved to intern variable. Else they will be returned. Default is False</li>
+</ul>
+</dd>
+<dt>Output: will only return when local_use=True</dt>
+<dd><ul class="first last simple">
+<li>count_matrix: a sparse matrix for each id count in corpus</li>
+<li>word_idfs: the idf list for a word list</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vectfidf.VecTFIDF.n_sim">
+<code class="descname">n_sim</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vectfidf.VecTFIDF.n_sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the sum of similarities of each id in a token_id list with a sentence(another token_id list)</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_ids: a token id list</li>
+<li>sentence_ids: a token id list for sentence</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>1d numpy array</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vectfidf.VecTFIDF.search">
+<code class="descname">search</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vectfidf.VecTFIDF.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and sort search scores  via vectfidf</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_ids: token ids</li>
+<li>corpus_ids: a list of token ids as corpus</li>
+<li>topN: int, return topN result, default is 1</li>
+<li>global_idfs, bool, use global idfs calculated from large corpus when doing load_index or idfs from input corpus_ids, default is True</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>[(score, tfidf), …], …</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vectfidf.VecTFIDF.search_index">
+<code class="descname">search_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vectfidf.VecTFIDF.search_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>traditional tf-idf algorithm</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_ids: token ids</li>
+<li>corpus_ids: a list of token ids as corpus, if None will search from global corpus from load_index function, default is None</li>
+<li>topN: int, return topN result, default is 1</li>
+<li>global_idfs, bool, use global idfs calculated from large corpus when doing load_index or idfs from input corpus_ids, default is True</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>[(score, tfidf), …], …</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vectfidf.VecTFIDF.search_index_batch">
+<code class="descname">search_index_batch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vectfidf.VecTFIDF.search_index_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a batch of closest_docs requests multithreaded. Note: we can use plain threads here as scipy is outside of the GIL.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_idss: a list of token ids</li>
+<li>topN: int, return topN result, default is 1</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>a list of result from search_index</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vectfidf.VecTFIDF.text2spvec">
+<code class="descname">text2spvec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vectfidf.VecTFIDF.text2spvec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used in search_index</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vectfidf.VecTFIDF.tf">
+<code class="descname">tf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vectfidf.VecTFIDF.tf" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate term frequencies for each word in a token id list</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_ids: a token id list</li>
+<li>sentence_ids: a token id list for sentence</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>1d numpy array</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vectfidf.VecTFIDF.tfidf">
+<code class="descname">tfidf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vectfidf.VecTFIDF.tfidf" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate tfidf for each id in a token list</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_ids: token ids</li>
+<li>sentence_ids: token ids in a sentence</li>
+<li>word_idfs: idf for token ids</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd>tfidf list</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ailab.text.vectfidf.n_count_ids">
+<code class="descclassname">ailab.text.vectfidf.</code><code class="descname">n_count_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vectfidf.n_count_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate n_count for each id in ids</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>ids: list of int</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>sparse matrix with (row list, col list, data list)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.text.vocab">
+<span id="ailab-text-vocab-module"></span><h2>ailab.text.vocab module<a class="headerlink" href="#module-ailab.text.vocab" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.text.vocab.Vocab">
+<em class="property">class </em><code class="descclassname">ailab.text.vocab.</code><code class="descname">Vocab</code><a class="headerlink" href="#ailab.text.vocab.Vocab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Vocab dictionary class, also support to accumulate term frequency, return embedding matrix, sentence to id</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>cached_vocab: string, cached vocab file path, default is ‘’</li>
+<li>vocab_size: int, the dictionary size, default is 2**24. If the number&lt;30, then the size is 2**vocab_size, else the size is <em>vocab_size</em>.</li>
+<li>ngrams: int, ngrams for sentence2id function, default is 1</li>
+<li>outofvocab: string, the behavior of outofvocab token, default is ‘unk’. Two options: ‘unk’ and ‘random’. ‘unk’ will fill with ‘unk’, ‘random’ will fill with a random token</li>
+<li>hashgenerate: bool, the token id generate from hash or accumulating. Default is False</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>seg_ins: instance of ailab.text.tokenizer.segment</li>
+<li>emb_ins: instance of ailab.text.embedding</li>
+<li>forceinit: bool, if true will always init a new vocab. Default is False</li>
+</ul>
+</dd>
+<dt>Some special operation:</dt>
+<dd><ul class="first last simple">
+<li>__add__: join several ailab.text.vocab together</li>
+<li>__call__: get ids for sentence list. Input is [sentence, …], or [token_list, …]</li>
+<li>__getitem__: get id for word</li>
+<li>__contains__: checkout if word or id in vocab</li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="ailab.text.vocab.Vocab.Nwords">
+<code class="descname">Nwords</code><a class="headerlink" href="#ailab.text.vocab.Vocab.Nwords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Property of the class</p>
+<dl class="docutils">
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>number of words</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.accumword">
+<code class="descname">accumword</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.accumword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the word to dictionary</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>word: string</li>
+<li>fulfill: bool, check if the word used to fulfill the dictionary, default is True</li>
+<li>tfaccum: bool, check if accumulate term count. Default is True</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>wordid: int</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.addBE">
+<code class="descname">addBE</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.addBE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add 4 special characters to dictionary, ‘&lt;pad&gt;’, ‘&lt;eos&gt;’, ‘&lt;bos&gt;’,’&lt;unk&gt;’</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.add_word">
+<code class="descname">add_word</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.add_word" title="Permalink to this definition">¶</a></dt>
+<dd><p>add word to vocab, same as accumword(word, fulfill=True, tfaccum=True)</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word: string</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>wordid: int</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.ave_vec">
+<code class="descname">ave_vec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.ave_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>get tf weighted average word vector of token list</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id: token_id list</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>1d numpy array</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.dense_vectors">
+<code class="descname">dense_vectors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.dense_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a numpy array of word vectors. The index of array is the word_ids</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.doc2bow">
+<code class="descname">doc2bow</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.doc2bow" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert tokens to bow</p>
+<dl class="docutils">
+<dt>Input should be one of them: </dt>
+<dd><ul class="first last simple">
+<li>wordlist: the token list</li>
+<li>idlist: the token id list</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>bow: [(id, tf), …]</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.get_id2vec">
+<code class="descname">get_id2vec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.get_id2vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all word vectors for all word_ids, Used to cache word vectors, combine with save function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.id2sentence">
+<code class="descname">id2sentence</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.id2sentence" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert id back to sentence</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>ids: list of ids</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.id2vec">
+<code class="descname">id2vec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.id2vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the word vector via word_id</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_id: int</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>1d numpy array. If word_id is multigram’s id, will return the sum of the vectors in this gram</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.id2word">
+<code class="descname">id2word</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.id2word" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert id to word.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>i: wordid</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>string. If id not in vocab, will return None</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.reduce_vocab">
+<code class="descname">reduce_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.reduce_vocab" title="Permalink to this definition">¶</a></dt>
+<dd><p>reduce vocab size by tf.</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>vocab_size: int, the target vocab_size, if None will reduce to the current number of words. Default is None</li>
+<li>reorder: bool, check if the dictionary reorder by tf. Default is False. Parameter only usable when vocab_size is None. If the vocab_size is not None, the dictionary will always be reordered</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.save">
+<code class="descname">save</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the vocab dictionary to <em>cached_vocab</em></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.senid2tf">
+<code class="descname">senid2tf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.senid2tf" title="Permalink to this definition">¶</a></dt>
+<dd><p>get counts for each word in token list</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id: token list</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>count list</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.senid2vec">
+<code class="descname">senid2vec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.senid2vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>get vord vectors for each word in token list</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id: token list</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>numpy array. The array index is the id index in input</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.sentence2id">
+<code class="descname">sentence2id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.sentence2id" title="Permalink to this definition">¶</a></dt>
+<dd><p>sentence to  token ids</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string or token list</li>
+<li>ngrams: int, the returned token ids will also include multi-grams ids, if None will use the config of ‘ngrams’. Default is None</li>
+<li>useBE: bool, True will add &lt;BOS&gt; and &lt;EOS&gt; for multi-grams ids. False will not. Default is True</li>
+<li>update: bool, check if use tf accumulate, default is True</li>
+<li>charlevel: bool, check if also include char level ids in token ids, default is False</li>
+<li>charngram: bool, check if ngrams parameter also affect char level ids, default is False</li>
+<li>remove_stopwords: bool, check if remove stopwords, default is True</li>
+<li>flatresult: bool, check if flat the final result. Please check the output. Default is True</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>if flatresult is True, then return a list of ids</li>
+<li>if flatresult is False, then return a dictionary, key is the n of n-grams and ‘char’, like 1,2,3,..,,char , value is the word id list.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.vocab.Vocab.word2id">
+<code class="descname">word2id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.vocab.Vocab.word2id" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert word to id but not accumulate tf, same as accumword(word, fulfill, tfaccum=False)</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word: string</li>
+<li>fulfill: bool, check if the word used to fulfill the dictionary, default is True</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>wordid: int</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ailab.text">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ailab.text" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ailab.text.Segment">
+<em class="property">class </em><code class="descclassname">ailab.text.</code><code class="descname">Segment</code><a class="headerlink" href="#ailab.text.Segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Tokenizer tool, integrate with several tools</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys: </dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>TOKENIZER: string, choose for tokenizer tool:</dt>
+<dd><ol class="first last arabic">
+<li><em>corenlp</em>: stanford CoreNLP</li>
+<li><em>spacy</em>: spacy</li>
+<li><em>jieba</em>: jieba</li>
+<li><em>ltp</em>: HIT-SCIR pyltp</li>
+<li><em>mecab</em>: mecab</li>
+<li><em>simple</em>: regex</li>
+<li><em>char</em>: will split to char level</li>
+<li><em>http://*</em>: will use restapi</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>LANGUAGE: if <em>TOKENIZER</em> not exists, will check the <em>LANGUAGE</em> config:</dt>
+<dd><ol class="first last arabic">
+<li>cn: will use jieba</li>
+<li>yue: will use jieba</li>
+<li>en: will use spacy</li>
+<li>jp: will use mecab</li>
+</ol>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Example Usage:</dt>
+<dd><ul class="first last simple">
+<li>seg = Segment(cfg); seg.seg(sentence)</li>
+<li>support __call__ method: seg(sentence)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.Embedding">
+<em class="property">class </em><code class="descclassname">ailab.text.</code><code class="descname">Embedding</code><a class="headerlink" href="#ailab.text.Embedding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Read the word vectors from different database sources</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys: Please check other Embedding_* classes for detailed needed keys for different sources. The choice of  source will look for the config key in sequential order below:</dt>
+<dd><ol class="first last arabic">
+<li><em>w2v_word2idx</em> <em>w2v_idx2vec</em> read the wordvec from file</li>
+<li><em>dynamodb</em> read the wordvec from amazon’s dynamodb</li>
+<li><em>redis_host</em> read from redis</li>
+<li><em>embedding_restapi</em> read from restapi</li>
+<li>default: random generated</li>
+</ol>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Example usage:</dt>
+<dd><ul class="first last simple">
+<li>emb = Embedding(cfg); embedding[word]</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.Vocab">
+<em class="property">class </em><code class="descclassname">ailab.text.</code><code class="descname">Vocab</code><a class="headerlink" href="#ailab.text.Vocab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Vocab dictionary class, also support to accumulate term frequency, return embedding matrix, sentence to id</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>cached_vocab: string, cached vocab file path, default is ‘’</li>
+<li>vocab_size: int, the dictionary size, default is 2**24. If the number&lt;30, then the size is 2**vocab_size, else the size is <em>vocab_size</em>.</li>
+<li>ngrams: int, ngrams for sentence2id function, default is 1</li>
+<li>outofvocab: string, the behavior of outofvocab token, default is ‘unk’. Two options: ‘unk’ and ‘random’. ‘unk’ will fill with ‘unk’, ‘random’ will fill with a random token</li>
+<li>hashgenerate: bool, the token id generate from hash or accumulating. Default is False</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>seg_ins: instance of ailab.text.tokenizer.segment</li>
+<li>emb_ins: instance of ailab.text.embedding</li>
+<li>forceinit: bool, if true will always init a new vocab. Default is False</li>
+</ul>
+</dd>
+<dt>Some special operation:</dt>
+<dd><ul class="first last simple">
+<li>__add__: join several ailab.text.vocab together</li>
+<li>__call__: get ids for sentence list. Input is [sentence, …], or [token_list, …]</li>
+<li>__getitem__: get id for word</li>
+<li>__contains__: checkout if word or id in vocab</li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="ailab.text.Vocab.Nwords">
+<code class="descname">Nwords</code><a class="headerlink" href="#ailab.text.Vocab.Nwords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Property of the class</p>
+<dl class="docutils">
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>number of words</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.accumword">
+<code class="descname">accumword</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.accumword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the word to dictionary</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>word: string</li>
+<li>fulfill: bool, check if the word used to fulfill the dictionary, default is True</li>
+<li>tfaccum: bool, check if accumulate term count. Default is True</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>wordid: int</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.addBE">
+<code class="descname">addBE</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.addBE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add 4 special characters to dictionary, ‘&lt;pad&gt;’, ‘&lt;eos&gt;’, ‘&lt;bos&gt;’,’&lt;unk&gt;’</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.add_word">
+<code class="descname">add_word</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.add_word" title="Permalink to this definition">¶</a></dt>
+<dd><p>add word to vocab, same as accumword(word, fulfill=True, tfaccum=True)</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word: string</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>wordid: int</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.ave_vec">
+<code class="descname">ave_vec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.ave_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>get tf weighted average word vector of token list</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id: token_id list</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>1d numpy array</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.dense_vectors">
+<code class="descname">dense_vectors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.dense_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a numpy array of word vectors. The index of array is the word_ids</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.doc2bow">
+<code class="descname">doc2bow</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.doc2bow" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert tokens to bow</p>
+<dl class="docutils">
+<dt>Input should be one of them: </dt>
+<dd><ul class="first last simple">
+<li>wordlist: the token list</li>
+<li>idlist: the token id list</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>bow: [(id, tf), …]</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.get_id2vec">
+<code class="descname">get_id2vec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.get_id2vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all word vectors for all word_ids, Used to cache word vectors, combine with save function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.id2sentence">
+<code class="descname">id2sentence</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.id2sentence" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert id back to sentence</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>ids: list of ids</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.id2vec">
+<code class="descname">id2vec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.id2vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the word vector via word_id</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_id: int</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>1d numpy array. If word_id is multigram’s id, will return the sum of the vectors in this gram</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.id2word">
+<code class="descname">id2word</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.id2word" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert id to word.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>i: wordid</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>string. If id not in vocab, will return None</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.reduce_vocab">
+<code class="descname">reduce_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.reduce_vocab" title="Permalink to this definition">¶</a></dt>
+<dd><p>reduce vocab size by tf.</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>vocab_size: int, the target vocab_size, if None will reduce to the current number of words. Default is None</li>
+<li>reorder: bool, check if the dictionary reorder by tf. Default is False. Parameter only usable when vocab_size is None. If the vocab_size is not None, the dictionary will always be reordered</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.save">
+<code class="descname">save</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the vocab dictionary to <em>cached_vocab</em></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.senid2tf">
+<code class="descname">senid2tf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.senid2tf" title="Permalink to this definition">¶</a></dt>
+<dd><p>get counts for each word in token list</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id: token list</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>count list</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.senid2vec">
+<code class="descname">senid2vec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.senid2vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>get vord vectors for each word in token list</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id: token list</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>numpy array. The array index is the id index in input</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.sentence2id">
+<code class="descname">sentence2id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.sentence2id" title="Permalink to this definition">¶</a></dt>
+<dd><p>sentence to  token ids</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence: string or token list</li>
+<li>ngrams: int, the returned token ids will also include multi-grams ids, if None will use the config of ‘ngrams’. Default is None</li>
+<li>useBE: bool, True will add &lt;BOS&gt; and &lt;EOS&gt; for multi-grams ids. False will not. Default is True</li>
+<li>update: bool, check if use tf accumulate, default is True</li>
+<li>charlevel: bool, check if also include char level ids in token ids, default is False</li>
+<li>charngram: bool, check if ngrams parameter also affect char level ids, default is False</li>
+<li>remove_stopwords: bool, check if remove stopwords, default is True</li>
+<li>flatresult: bool, check if flat the final result. Please check the output. Default is True</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>if flatresult is True, then return a list of ids</li>
+<li>if flatresult is False, then return a dictionary, key is the n of n-grams and ‘char’, like 1,2,3,..,,char , value is the word id list.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.Vocab.word2id">
+<code class="descname">word2id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.Vocab.word2id" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert word to id but not accumulate tf, same as accumword(word, fulfill, tfaccum=False)</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word: string</li>
+<li>fulfill: bool, check if the word used to fulfill the dictionary, default is True</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>wordid: int</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.DocSim">
+<em class="property">class </em><code class="descclassname">ailab.text.</code><code class="descname">DocSim</code><a class="headerlink" href="#ailab.text.DocSim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Calculate similarities between sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>vocab: ailab.text.vocab object</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.DocSim.distance">
+<code class="descname">distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.DocSim.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cosine distance between two vectors</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>vec1: first vector</li>
+<li>vec2: second vector</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.DocSim.idf_weighted_distance">
+<code class="descname">idf_weighted_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.DocSim.idf_weighted_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>IDF weighted distance between two sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id1: word_id list for sentence1</li>
+<li>sentence_id2: word_id list for sentence2</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.DocSim.min_word_distance">
+<code class="descname">min_word_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.DocSim.min_word_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimum word distance between two sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id1: word_id list for sentence1</li>
+<li>sentence_id2: word_id list for sentence2</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.DocSim.rwmd_distance">
+<code class="descname">rwmd_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.DocSim.rwmd_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Relaxation word mover’s distance between two sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id1: word_id list for sentence1</li>
+<li>sentence_id2: word_id list for sentence2</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.DocSim.wcd_distance">
+<code class="descname">wcd_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.DocSim.wcd_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Word center distance between two sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id1: word_id list for sentence1</li>
+<li>sentence_id2: word_id list for sentence2</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.DocSim.wmd_distance">
+<code class="descname">wmd_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.DocSim.wmd_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Word mover’s distance between two sentences</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>sentence_id1: word_id list for sentence1</li>
+<li>sentence_id2: word_id list for sentence2</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ailab.text.VecTFIDF">
+<em class="property">class </em><code class="descclassname">ailab.text.</code><code class="descname">VecTFIDF</code><a class="headerlink" href="#ailab.text.VecTFIDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Modified TF-IDF algorithm with wordvector</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>cfg: dictionary or ailab.utils.config object</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>needed keys:</dt>
+<dd><ul class="first last">
+<li>freqwords_path: path of freqword list, will force set the count of each word in the list to a large number</li>
+<li>cached_index: path of cached index file</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>vocab_ins: instance of ailab.text.vocab</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="ailab.text.VecTFIDF.get_count_matrix">
+<code class="descname">get_count_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.VecTFIDF.get_count_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>count bag of words in corpus_ids</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>corpus_ids: corpus ids, format of [[id, id, …],…]</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>count matrix (scipy.sparse.csr_matrix)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.VecTFIDF.get_doc_freqs">
+<code class="descname">get_doc_freqs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.VecTFIDF.get_doc_freqs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return word –&gt; # of docs it appears in.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>count matrix</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.VecTFIDF.load_index">
+<code class="descname">load_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.VecTFIDF.load_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build or load index for corpus_ids</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>corpus_ids: a list of sentence_ids. Will only be used when the index is needed to train. default is None.</li>
+<li>retrain: bool, check if index need to rebuild, default is False</li>
+<li>local_use: bool, check if return count_matrix or word_idfs. If not, they will be saved to intern variable. Else they will be returned. Default is False</li>
+</ul>
+</dd>
+<dt>Output: will only return when local_use=True</dt>
+<dd><ul class="first last simple">
+<li>count_matrix: a sparse matrix for each id count in corpus</li>
+<li>word_idfs: the idf list for a word list</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.VecTFIDF.n_sim">
+<code class="descname">n_sim</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.VecTFIDF.n_sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the sum of similarities of each id in a token_id list with a sentence(another token_id list)</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_ids: a token id list</li>
+<li>sentence_ids: a token id list for sentence</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>1d numpy array</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.VecTFIDF.search">
+<code class="descname">search</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.VecTFIDF.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and sort search scores  via vectfidf</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_ids: token ids</li>
+<li>corpus_ids: a list of token ids as corpus</li>
+<li>topN: int, return topN result, default is 1</li>
+<li>global_idfs, bool, use global idfs calculated from large corpus when doing load_index or idfs from input corpus_ids, default is True</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>[(score, tfidf), …], …</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.VecTFIDF.search_index">
+<code class="descname">search_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.VecTFIDF.search_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>traditional tf-idf algorithm</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_ids: token ids</li>
+<li>corpus_ids: a list of token ids as corpus, if None will search from global corpus from load_index function, default is None</li>
+<li>topN: int, return topN result, default is 1</li>
+<li>global_idfs, bool, use global idfs calculated from large corpus when doing load_index or idfs from input corpus_ids, default is True</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>[(score, tfidf), …], …</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.VecTFIDF.search_index_batch">
+<code class="descname">search_index_batch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.VecTFIDF.search_index_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a batch of closest_docs requests multithreaded. Note: we can use plain threads here as scipy is outside of the GIL.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_idss: a list of token ids</li>
+<li>topN: int, return topN result, default is 1</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>a list of result from search_index</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.VecTFIDF.text2spvec">
+<code class="descname">text2spvec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.VecTFIDF.text2spvec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used in search_index</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.VecTFIDF.tf">
+<code class="descname">tf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.VecTFIDF.tf" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate term frequencies for each word in a token id list</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_ids: a token id list</li>
+<li>sentence_ids: a token id list for sentence</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd><ul class="first last simple">
+<li>1d numpy array</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ailab.text.VecTFIDF.tfidf">
+<code class="descname">tfidf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ailab.text.VecTFIDF.tfidf" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate tfidf for each id in a token list</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>word_ids: token ids</li>
+<li>sentence_ids: token ids in a sentence</li>
+<li>word_idfs: idf for token ids</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd>tfidf list</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Pengjia Zhu.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
