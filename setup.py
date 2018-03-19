@@ -18,7 +18,7 @@ def read(fname):
 
 setup(
     name = "ailab",
-    version = "0.1.1",
+    version = "0.1.2",
     author = "Pengjia Zhu",
     author_email = "zhupengjia@gmail.com",
     description = ("ailab"),

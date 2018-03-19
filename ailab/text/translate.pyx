@@ -1,7 +1,19 @@
 #!/usr/bin/env python
 #-*- coding: UTF-8 -*-
 
+'''
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
+'''
+
 class Translate:
+    '''
+        Translate module using google translate api
+
+        Method:
+            __getitem__:
+                - text: string
+                - target: target language, default is 'en'
+    '''
     def __init__(self):
         from google.cloud import translate
         self.translate_client = translate.Client()

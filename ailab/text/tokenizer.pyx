@@ -2,8 +2,21 @@
 import os, string, numpy, re, glob, json, requests
 from ..utils import restpost
 
+'''
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
+'''
+
 class Segment_Base(object):
-    def __init__(self, cfg, stopwords=True):
+    '''
+        Parent class for other tokenizer classes, please don't use this class directly
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys:
+                    - stopwords_path: the path of stopwords
+                    - ner_name_replace: dictionary, replace the entity name to the mapped name
+    '''
+    def __init__(self, cfg):
         self.stopwords = {}
         self.cfg = {'stopwords_path':None, 'ner_name_replace':{}}
         for k in cfg: self.cfg[k] = cfg[k]
@@ -20,11 +33,20 @@ class Segment_Base(object):
 
 
 class Segment_CoreNLP(Segment_Base):
+    '''
+        Stanford CoreNLP wrapper, Please check `stanford CoreNLP <https://stanfordnlp.github.io/CoreNLP/>`_ for more details
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys:
+                    - all keys mentioned in Segment_Base
+                    - CORENLP_URL: corenlp api url
+    '''
     def __init__(self, cfg):
         Segment_Base.__init__(self, cfg)
         self.server_url = cfg['CORENLP_URL']
 
-    def annotate(self, text, properties=None):
+    def _annotate(self, text, properties=None):
         assert isinstance(text, str)
         if properties is None:
             properties = {}
@@ -61,8 +83,22 @@ class Segment_CoreNLP(Segment_Base):
         return output
 
     def seg(self, sentence, remove_stopwords = True, entities_filter = None, pos_filter = None):
+        ''' segment sentence to words
+            
+            Input:
+                - sentence: string
+                - remove_stopwords: bool, default is True
+                - entities_filter: string list, will only remain the entity tokens, default is None
+                - pos_filter: string list, will only remain special pos tokens, default is None
+
+            Output: dictionary with keys:
+                - tokens: list of tokens
+                - texts: list of raw texts
+                - entities: list of entities from NER
+                - pos: list of pos tags
+        '''
         txts, tokens, entities, pos= [], [], [], []
-        for idx, sentence in enumerate(self.annotate(sentence, properties={'annotators': 'tokenize, pos, lemma, ner', 'outputFormat':'json'})['sentences']):
+        for idx, sentence in enumerate(self._annotate(sentence, properties={'annotators': 'tokenize, pos, lemma, ner', 'outputFormat':'json'})['sentences']):
             for token in sentence['tokens']:
                 if remove_stopwords and token['word'] in self.stopwords:
                     continue
@@ -81,10 +117,17 @@ class Segment_CoreNLP(Segment_Base):
     
         return {"tokens":tokens, "texts":txts, "entities":entities, 'pos':pos}
    
-    def seg_sentence(self, sentence, remove_stopwords=True, pos_filter=None):
-        return self.seg(sentence, remove_stopwords=remove_stopwords, pos_filter=pos_filter)
 
 class Segment_Spacy(Segment_Base):
+    '''
+        Spacy wrapper, Please check `Spacy <https://spacy.io/>`_ for more details
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys:
+                    - all keys mentioned in Segment_Base
+                    - cached_ner: if the key existed, will load the user defined model instead of default model.
+    '''
     def __init__(self, cfg):
         import spacy
         Segment_Base.__init__(self, cfg)
@@ -94,6 +137,24 @@ class Segment_Spacy(Segment_Base):
             self.nlp = spacy.load(cfg['LANGUAGE'])
 
     def seg(self, sentence, remove_stopwords = True, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
+        ''' segment sentence to words
+            
+            Input:
+                - sentence: string
+                - remove_stopwords: bool, default is True
+                - tags_filter: string list, will only main special tag tokens, default is None
+                - entities_filter: string list, will only remain the entity tokens, default is None
+                - pos_filter: string list, will only remain special pos tokens, default is None
+                - dep_filter: string list, will only remain special dep tokens, default is None
+
+            Output: dictionary with keys:
+                - tokens: list of tokens
+                - tags: list of detailed part-of-speech tags
+                - texts: list of raw texts
+                - entities: list of entities from NER
+                - pos: list of simple part-of-speech tags
+                - dep: list of syntactic dependency
+        '''
         txts, tokens, tags, entities, pos, dep= [], [], [], [], [], []
         for token in self.nlp(sentence):
             if remove_stopwords and token.text in self.stopwords:
@@ -122,11 +183,17 @@ class Segment_Spacy(Segment_Base):
             
         return {"tokens":tokens, "tags":tags, "texts":txts, "entities":entities, 'pos':pos, 'dep':dep}
    
-    def seg_sentence(self, sentence, remove_stopwords=True, pos_filter=['PROPN','NOUN','ADJ','PRON','ADV']):
-        return self.seg(sentence, remove_stopwords=remove_stopwords, pos_filter=pos_filter)
-
 
 class Segment_Jieba(Segment_Base):
+    '''
+        Jieba wrapper, Please check `Jieba <https://github.com/fxsjy/jieba>`_ for more details
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys:
+                    - all keys mentioned in Segment_Base
+                    - seg_dict_path: if the key existed, will load the user definded model
+    '''
     def __init__(self, cfg):
         import jieba
         Segment_Base.__init__(self, cfg)
@@ -135,6 +202,15 @@ class Segment_Jieba(Segment_Base):
         self.nlp = jieba
 
     def seg(self, sentence, remove_stopwords=True):
+        ''' segment sentence to words
+            
+            Input:
+                - sentence: string
+                - remove_stopwords: bool, default is True
+
+            Output: dictionary with keys:
+                - tokens: list of tokens
+        '''
         #sentence = re.sub(r"[\s\u0020-\u007f\u2000-\u206f\u3000-\u303f\uff00-\uffef]+", " ", sentence)
         sentence = re.sub(r"[^\w\d]+", " ", sentence)
         tokens = []
@@ -147,11 +223,19 @@ class Segment_Jieba(Segment_Base):
             tokens.append(x)
         return {"tokens":tokens}
      
-    def seg_sentence(self, sentence):
-        return self.seg(sentence, remove_stopwords=True)
-
 
 class Segment_LTP(Segment_Base):
+    '''
+        HIT-SCIR pyltp wrapper, Please check `pyltp <https://github.com/HIT-SCIR/pyltp>`_ for more details
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys:
+                    - all keys mentioned in Segment_Base
+                    - cws_model_path: path of cws model
+                    - pos_model_path: path of pos model
+                    - ner_model_path: path of ner model
+    '''
     def __init__(self, cfg):
         Segment_Base.__init__(self, cfg)
         from pyltp import Segmentor, Postagger, NamedEntityRecognizer
@@ -176,6 +260,20 @@ class Segment_LTP(Segment_Base):
             n.release()
 
     def seg(self, sentence, remove_stopwords = True, tags_filter = None, entities_filter = None, entityjoin=True):
+        ''' segment sentence to words
+            
+            Input:
+                - sentence: string
+                - remove_stopwords: bool, default is True
+                - tags_filter: string list, will only main special tag tokens, default is None
+                - entities_filter: string list, will only remain the entity tokens, default is None
+                - entityjoin: bool, will join the tokens with same entity and next to each other, default is True
+
+            Output: dictionary with keys:
+                - tokens: list of tokens
+                - tags: list of detailed part-of-speech tags
+                - entities: list of entities from NER
+        '''
         words_ = self.seg_ins.segment(sentence)
         postags_ = self.pos_ins.postag(words_)
         entities__ = []
@@ -242,6 +340,15 @@ class Segment_LTP(Segment_Base):
 
 
 class Segment_Mecab(Segment_Base):
+    '''
+        Mecab wrapper, Please check `Mecab <https://taku910.github.io/mecab/>`_ for more details
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys:
+                    - all keys mentioned in Segment_Base
+                    - seg_dict_path: mecab model path
+    '''
     def __init__(self, cfg):
         import MeCab
         self.mecab_ins = MeCab.Tagger('-d %s ' % cfg["seg_dict_path"])
@@ -249,6 +356,17 @@ class Segment_Mecab(Segment_Base):
 
     
     def seg(self, sentence, remove_stopwords=False, tags_filter=None):
+        ''' segment sentence to words
+            
+            Input:
+                - sentence: string
+                - remove_stopwords: bool, default is True
+                - tags_filter: string list, will only main special tag tokens, default is None. Some available tags are "名詞", "動詞", "助動詞", "形容詞", "助詞", "係助詞"...
+
+            Output: dictionary with keys:
+                - tokens: list of tokens
+                - tags: list of detailed part-of-speech tags
+        '''
         #sentence = re.sub(r"[\s\u0020-\u007f\u2000-\u206f\u3000-\u303f\uff00-\uffef]+", " ", sentence)
         sentence = re.sub(r"[^\w\d]+", " ", sentence)
         tokens, tags = [], []
@@ -274,14 +392,11 @@ class Segment_Mecab(Segment_Base):
             m = m.next
         return {"tokens":tokens, "tags":tags}
     
-    def seg_sentence(self, sentence):
-        tags_filter = ["名詞", "動詞", "助動詞", "形容詞"]
-        return self.seg(sentence, remove_stopwords=True, tags_filter=tags_filter)
-
-    def seg_smart(self, sentence):
-        tokens = self.seg_sentence(sentence)['tokens']
 
 class Segment_Keras(Segment_Base):
+    '''
+        Tokenizer wrote by Keras, use bi-lstm + crf, not finished, please don't use it
+    '''
     def __init__(self, cfg):
         from keras.models import Model, load_model
         from ..utils import zload
@@ -395,8 +510,18 @@ class Segment_Rest(Segment_Base):
             for k in data: filtereddata[k].append(data[k][i])
         return filtereddata
 
+
 # natural segment
 class Segment_Simple(Segment_Base):
+    '''
+        Tokenizer use regex
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys:
+                    - all keys mentioned in Segment_Base
+                    - TOKENIZER REGEX: regex string, default is [\s\.\:\;\&\'\"\/\\\(\)\[\]\{\}\%\$\#\!\?\^\&\+\`\~（）《》【】「」；：‘“’”？／。、，]
+    '''
     def __init__(self, cfg):
         Segment_Base.__init__(self, cfg)
         if not 'TOKENIZER_REGEX' in self.cfg:
@@ -406,6 +531,15 @@ class Segment_Simple(Segment_Base):
         self.re_punc = re.compile(tokenizer_regex)
     
     def seg(self, sentence, remove_stopwords = True):
+        ''' segment sentence to words
+            
+            Input:
+                - sentence: string
+                - remove_stopwords: bool, default is True
+
+            Output: dictionary with keys:
+                - tokens: list of tokens
+        '''
         tokens = [s.lower() for s in self.re_punc.split(sentence) if len(s)>0]
         if remove_stopwords:
             tokens = [s for s in tokens if s not in self.stopwords]
@@ -414,10 +548,27 @@ class Segment_Simple(Segment_Base):
 
 # character level segment
 class Segment_Char(Segment_Base):
+    '''
+        Split sentence to character list
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys:
+                    - all keys mentioned in Segment_Base
+    '''
     def __init__(self, cfg):
         Segment_Base.__init__(self, cfg)
 
     def seg(self, sentence, remove_stopwords = True):
+        ''' segment sentence to characters
+            
+            Input:
+                - sentence: string
+                - remove_stopwords: bool, default is True
+
+            Output: dictionary with keys:
+                - tokens: list of characters
+        '''
         tokens = []
         for s in sentence:
             s = s.strip().lower()
@@ -429,6 +580,31 @@ class Segment_Char(Segment_Base):
 
 
 class Segment(object):
+    '''
+        Tokenizer tool, integrate with several tools 
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys: 
+                    - TOKENIZER: string, choose for tokenizer tool:
+                        1. *corenlp*: stanford CoreNLP
+                        2. *spacy*: spacy
+                        3. *jieba*: jieba
+                        4. *ltp*: HIT-SCIR pyltp
+                        5. *mecab*: mecab
+                        6. *simple*: regex
+                        7. *char*: will split to char level
+                        8. *http://**: will use restapi
+                    - LANGUAGE: if *TOKENIZER* not exists, will check the *LANGUAGE* config:
+                        1. cn: will use jieba
+                        2. yue: will use jieba
+                        3. en: will use spacy
+                        4. jp: will use mecab
+
+        Example Usage:
+            - seg = Segment(cfg); seg.seg(sentence)
+            - support __call__ method: seg(sentence)
+    '''
     def __new__(cls, cfg):
         tokenizers = {'corenlp':Segment_CoreNLP, \
                       'spacy':Segment_Spacy, \

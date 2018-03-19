@@ -1,9 +1,24 @@
 #!/usr/bin/env python
-#search keyword using annoy, via word vectors
 import os
 #from ..utils import setLogger
 
+'''
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
+'''
+
 class AnnoySearch:
+    '''
+        Search keyword using annoy, via word vectors, please check `spotify/annoy <https://github.com/spotify/annoy>`_ for more details
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys:
+                    - annoy_ntree: int, builds a forest of annoy_ntree trees, default is 10
+                    - annoy_cache: string, cached index file path, default is ''
+                    - annoy_filter: float, similarity threshold, default is 0.5
+            - emb_ins: ailab.utils.embedding object, for word2vec source
+            - seg_ins: ailab.utils.segment object, for tokenizer
+    '''
     def __init__(self, cfg, emb_ins, seg_ins = None):
         self.cfg = {'annoy_ntree':10, 'annoy_cache':'', 'annoy_filter':0.5}
         for k in cfg: self.cfg[k] = cfg[k]
@@ -11,7 +26,14 @@ class AnnoySearch:
         self.seg_ins = seg_ins
         #self.logger = setLogger()
 
+
     def load_index(self, keywords):
+        '''
+            Build or load index(if annoy_cache existed)
+
+            Input:
+                - keywords: list of string
+        '''
         from annoy import AnnoyIndex
         self.search = AnnoyIndex(self.emb_ins.vec_len)
         if os.path.exists(self.cfg['annoy_cache']):
@@ -26,8 +48,21 @@ class AnnoySearch:
                     self.search.save(self.cfg['annoy_cache'])
                 except Exception as err: 
                     self.logger.warning('Annoy cache failed! ' + err)
-    
+
+
     def find(self, sentence, remove_stopwords=False, location=False):
+        '''
+            Search keywords from sentence
+
+            Input:
+                - sentence: string
+                - remove_stopwords: bool, if remove stopwords or not, default is False
+                - location: bool, if return keyword location or not, default is False
+
+            Output:
+                - list, format like [(keyword, location), ...] 
+
+        '''
         if isinstance(sentence, str):
             if self.seg_ins is None:
                 from .tokenizer import Segment
