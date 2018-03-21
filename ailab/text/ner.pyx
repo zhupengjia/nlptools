@@ -82,7 +82,7 @@ class NER_Base(object):
             Build the keywords index via annoy search(word vector search). Any available cfg keys please check ailab.text.annoysearch
 
             Input:
-                - emb_ins: instant of ailab.text.embedding
+                - emb_ins: instance of ailab.text.embedding
         '''
         from .annoysearch import AnnoySearch
         keywords = self.__read_keywords()
