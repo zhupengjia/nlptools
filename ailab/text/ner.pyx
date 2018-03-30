@@ -433,10 +433,10 @@ class NER(object):
                         1. *corenlp*: will use NER_CoreNLP
                         2. *spacy*: will use NER_Spacy
                         3. *ltp*: will use NER_LTP
-                        8. *http://**: will use NER_Rest
+                        4. *http://**: will use NER_Rest
                     - LANGUAGE: if *TOKENIZER* not exists, will check the *LANGUAGE* config:
                         1. cn: will use NER_LTP
-                        3. en: will use NER_Spacy
+                        2. en: will use NER_Spacy
 
         Example Usage:
             - ner = NER(cfg); ner.get(sentence)
