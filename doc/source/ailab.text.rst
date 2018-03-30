@@ -36,6 +36,14 @@ ailab\.text\.embedding module
     :undoc-members:
     :show-inheritance:
 
+ailab\.text\.synonyms module
+-----------------------------
+
+.. automodule:: ailab.text.synonyms
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 ailab\.text\.ner module
 -----------------------
 

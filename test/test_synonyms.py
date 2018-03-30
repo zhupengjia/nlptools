@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 import time
-from ailab.text.synonyms import Synonyms
-from ailab.text import Embedding, Segment
+from ailab.text import Synonyms, Embedding
 
 cfg = {'synonyms_path': '/home/pzhu/data/word2vec/en/synonyms_en.pkl',\
         'tokenizer': 'en',\
