@@ -3,9 +3,13 @@ import os, operator, sys, numpy
 from .embedding import Embedding_File
 from ..utils import zload, distance2similarity
 
+'''
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
+'''
+
 class Synonyms:
     '''
-        Get synonyms
+        Get synonyms using annoy, via word vectors
 
         Input:
             - cfg: dictionary or ailab.utils.config object
@@ -15,7 +19,6 @@ class Synonyms:
                     - synonyms_filter: similarity score filter for finding synonyms, default is 0.5
                     - synonyms_max: max number of synonyms, default is 1000
             - emb_ins: ailab.utils.embedding object, for word2vec source
-            - seg_ins: ailab.utils.segment object, for tokenizer
 
         Special usage:
             - __call__: get synonyms for word
@@ -26,13 +29,12 @@ class Synonyms:
 
     '''
 
-    def __init__(self, cfg, emb_ins, seg_ins = None):
+    def __init__(self, cfg, emb_ins):
         self.cfg = {'synonyms_path':'', 'w2v_word2idx': '', 'synonyms_filter': 0.5, 'synonyms_max': 1000}
         for k in self.cfg: 
             if k in cfg:
                 self.cfg[k] = cfg[k]
         self.emb_ins = emb_ins
-        self.seg_ins = seg_ins
         self._load_index()
 
 

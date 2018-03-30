@@ -28,7 +28,7 @@
          -  ailab/text/ner.pyx
             - ner training and predict class, also included keyword/regex entity extraction 
          -  ailab/text/translate.pyx
-            - google api to translate
+            - google api for translate
          -  ailab/text/vocab.pyx
             - dictionary class, word/character <-> id, vec, bow 
          -  ailab/text/topicmodel.pyx
@@ -37,6 +37,8 @@
             - search using acora, a keyword search engine
          -  ailab/text/annoysearch.pyx
             - use annoy for fast vector based search
+         -  ailab/text/synonyms.pyx
+            - get synonyms via word embedding
     - ailab/zoo
         some models
 
