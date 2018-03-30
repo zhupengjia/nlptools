@@ -235,14 +235,20 @@ class Segment_LTP(Segment_Base):
                     - cws_model_path: path of cws model
                     - pos_model_path: path of pos model
                     - ner_model_path: path of ner model
+                    - 
     '''
     def __init__(self, cfg):
         Segment_Base.__init__(self, cfg)
-        from pyltp import Segmentor, Postagger, NamedEntityRecognizer
+        from pyltp import Segmentor, Postagger, NamedEntityRecognizer, Parser
         self.seg_ins = Segmentor()
         self.seg_ins.load(cfg['cws_model_path'])
         self.pos_ins = Postagger()
         self.pos_ins.load(cfg['pos_model_path'])
+        if os.path.exists(cfg['parser_model_path']):
+            self.parser_ins = Parser()
+            self.parser_ins.load(cfg['parser_model_path'])
+        else:
+            self.parser_ins = None
         self.ner_ins = []
 
         for path in sorted(glob.glob(cfg['ner_model_path'])):
@@ -276,6 +282,8 @@ class Segment_LTP(Segment_Base):
         '''
         words_ = self.seg_ins.segment(sentence)
         postags_ = self.pos_ins.postag(words_)
+        if self.parser_ins is not None:
+            arcs_ = self.parser_ins.parse(words_, postags_)
         entities__ = []
         
         for n in self.ner_ins:

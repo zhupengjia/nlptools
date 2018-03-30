@@ -37,6 +37,7 @@ setup(
         "Cython",
         "pandas",
         "nameko",
+        'bidict',
         "requests"
         ],
     tests_require=['pytest'],

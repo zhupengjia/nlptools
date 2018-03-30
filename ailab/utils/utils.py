@@ -203,6 +203,13 @@ def envread(keys):
     return cfg
 
 
+def distance2similarity(distance):
+    '''
+        Convert distance to similarity
+    '''
+    return 1./(1+distance)
+
+
 #language detection
 def lang_detect(string):
     '''

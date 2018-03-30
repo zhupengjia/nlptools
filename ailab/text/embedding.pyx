@@ -78,7 +78,7 @@ class Embedding_File(Embedding_Base):
         Embedding_Base.__init__(self, cfg)
         self.word2idx = None
 
-    def __load_vec(self):
+    def _load_vec(self):
         if self.word2idx is None:
             self.word2idx = zload(self.cfg['w2v_word2idx'])
             self.idx2vec = np.load(self.cfg['w2v_idx2vec']).astype('float')
@@ -86,7 +86,7 @@ class Embedding_File(Embedding_Base):
     def __getitem__(self, word):
         if word in self.cached_vec:
             return self.cached_vec[word]
-        self.__load_vec()
+        self._load_vec()
         if word in self.word2idx:
             v = np.concatenate((self.idx2vec[self.word2idx[word]],np.zeros(1)))
         else:
@@ -97,7 +97,7 @@ class Embedding_File(Embedding_Base):
         return v
 
     def __contains__(self, word):
-        self.__load_vec()
+        self._load_vec()
         return word in self.word2idx
 
 

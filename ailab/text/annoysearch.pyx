@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os
-#from ..utils import setLogger
 
 '''
     Author: Pengjia Zhu (zhupengjia@gmail.com)
@@ -21,10 +20,11 @@ class AnnoySearch:
     '''
     def __init__(self, cfg, emb_ins, seg_ins = None):
         self.cfg = {'annoy_ntree':10, 'annoy_cache':'', 'annoy_filter':0.5}
-        for k in cfg: self.cfg[k] = cfg[k]
+        for k in self.cfg: 
+            if k in cfg:
+                self.cfg[k] = cfg[k]
         self.emb_ins = emb_ins
         self.seg_ins = seg_ins
-        #self.logger = setLogger()
 
 
     def load_index(self, keywords):
@@ -47,7 +47,7 @@ class AnnoySearch:
                 try:
                     self.search.save(self.cfg['annoy_cache'])
                 except Exception as err: 
-                    self.logger.warning('Annoy cache failed! ' + err)
+                    print('Annoy cache failed! ' + err)
 
 
     def find(self, sentence, remove_stopwords=False, location=False):
