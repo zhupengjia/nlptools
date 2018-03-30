@@ -17,28 +17,28 @@
             - parse yaml config
         -  ailab/utils/logger.py
             - create logger
-        - ailab/text
-            - some nlp tools
+    - ailab/text
+        some nlp tools
          -  ailab/text/docsim.pyx
-            - calculate distance between vectors
+            * calculate distance between vectors
          -  ailab/text/embedding.pyx
-            - read word2vec from redis/dynamodb/file/api
+            * read word2vec from redis/dynamodb/file/api
          -  ailab/text/tokenizer.pyx
-            - tokenizer, support jieba/mecab/ltp/corenlp/spacy/simple
+            * tokenizer, support jieba/mecab/ltp/corenlp/spacy/simple
          -  ailab/text/ner.pyx
-            - ner training and predict class, also included keyword/regex entity extraction 
+            * ner training and predict class, also included keyword/regex entity extraction 
          -  ailab/text/translate.pyx
-            - google api for translate
+            * google api for translate
          -  ailab/text/vocab.pyx
-            - dictionary class, word/character <-> id, vec, bow 
+            * dictionary class, word/character <-> id, vec, bow 
          -  ailab/text/topicmodel.pyx
-            - lsi, lda model
+            * lsi, lda model
          -  ailab/text/acorasearch.pyx
-            - search using acora, a keyword search engine
+            * search using acora, a keyword search engine
          -  ailab/text/annoysearch.pyx
-            - use annoy for fast vector based search
+            * use annoy for fast vector based search
          -  ailab/text/synonyms.pyx
-            - get synonyms via word embedding
+            * get synonyms via word embedding
     - ailab/zoo
         some models
 
