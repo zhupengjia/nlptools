@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import time
+import time, sys
 from ailab.text import Synonyms, Embedding
 
 cfg = {'synonyms_path': '/home/pzhu/data/word2vec/en/synonyms_en.pkl',\
@@ -11,7 +11,10 @@ emb = Embedding(cfg)
 
 s = Synonyms(cfg, emb)
 t1 = time.time()
-synonyms = s('chinese', 10, 0.5)
+synonyms = s(sys.argv[1], 100, 0.5)
 t2 = time.time()
-print(synonyms, t2-t1)
+print(t2-t1)
+for i in range(len(synonyms[0])):
+    print(synonyms[0][i],'\t\t', synonyms[1][i])
+
 

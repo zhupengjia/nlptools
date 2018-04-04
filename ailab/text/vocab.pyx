@@ -76,11 +76,15 @@ class Vocab(object):
         if idlist is not None:
             ids = idlist
         else:
-            if isinstance(wordlist, str):
-                wordlist = self.sentence2id(wordlist, update=False)
             if isinstance(wordlist[0], list):
                 wordlist = flat_list(wordlist)
-            ids = [self.word2id[w] for w in wordlist]
+            if isinstance(wordlist, str) or isinstance(wordlist[0], str):
+                ids = self.sentence2id(wordlist, update=False)
+            elif isinstance(wordlist[0], int):
+                #if wordlist is an idlist
+                ids = wordlist
+            else:
+                raise('docbow input is not supported!  your input is:' + str(wordlist))
         if isinstance(ids[0], list):
             ids = flat_list(ids)
         tfs = [self._id2tf[i] for i in ids]
