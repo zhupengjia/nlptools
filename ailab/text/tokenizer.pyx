@@ -24,7 +24,7 @@ class Segment_Base(object):
 
     def __loadStopwords(self, stopwords_path):
         if stopwords_path is not None and os.path.exists(stopwords_path):
-            with open(stopwords_path) as f:
+            with open(stopwords_path, encoding='utf-8') as f:
                 for i in f.readlines():
                     self.stopwords[i.strip()] = ''
 

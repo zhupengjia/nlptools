@@ -29,8 +29,10 @@ class Config(dict):
         elif isinstance(cfginput, argparse.Namespace):
             config = vars(cfginput)
         else:
-            with open(cfginput) as f:
+            with open(cfginput, encoding='utf-8') as f:
+                print('==========encoding utf-8')
                 config = yaml.load(f)
+            
         for k in config:
             if isinstance(config[k], (dict, argparse.Namespace)):
                 config[k] = Config(config[k])
