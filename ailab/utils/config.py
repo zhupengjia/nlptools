@@ -30,7 +30,6 @@ class Config(dict):
             config = vars(cfginput)
         else:
             with open(cfginput, encoding='utf-8') as f:
-                print('==========encoding utf-8')
                 config = yaml.load(f)
             
         for k in config:
