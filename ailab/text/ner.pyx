@@ -122,7 +122,7 @@ class NER_Base(object):
         if len(entity) > 0:
             entity, loc = tuple(zip(*entity))
             for i, il in enumerate(loc):
-                if tokens[il][0] == '{' and tokens[il][-1] == '}':
+                if tokens[il][0] == '$':
                     continue
                 k = self.keywords_kw2e[entity[i]]
                 if not k in entities:entities[k] = []
@@ -131,7 +131,7 @@ class NER_Base(object):
                 else:
                     entities[k].append(entity[i])
                 if replace:
-                    tokens[il] = '{' + k.upper() + '}'
+                    tokens[il] = '$' + k.upper()
         if replace:
             return entities, tokens
         else:
@@ -167,7 +167,7 @@ class NER_Base(object):
                     entities[reg].append(self.entity_replace[e])
                 else:
                     entities[reg].append(e)
-            replaced = re.sub(regex[reg], '{'+reg.upper()+'}', replaced)
+            replaced = re.sub(regex[reg], '$'+reg.upper(), replaced)
         if replace:
             return entities, replaced
         else:
@@ -228,14 +228,14 @@ class NER_Base(object):
             replaced = []
             for i, e in enumerate(tokens['entities']):
                 if len(tokens['tokens'][i]) < 1:continue
-                elif tokens['tokens'][i] in ['{', '}']:
+                elif tokens['tokens'][i] in ['$']:
                     continue
-                if i > 0 and i < len(tokens['tokens'])-1 and tokens['tokens'][i-1] == '{' and tokens['tokens'][i+1] == '}':
-                    replaced.append('{' + tokens['tokens'][i].upper() + '}')
+                if i > 0 and i < len(tokens['tokens'])-1 and tokens['tokens'][i-1] == '$':
+                    replaced.append('$' + tokens['tokens'][i].upper())
                 elif e not in self.cfg['ner'] or len(e) < 1:
                     replaced.append( tokens['tokens'][i] )
                 else:
-                    replaced.append( '{' + e.upper() + '}' )
+                    replaced.append( '$' + e.upper())
             for i in range(len(replaced)-1, 0, -1):
                 if replaced[i] == replaced[i-1]:
                     del replaced[i]

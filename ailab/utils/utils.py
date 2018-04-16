@@ -232,13 +232,4 @@ def lang_detect(string):
     return langs[numpy.argmax(langsnum)]
 
 
-class FailsafeDict(dict):
-    '''
-        safe dictionary, if item not exists 
-    '''
-    def __getitem__(self, item):
-        try:
-            return super().__getitem__(item)
-        except KeyError:
-            return "{" + str(item) + "}"
 
