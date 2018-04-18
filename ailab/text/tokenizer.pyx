@@ -244,7 +244,7 @@ class Segment_LTP(Segment_Base):
         self.seg_ins.load(cfg['cws_model_path'])
         self.pos_ins = Postagger()
         self.pos_ins.load(cfg['pos_model_path'])
-        if os.path.exists(cfg['parser_model_path']):
+        if 'parser_model_path' in cfg and  os.path.exists(cfg['parser_model_path']):
             self.parser_ins = Parser()
             self.parser_ins.load(cfg['parser_model_path'])
         else:
