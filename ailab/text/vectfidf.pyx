@@ -5,9 +5,20 @@ from sklearn.metrics.pairwise import pairwise_distances
 from functools import partial
 from ..utils import zload, zdump, setLogger
 
+'''
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
+'''
 
-#calculate n_count for each id in ids, output a sparse matrix
 def n_count_ids(ids):
+    '''
+        calculate n_count for each id in ids
+        
+        Input: 
+            - ids: list of int
+
+        Output:
+            - sparse matrix with (row list, col list, data list)
+    '''
     ids, doc_id = ids
     counts = Counter(ids)
     row = list(counts.keys())
@@ -16,6 +27,16 @@ def n_count_ids(ids):
     return row, col, data
 
 class VecTFIDF(object):
+    '''
+        Modified TF-IDF algorithm with wordvector
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys:
+                    - freqwords_path: path of freqword list, will force set the count of each word in the list to a large number
+                    - cached_index: path of cached index file
+            - vocab_ins: instance of ailab.text.vocab
+    '''
     def __init__(self, cfg, vocab_ins):
         self.cfg = {'freqwords_path':'', 'cached_index':''}
         for k in cfg: self.cfg[k] = cfg[k]
@@ -35,7 +56,18 @@ class VecTFIDF(object):
                     for i in self.vocab.sentence2id(w.strip(), ngrams=1, useBE=False, update=True):
                         self.freqwords[i] = 0
 
+
     def n_sim(self, word_ids, sentence_ids):
+        '''
+            Get the sum of similarities of each id in a token_id list with a sentence(another token_id list)
+
+            Input:
+                - word_ids: a token id list
+                - sentence_ids: a token id list for sentence
+
+            output:
+                - 1d numpy array
+        '''
         if len(sentence_ids) < 1:
             return 0
         if isinstance(word_ids, int):
@@ -47,15 +79,32 @@ class VecTFIDF(object):
         return score.sum(axis = 1)
 
 
-    #calculate tf
     def tf(self, word_ids, sentence_ids):
+        '''
+            calculate term frequencies for each word in a token id list
+
+            Input:
+                - word_ids: a token id list
+                - sentence_ids: a token id list for sentence
+
+            output:
+                - 1d numpy array
+        '''
         if len(sentence_ids) == 0:
             return 0
         return self.n_sim(word_ids, sentence_ids)/len(sentence_ids)
    
 
-    #count bag of words in corpus_ids
     def get_count_matrix(self, corpus_ids):
+        '''
+            count bag of words in corpus_ids
+
+            Input:
+                - corpus_ids: corpus ids, format of [[id, id, ...],...] 
+
+            Output:
+                - count matrix (scipy.sparse.csr_matrix)
+        '''
         row, col, data = [], [], []
         pool = multiprocessing.Pool(
             max(multiprocessing.cpu_count()-2, 1)
@@ -75,13 +124,31 @@ class VecTFIDF(object):
          
         return count_matrix
 
-    #Return word --> # of docs it appears in.
     def get_doc_freqs(self, cnts):
+        '''
+            Return word --> # of docs it appears in.
+            
+            Input:
+                - count matrix
+        '''
         binary = (cnts > 0).astype(int)
         freqs = numpy.array(binary.sum(1)).squeeze()
         return freqs
 
+
     def load_index(self, corpus_ids=None, retrain=False, local_use=False):
+        '''
+            Build or load index for corpus_ids
+
+            Input:
+                - corpus_ids: a list of sentence_ids. Will only be used when the index is needed to train. default is None.
+                - retrain: bool, check if index need to rebuild, default is False
+                - local_use: bool, check if return count_matrix or word_idfs. If not, they will be saved to intern variable. Else they will be returned. Default is False
+
+            Output: will only return when local_use=True
+                - count_matrix: a sparse matrix for each id count in corpus
+                - word_idfs: the idf list for a word list
+        '''
         if not local_use and os.path.exists(self.cfg['cached_index']) and not retrain:
             tmp = zload(self.cfg['cached_index'])
             self.count_matrix = tmp[0]
@@ -101,6 +168,17 @@ class VecTFIDF(object):
 
 
     def tfidf(self, word_ids, sentence_ids, word_idfs):
+        '''
+            calculate tfidf for each id in a token list
+
+            Input:
+                - word_ids: token ids
+                - sentence_ids: token ids in a sentence
+                - word_idfs: idf for token ids
+
+            Output:
+                tfidf list
+        '''
         tf = self.tf(word_ids, sentence_ids)
         idf = word_idfs[word_ids]
         #self.logger.debug('VecTFIDF: word_ids, ' + str(word_ids) + ' sentence_ids' + str(sentence_ids) + ' tf,' + str(tf) + " idf," + str(idf))
@@ -108,6 +186,19 @@ class VecTFIDF(object):
 
     #vec TF-IDF
     def search(self, word_ids, corpus_ids, topN=1, global_idfs=True):
+        '''
+            Calculate and sort search scores  via vectfidf
+
+            Input:
+                - word_ids: token ids
+                - corpus_ids: a list of token ids as corpus
+                - topN: int, return topN result, default is 1
+                - global_idfs, bool, use global idfs calculated from large corpus when doing load_index or idfs from input corpus_ids, default is True
+
+            Output:
+                - [(score, tfidf), ...], ...
+              
+        '''
         corpus_ids = pandas.Series(corpus_ids)
         if self.word_idfs is not None and global_idfs:
             word_idfs = self.word_idfs
@@ -121,8 +212,19 @@ class VecTFIDF(object):
         return list(zip(scores, tfidf))
 
     
-    #traditional TF-IDF algorithms
     def search_index(self, word_ids, corpus_ids=None, topN=1, global_idfs=True):
+        '''
+            traditional tf-idf algorithm
+
+            Input:
+                - word_ids: token ids
+                - corpus_ids: a list of token ids as corpus, if None will search from global corpus from load_index function, default is None
+                - topN: int, return topN result, default is 1
+                - global_idfs, bool, use global idfs calculated from large corpus when doing load_index or idfs from input corpus_ids, default is True
+
+            Output:
+                - [(score, tfidf), ...], ...
+        '''
         if corpus_ids is None:
             spvec = self.text2spvec(word_ids, self.word_idfs)
             res = spvec * self.count_matrix
@@ -144,8 +246,16 @@ class VecTFIDF(object):
         return list(zip(doc_ids, doc_scores))
     
     def search_index_batch(self, word_idss, topN = 1):
-        """Process a batch of closest_docs requests multithreaded.
-        Note: we can use plain threads here as scipy is outside of the GIL.
+        """
+            Process a batch of closest_docs requests multithreaded. Note: we can use plain threads here as scipy is outside of the GIL.
+
+            Input:
+                - word_idss: a list of token ids
+                - topN: int, return topN result, default is 1
+
+            Output:
+                - a list of result from search_index
+                
         """
         ncpus = max(multiprocessing.cpu_count() - 2, 1)
         with multiprocessing.pool.ThreadPool(ncpus) as threads:
@@ -154,6 +264,9 @@ class VecTFIDF(object):
         return results
     
     def text2spvec(self, word_ids, word_idfs):
+        '''
+            Used in search_index
+        '''
         # Count 
         wids_unique, wids_counts = numpy.unique(word_ids, return_counts=True)
         tfs = numpy.log1p(wids_counts)

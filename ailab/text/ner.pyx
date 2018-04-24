@@ -4,7 +4,23 @@ import os, numpy, re, uuid, shutil, glob, sys
 from .tokenizer import *
 
 
+'''
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
+'''
+
 class NER_Base(object):
+    '''
+        Parent class for other NER classes, please don't use this class directly
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys:
+                    - keywords: dictionary of {entityname: keywords list file path}, entity recognition via keywords list
+                    - ner: list, entity recognition via NER, will only remain the entity names in list
+                    - regex: dictionary of {entityname: regex}, entity recognition via REGEX.
+                    - stopwords_path: the path of stopwords
+                    - ner_name_replace: dictionary, replace the entity name to the mapped name
+    '''
     def __init__(self, cfg):
         self.cfg = cfg
         self.custom_regex = {}
@@ -46,8 +62,10 @@ class NER_Base(object):
         return keywords
 
 
-    #keywords to regex
     def build_keywords_regex(self):
+        '''
+            build keywords to regex, so the behavior of the keywords recongition will be the same as regex 
+        '''
         keywords = self.__read_keywords() 
         for k in keywords:
             keywords_temp = keywords[k]
@@ -58,9 +76,14 @@ class NER_Base(object):
             keyword = ['('+l+')' for l in keywords_temp]
             self.keywords_regex[k] = '|'.join(keyword)
 
-
-    #keywords to annoy index
+    
     def build_keywords_index(self, emb_ins):
+        '''
+            Build the keywords index via annoy search(word vector search). Any available cfg keys please check ailab.text.annoysearch
+
+            Input:
+                - emb_ins: instance of ailab.text.embedding
+        '''
         from .annoysearch import AnnoySearch
         keywords = self.__read_keywords()
         self.keywords_index = AnnoySearch(self.cfg, emb_ins)
@@ -75,6 +98,20 @@ class NER_Base(object):
 
 
     def get_keywords(self, sentence, replace = False, entities=None):
+        '''
+           get the keyword entities from sentence
+
+           Input:
+                - sentence: string or a token list
+                - replace: to replace the token to entity name in tokens list, default is False
+                - entities: the existed entity dictionary. will append the found entities to this dictionary
+            
+            Output:
+                - if the replace is True, will return (entities, tokens)
+                - if the replace is False, will return entities
+                - entities: a dictionary of entity with format of {entity name: entitiy value, ...}
+                - tokens: the token list
+        '''
         if isinstance(sentence, str):
             tokens = self.seg(sentence)['tokens']
         else:
@@ -85,7 +122,7 @@ class NER_Base(object):
         if len(entity) > 0:
             entity, loc = tuple(zip(*entity))
             for i, il in enumerate(loc):
-                if tokens[il][0] == '{' and tokens[il][-1] == '}':
+                if tokens[il][0] == '$':
                     continue
                 k = self.keywords_kw2e[entity[i]]
                 if not k in entities:entities[k] = []
@@ -94,7 +131,7 @@ class NER_Base(object):
                 else:
                     entities[k].append(entity[i])
                 if replace:
-                    tokens[il] = '{' + k.upper() + '}'
+                    tokens[il] = '$' + k.upper()
         if replace:
             return entities, tokens
         else:
@@ -103,6 +140,20 @@ class NER_Base(object):
 
     #get entities via regex
     def get_regex(self, sentence, replace = False, entities=None):
+        '''
+            get the entities from regex
+
+            Input:
+                - sentence: string
+                - replace: to replace the token to entity name in sentence, default is False
+                - entities: the existed entity dictionary. will append the found entities to this dictionary
+            
+            output:
+                - if the replace is True, will return (entities, replaced sentence)
+                - if the replace is False, will return entities
+                - entities: a dictionary of entity with format of {entity name: entitiy value, ...}
+                - replaced: replaced sentence (the entity value in sentence will be replaced to entity name)
+        '''
         if entities is None:
             entities = {}
         replaced = sentence
@@ -116,7 +167,7 @@ class NER_Base(object):
                     entities[reg].append(self.entity_replace[e])
                 else:
                     entities[reg].append(e)
-            replaced = re.sub(regex[reg], '{'+reg.upper()+'}', replaced)
+            replaced = re.sub(regex[reg], '$'+reg.upper(), replaced)
         if replace:
             return entities, replaced
         else:
@@ -124,6 +175,17 @@ class NER_Base(object):
 
     
     def get(self, sentence, entities = None):
+        '''
+            get the entities from keywords, regex, ner
+
+            Input:
+                - sentence: string or token list
+                - entities: the existed entity dictionary. will append the found entities to this dictionary
+            
+            Output: a tuple of (entities, tokens)
+                - entities: a dictionary of entity with format of {entity name: entitiy value, ...}
+                - tokens: the token list, note the entity values are replaced to entity names
+        '''
         if entities is None:
             entities = {}
         entities, replace_regex = self.get_regex(sentence, True, entities)
@@ -134,8 +196,21 @@ class NER_Base(object):
         return entities, tokens
     
     
-    #get entities via ner
     def get_ner(self, sentence, replace = False, entities=None):
+        '''
+            get the entities viaNER
+
+            Input:
+                - sentence: string or token list
+                - replace: to replace the token to entity name in tokens list, default is False
+                - entities: the existed entity dictionary. will append the found entities to this dictionary
+            
+            Output:
+                - if the replace is True, will return (entities, tokens)
+                - if the replace is False, will return entities
+                - entities: a dictionary of entity with format of {entity name: entitiy value, ...}
+                - tokens: the token list
+        '''
         if entities is None:
             entities = {}
         replace_blacklist = list(set(list(entities.keys()) + self.replace_blacklist))
@@ -153,14 +228,14 @@ class NER_Base(object):
             replaced = []
             for i, e in enumerate(tokens['entities']):
                 if len(tokens['tokens'][i]) < 1:continue
-                elif tokens['tokens'][i] in ['{', '}']:
+                elif tokens['tokens'][i] in ['$']:
                     continue
-                if i > 0 and i < len(tokens['tokens'])-1 and tokens['tokens'][i-1] == '{' and tokens['tokens'][i+1] == '}':
-                    replaced.append('{' + tokens['tokens'][i].upper() + '}')
+                if i > 0 and i < len(tokens['tokens'])-1 and tokens['tokens'][i-1] == '$':
+                    replaced.append('$' + tokens['tokens'][i].upper())
                 elif e not in self.cfg['ner'] or len(e) < 1:
                     replaced.append( tokens['tokens'][i] )
                 else:
-                    replaced.append( '{' + e.upper() + '}' )
+                    replaced.append( '$' + e.upper())
             for i in range(len(replaced)-1, 0, -1):
                 if replaced[i] == replaced[i-1]:
                     del replaced[i]
@@ -171,15 +246,32 @@ class NER_Base(object):
 
 
 class NER_CoreNLP(NER_Base, Segment_CoreNLP):
+    '''
+        The NER part uses stanford CoreNLP. The class inherit from NER_Base and ailab.text.Segment_CoreNLP
+        
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys: please check the needed keys from NER_Base and ailab.text.Segment_CoreNLP
+    '''
     def __init__(self, cfg):
         NER_Base.__init__(self,cfg)
         Segment_CoreNLP.__init__(self, cfg)
     
     def train(self, entities, data, n_iter=50):
+        '''
+            Train the corenlp user defined model, not implemented
+        '''
         raise('The function of CoreNLP ner training is not finished')
 
 
 class NER_Spacy(NER_Base, Segment_Spacy):
+    '''
+        The NER part uses Spacy. The class inherit from NER_Base and Spacy
+        
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys: please check the needed keys from NER_Base and ailab.text.Segment_Spacy
+    '''
     def __init__(self, cfg):
         NER_Base.__init__(self, cfg)
         Segment_Spacy.__init__(self, cfg)
@@ -193,6 +285,14 @@ class NER_Spacy(NER_Base, Segment_Spacy):
                 infix_finditer=infix_re.finditer)
 
     def train(self, entities, data, n_iter = 50):
+        '''
+            Train user defined NER model via spacy api.
+            
+            Input:
+                - entities: entity name list
+                - data: format of [(text, annotations), ...]. Please check `spacy document <https://spacy.io/usage/training>`_ for more details
+
+        '''
         import random
         from pathlib import Path
         if 'ner' not in self.nlp.pipe_names:
@@ -216,12 +316,25 @@ class NER_Spacy(NER_Base, Segment_Spacy):
     
 
 class NER_LTP(NER_Base, Segment_LTP):
+    '''
+        The NER part uses PyLTP. The class inherit from NER_Base and ailab.text.Segment_LTP
+        
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys: please check the needed keys from NER_Base and ailab.text.Segment_LTP
+    '''
     def __init__(self, cfg):
         NER_Base.__init__(self, cfg)
         Segment_LTP.__init__(self, cfg)
 
     
     def train_predeal(self, data):
+        '''
+            Predeal the training data to LTP training data format
+
+            Input:
+                - data: format of [(text, annotations), ...], same as spacy. Please check `spacy document <https://spacy.io/usage/training>`_ for more details
+        '''
         point = 0
         tokens, tags, entities = [], [], []
         for start,end,entity in data[1]:
@@ -266,6 +379,13 @@ class NER_LTP(NER_Base, Segment_LTP):
         return ' '.join(ltp_train)
         
     def train(self, data, maxiter=20):
+        '''
+            Train model via LTP
+
+            Input:
+                - data: the output from train_predeal
+                - maxiter: iteration number
+        '''
         nfiles = len(glob.glob(self.cfg['ner_model_path']))
         tmp_file = '/tmp/ner_train_' + uuid.uuid4().hex
         tmp_ner_file = tmp_file + '.ner'
@@ -284,15 +404,43 @@ class NER_LTP(NER_Base, Segment_LTP):
 
 
 class NER_Rest(NER_Base, Segment_Rest):
+    '''
+        The NER part uses restapi. The class inherit from NER_Base and ailab.text.Segment_Rest
+        
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys: please check the needed keys from NER_Base and ailab.text.Segment_Rest
+    '''
     def __init__(self, cfg):
         NER_Base.__init__(self, cfg)
         Segment_Rest.__init__(self, cfg)
     
     def train(self, entities, data, n_iter=50):
+        '''
+            Training the user defined NER model, not implemented.
+        '''
         raise('training via NER Rest api is not supported')
 
 
 class NER(object):
+    '''
+        Entity recognition tool, integrate with several tools 
+
+        Input:
+            - cfg: dictionary or ailab.utils.config object
+                - needed keys: 
+                    - TOKENIZER: string, choose for NER class:
+                        1. *corenlp*: will use NER_CoreNLP
+                        2. *spacy*: will use NER_Spacy
+                        3. *ltp*: will use NER_LTP
+                        4. *http://**: will use NER_Rest
+                    - LANGUAGE: if *TOKENIZER* not exists, will check the *LANGUAGE* config:
+                        1. cn: will use NER_LTP
+                        2. en: will use NER_Spacy
+
+        Example Usage:
+            - ner = NER(cfg); ner.get(sentence)
+    '''
     def __new__(cls, cfg):
         tokenizers = {'corenlp':NER_CoreNLP, \
                       'spacy':NER_Spacy, \

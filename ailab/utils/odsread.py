@@ -1,7 +1,17 @@
 #!/usr/bin/env python
 import xml.etree.ElementTree as XET
 
+'''
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
+'''
+
 class odsread:
+    '''
+        read ods file
+
+        Input:
+            - filename: ods filepath
+    '''
     def __init__(self,filename):
         from zipfile import ZipFile
         ziparchive = ZipFile(filename, "r")
@@ -45,6 +55,12 @@ class odsread:
         return False
 
     def parse(self,tablename):
+        '''
+            parse the ods table
+
+            input:
+                - tablename: string
+        '''
         tables=self.__findtagall(self.xmltree,"table")
         table=self.__findtreewithattrib(tables,"name",tablename)
         rows=self.__findtagall(table,"table-row")
@@ -68,18 +84,50 @@ class odsread:
                     else:
                         self.hrefs[-1].append(None)
 
+
     def getvalue(self,row,col):
+        '''
+            get value with row and col number
+
+            input:
+                - row: row number
+                - col: col number
+
+            output:
+                - value
+        '''
         if row<len(self.values):
             if col<len(self.values[row]):
                 return self.values[row][col]
         return False
 
+
     def getvalbyrow(self,row):
+        '''
+            get value for special row 
+
+            input:
+                - row: row number
+
+            output:
+                - value list
+        '''
+
         if row<len(self.values):
             return self.values[row]
         return False
 
+
     def getvalbycol(self,col):
+        '''
+            get value for special col
+
+            input:
+                - row: col number
+
+            output:
+                - value list
+        '''
         vals=[]
         for rows in self.values:
             if col<len(rows):
@@ -88,9 +136,10 @@ class odsread:
                 vals.append("")
         return vals
 
+
 if __name__ == '__main__':
     bcmconstfile="/home/pzhu/work/run record/bcm calibration.ods"
     ods=odsread(bcmconstfile)
     ods.parse("bcm")
     for col in ods.getvalbycol(14):
-        print col
+        print(col)

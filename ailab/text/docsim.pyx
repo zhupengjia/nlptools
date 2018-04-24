@@ -3,18 +3,43 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_distances
 from scipy.spatial.distance import cosine
 
+
+'''
+    Author: Zhiqiang Yao, Pengjia Zhu (zhupengjia@gmail.com)
+'''
+
 class DocSim(object):
+    '''
+        Calculate similarities between sentences
+
+        Input:
+            - vocab: ailab.text.vocab object
+    '''
     def __init__(self, vocab):
         self.vocab = vocab
 
 
     def min_word_distance(self, sentence_id1, sentence_id2):
+        '''
+            Minimum word distance between two sentences
+
+            Input:
+                - sentence_id1: word_id list for sentence1
+                - sentence_id2: word_id list for sentence2 
+        '''
         vec1 = self.vocab.senid2vec(sentence_id1)
         vec2 = self.vocab.senid2vec(sentence_id2)
         return cosine_distances(vec1, vec2).min()
     
    
     def wcd_distance(self, sentence_id1, sentence_id2):
+        '''
+            Word center distance between two sentences
+
+            Input:
+                - sentence_id1: word_id list for sentence1
+                - sentence_id2: word_id list for sentence2 
+        '''
         if len(sentence_id1) < 1 or len(sentence_id2) < 1:
             return float('inf')
         words = np.unique(sentence_id1 + sentence_id2)
@@ -36,6 +61,13 @@ class DocSim(object):
 
 
     def wmd_distance(self, sentence_id1, sentence_id2):
+        '''
+            Word mover's distance between two sentences
+
+            Input:
+                - sentence_id1: word_id list for sentence1
+                - sentence_id2: word_id list for sentence2 
+        '''
         from pyemd import emd
         if len(sentence_id1) < 1 or len(sentence_id2) < 1:
             return float('inf')
@@ -59,6 +91,13 @@ class DocSim(object):
     
 
     def rwmd_distance(self, sentence_id1, sentence_id2):
+        '''
+            Relaxation word mover's distance between two sentences
+
+            Input:
+                - sentence_id1: word_id list for sentence1
+                - sentence_id2: word_id list for sentence2 
+        '''
         if len(sentence_id1) < 1 or len(sentence_id2) < 1:
             return float('inf')
         words = np.unique(sentence_id1 + sentence_id2)
@@ -86,12 +125,26 @@ class DocSim(object):
 
 
     def idf_weighted_distance(self, sentence_id1, sentence_id2):
+        '''
+            IDF weighted distance between two sentences
+
+            Input:
+                - sentence_id1: word_id list for sentence1
+                - sentence_id2: word_id list for sentence2 
+        '''
         vec1 = self.vocab.ave_vec(sentence_id1)
         vec2 = self.vocab.ave_vec(sentence_id2)
         return self.distance(vec1, vec2)
    
 
     def distance(self, vec1, vec2):
+        '''
+            Cosine distance between two vectors
+
+            Input:
+                - vec1: first vector
+                - vec2: second vector
+        '''
         return cosine(vec1, vec2)
 
 

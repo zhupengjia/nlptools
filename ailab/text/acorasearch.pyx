@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-#search keyword using acora
+
+'''
+    Author: Zhiqiang Yao
+'''
 
 from itertools import groupby
 from operator import itemgetter
 
 
 class AcoraSearch:
+    '''
+        search keyword using acora, please check `Acora <https://pypi.python.org/pypi/acora/>`_ for more details
+
+        Input:
+            - keywords: a keywords list to build an index
+            - vocab: ailab.text.vocab object, used to convert word to id, default is None(avoid converting word to id)
+    '''
     def __init__(self, keywords, vocab=None):
         from acora import AcoraBuilder
         builder = AcoraBuilder()
@@ -18,7 +28,17 @@ class AcoraSearch:
         #Generate the Acora search engine for the current keyword set:
         self.engine = builder.build()
 
+
     def find(self, input):
+        '''
+        Find keywords from input, search for all occurrences
+        
+        Input:
+            - input: string
+        
+        Output:
+            - list, if vocab=None format like [(word, wordpos), ...], if vocab existed, format like [(word, wordid and word position), ...]
+        '''
         result =  self.engine.findall(input)
         if self.vocab is None:
             return result
@@ -28,14 +48,35 @@ class AcoraSearch:
             
             return list(zip(word, wordid, pos))
 
+
     def find_longest(self, input):
+        '''
+        Find the longest match from input
+
+
+        Input:
+            - input: string
+        
+        Output:
+            - list, if vocab=None format like (word, wordpos), if vocab existed, format like (word, wordid and word position)
+        '''
         def longest_match(matches):
             for pos, match_set in groupby(matches, itemgetter(1)):
                 yield max(match_set)
 
         return longest_match(self.find(input))
 
+
     def find_max_match(self, input):
+        '''
+        Find the max match from input
+
+        Input:
+            - input: string
+        
+        Output:
+            - list, if vocab=None format like (word, wordpos), if vocab existed, format like (word, wordid and word position)
+        '''
         def subset(a, b):
             if (a[1] >= b[1]) and ((a[1] + len(a[0])) <= (b[1] + len(b[0]))):
                 return True

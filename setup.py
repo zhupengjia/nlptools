@@ -18,7 +18,7 @@ def read(fname):
 
 setup(
     name = "ailab",
-    version = "0.1.0",
+    version = "0.1.2",
     author = "Pengjia Zhu",
     author_email = "zhupengjia@gmail.com",
     description = ("ailab"),
@@ -37,10 +37,11 @@ setup(
         "Cython",
         "pandas",
         "nameko",
+        'bidict',
         "requests"
         ],
     tests_require=['pytest'],
-    ext_modules = cythonize(["ailab/*/*.pyx", "ailab/*/*/*.pyx"]),
+    ext_modules = cythonize(["ailab/*/*.pyx", "ailab/*/*/*/*.pyx"]),
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
