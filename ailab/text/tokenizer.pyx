@@ -31,7 +31,7 @@ class Segment_CoreNLP(Segment_Base):
         else:
             assert isinstance(properties, dict)
 
-        r = requests.post(self.server_url, params={'properties': str(properties)}, data=text, headers={'Connection': 'close'})
+        r = requests.post(self.server_url, params={'properties': str(properties)}, data=text.encode('utf-8'), headers={'Connection': 'close'})
         output = r.text
         if ('outputFormat' in properties
              and properties['outputFormat'] == 'json'):
