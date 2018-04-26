@@ -399,8 +399,7 @@ class Vocab(object):
             sentence_char = self.seg_char.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
             ids['char'] = [func_add_word(t) for t in sentence_char]
             ids['char'] = [i for i in ids['char'] if i is not None]
-        
-        ids = {n:ids[n] for n in ngrams}
+        ids = {n:ids[n] for n in ngrams if n in ids}
         if flatresult:
             return flat_list(ids.values())
         else:
