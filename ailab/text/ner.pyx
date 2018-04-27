@@ -333,7 +333,7 @@ class NER_LTP(NER_Base, Segment_LTP):
             Predeal the training data to LTP training data format
 
             Input:
-                - data: format of [(text, annotations), ...], same as spacy. Please check `spacy document <https://spacy.io/usage/training>`_ for more details
+                - data: format of (text, [(start, end, entityname), ]), same as spacy. Please check `spacy document <https://spacy.io/usage/training>`_ for more details
         '''
         point = 0
         tokens, tags, entities = [], [], []
@@ -383,7 +383,7 @@ class NER_LTP(NER_Base, Segment_LTP):
             Train model via LTP
 
             Input:
-                - data: the output from train_predeal
+                - data: list of tuple with format of (text, [(start, end, entityname), ])
                 - maxiter: iteration number
         '''
         nfiles = len(glob.glob(self.cfg['ner_model_path']))
