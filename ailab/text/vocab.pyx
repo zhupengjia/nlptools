@@ -435,6 +435,7 @@ class Vocab(object):
                 vectors[k] = 0
             else:
                 vectors[k] = self.id2vec(k)
+
         return vectors
 
 
@@ -464,7 +465,7 @@ class Vocab(object):
         if self.emb_ins is None:
             return None
         vec = numpy.zeros((len(sentence_id), self.emb_ins.vec_len), 'float')
-        for i,sid in enumerate(sentence_id):
+        for i, sid in enumerate(sentence_id):
             vec[i] = self.id2vec(sid)
         return vec
 

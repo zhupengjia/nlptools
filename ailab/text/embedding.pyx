@@ -31,6 +31,8 @@ class Embedding_Base(object):
         self.__get_cached_vec()
         if self.cfg['w2v_adddim']:
             self.vec_len = int(self.cfg['vec_len']) + 1
+        else:
+            self.vec_len = int(self.cfg['vec_len']) 
    
 
     def distance(self, word1, word2):
@@ -59,7 +61,7 @@ class Embedding_Base(object):
             else:
                 v = np.concatenate((np.random.randn(self.vec_len - 1), np.ones(1)))
         else:
-            if not v:
+            if v is None:
                 v = np.random.randn(self.vec_len)
         if returnbase64:
             v = base64.b64encode(v.tostring()).decode()
@@ -106,6 +108,7 @@ class Embedding_File(Embedding_Base):
         v = self.idx2vec[self.word2idx[word]] if word in self.word2idx else None
         v = self._postdeal(v, 'RETURNBASE64' in self.cfg)
         self.cached_vec[word] = v
+        #print(v)
         return v
 
     def __contains__(self, word):
@@ -139,7 +142,7 @@ class Embedding_Redis(Embedding_Base):
         if word in self.cached_vec:
             return self.cached_vec[word]
         v = self.redis_ins.get(word)
-        if not v:
+        if v is None:
             v = self._postdeal(v, 'RETURNBASE64' in self.cfg)
         else:
             if not 'RETURNBASE64' in self.cfg:
