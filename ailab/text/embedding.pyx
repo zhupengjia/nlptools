@@ -22,14 +22,14 @@ class Embedding_Base(object):
                     - vec_len: int, vector length, default is 300
                     - vec_type: type of saved vector, default is float64
                     - cached_w2v: the cache path in local, default is ''
-                    - outofvocab: 0 for random, 1 for random but with additional dim, default is 0
+                    - w2v_adddim: 0 for random, 1 for random but with additional dim, default is 0
                 
     '''
     def __init__(self, cfg):
-        self.cfg = {'vec_len':300, 'vec_type':'float64', 'cached_w2v':'', 'outofvocab': 0}
+        self.cfg = {'vec_len':300, 'vec_type':'float64', 'cached_w2v':'', 'w2v_adddim': 0}
         for k in cfg:self.cfg[k] = cfg[k]
         self.__get_cached_vec()
-        if self.cfg['outofvocab']:
+        if self.cfg['w2v_adddim']:
             self.vec_len = int(self.cfg['vec_len']) + 1
    
 
@@ -53,7 +53,7 @@ class Embedding_Base(object):
    
     
     def _postdeal(self, v = None, returnbase64 = False):
-        if self.cfg['outofvocab']:
+        if self.cfg['w2v_adddim']:
             if v:
                 v = np.concatenate((v, np.zeros(1)))
             else:
