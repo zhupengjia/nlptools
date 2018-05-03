@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import numpy, os, random
+import numpy, os, random, copy
 import unicodedata
 from .tokenizer import Segment, Segment_Char
 from ..utils import zload, zdump, hashword, normalize, flat_list
@@ -357,9 +357,9 @@ class Vocab(object):
             else: return {}
         else:
             sentence_seg = sentence
-
+        
         if ngrams is None:
-            ngrams = self.cfg['ngrams']
+            ngrams = copy.deepcopy(self.cfg['ngrams'])
         elif isinstance(ngrams, int):
             ngrams = list(range(1, ngrams+1))
             
