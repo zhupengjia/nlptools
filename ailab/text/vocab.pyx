@@ -29,6 +29,7 @@ class Vocab(object):
             - __add__: join several ailab.text.vocab together
             - __call__: get ids for sentence list. Input is [sentence, ...], or [token_list, ...]
             - __getitem__: get id for word
+            - __len__: get vocab size
             - __contains__: checkout if word or id in vocab
     '''
     def __init__(self, cfg=None, seg_ins=None, emb_ins=None, forceinit=False):
@@ -161,19 +162,9 @@ class Vocab(object):
             return None
 
 
-    @property
-    def Nwords(self):
-        '''
-            Property of the class
-
-            Output:
-                - number of words
-        '''
-        return len(self._id2word)
-
-
     def __len__(self):
-        return len(self._id2word)
+        return self.vocab_size
+
 
     def reduce_vocab(self, vocab_size=None, reorder=False):
         '''
@@ -419,7 +410,6 @@ class Vocab(object):
         '''
             return a numpy array of word vectors. The index of array is the word_ids
         '''
-        self.get_id2vec()
         vectors = numpy.zeros((self._vocab_max+1, self.emb_ins.vec_len), 'float')
         for k in self._id2word:
             if k == 0:
