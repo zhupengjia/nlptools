@@ -415,15 +415,6 @@ class Vocab(object):
         return ' '.join([self._id2word[i] for i in ids])
 
     
-    def get_id2vec(self):
-        '''
-            Get all word vectors for all word_ids, Used to cache word vectors, combine with save function 
-        '''
-        if self.emb_ins is None:
-            return None
-        for i in self._id2word:
-            self.id2vec(i)
-    
     def dense_vectors(self):
         '''
             return a numpy array of word vectors. The index of array is the word_ids
@@ -431,7 +422,7 @@ class Vocab(object):
         self.get_id2vec()
         vectors = numpy.zeros((self._vocab_max+1, self.emb_ins.vec_len), 'float')
         for k in self._id2word:
-            if k == self._id_PAD:
+            if k == 0:
                 vectors[k] = 0
             else:
                 vectors[k] = self.id2vec(k)
