@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import numpy, os, random, copy
 import unicodedata
-from .tokenizer import Segment, Segment_Char
-from ..utils import zload, zdump, hashword, normalize, flat_list
+from .tokenizer import Tokenizer, Tokenizer_Char, Tokenizer_Simple
+from .embedding import Embedding_Random
+from ..utils import zload, zdump, normalize, flat_list
 
 '''
     Author: Pengjia Zhu (zhupengjia@gmail.com)
@@ -14,16 +15,12 @@ class Vocab(object):
         Vocab dictionary class, also support to accumulate term frequency, return embedding matrix, sentence to id
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - cached_vocab: string, cached vocab file path, default is ''
-                    - vocab_size: int, the dictionary size, default is 2**24. If the number<30, then the size is 2**vocab_size, else the size is *vocab_size*.
-                    - ngrams: int, ngrams for sentence2id function, default is 1
-                    - outofvocab: string, the behavior of outofvocab token, default is 'unk'. Two options: 'unk' and 'random'. 'unk' will fill with 'unk', 'random' will fill with a random token
-                    - hashgenerate: bool, the token id generate from hash or accumulating. Default is False
-            - seg_ins: instance of ailab.text.tokenizer.segment
-            - emb_ins: instance of ailab.text.embedding
-            - forceinit: bool, if true will always init a new vocab. Default is False  
+            - cached_vocab: string, cached vocab file path, default is ''
+            - vocab_size: int, the dictionary size, default is 1M. If the number<30, then the size is 2**vocab_size, else the size is *vocab_size*.
+            - ngrams: int or list of int, ngrams for sentence2id function, default is 1
+            - outofvocab: string, the behavior of outofvocab token, default is 'unk'. Two options: 'unk' and 'random'. 'unk' will fill with 'unk', 'random' will fill with a random token
+            - tokenizer: instance of text.tokenizer, default is None(use regex tokenizer)
+            - embedding: instance of text.embedding, default is None(use random vector)
 
         Some special operation:
             - __add__: join several ailab.text.vocab together
@@ -32,25 +29,24 @@ class Vocab(object):
             - __len__: get vocab size
             - __contains__: checkout if word or id in vocab
     '''
-    def __init__(self, cfg=None, seg_ins=None, emb_ins=None, forceinit=False):
-        self.cfg = {'cached_vocab': '', 'vocab_size': 2**24, 'ngrams':1, 'outofvocab':'unk', 'hashgenerate':0}
-        if cfg is not None:
-            for k in cfg: self.cfg[k] = cfg[k]
-        if isinstance(self.cfg['ngrams'], int):
-            self.cfg['ngrams'] = list(range(1, self.cfg['ngrams']+1))
-        self.seg_ins = seg_ins
-        self.seg_ins_emb = seg_ins is None # if tokenizer embedded in Vocab or as a parameter input
-        self.seg_char = Segment_Char(cfg)
-        self.emb_ins = emb_ins
-        self.vocab_size = int(self.cfg['vocab_size'])
+    def __init__(self, cached_vocab='', vocab_size=1000000, ngrams=1, outofvocab='unk', tokenizer=None, embedding=None):
+        if isinstance(ngrams, int):
+            ngrams = list(range(1, ngrams+1))
+        self.ngrams = ngrams
+        self.cached_vocab = cached_vocab
+        self.outofvocab = outofvocab
+        self.tokenizer = tokenizer if tokenizer is not None else Tokenizer_Simple() 
+        self.tokenizer_char = Tokenizer_Char()
+        self.embedding = embedding if embedding is not None else Embedding_Random()
+        self.vocab_size = int(self.vocab_size)
         if self.vocab_size < 30:
-            self.vocab_size = 2**int(self.cfg['vocab_size'])
-        self.__get_cached_vocab(forceinit)
+            self.vocab_size = 2**int(self.vocab_size)
+        self.__get_cached_vocab()
+
 
     def __del__(self):
-        del self._id2word, self._word2id, self._id2tf, self._id_ngrams
-        if self.seg_ins_emb: 
-            del self.seg_ins
+        del self._id2word, self._word2id, self._id2tf, self._id_ngrams, self.tokenizer
+
 
     def addBE(self):
         '''
@@ -60,6 +56,7 @@ class Vocab(object):
         self._id_spec = [self.word2id(w) for w in self._word_spec]
         self.PAD, self.EOS, self.BOS, self.UNK = tuple(self._word_spec)
         self._id_PAD, self._id_EOS, self._id_BOS, self._id_UNK = tuple(self._id_spec)
+
 
     def doc2bow(self, wordlist = None, idlist=None):
         '''
@@ -91,12 +88,13 @@ class Vocab(object):
         tfs = [self._id2tf[i] for i in ids]
         return list(zip(ids, tfs))
 
+
     def __get_cached_vocab(self, forceinit):
         ifinit = True
         self._id_UNK = 0
-        if os.path.exists(self.cfg['cached_vocab']) and not forceinit:
+        if os.path.exists(self.cached_vocab):
             try:
-                cached_vocab = zload(self.cfg['cached_vocab'])
+                cached_vocab = zload(self.cached_vocab)
                 self._id2word, self._word2id, self._id2tf, self._id_ngrams  = cached_vocab
                 if len(self._id2word) > 0:
                     self._vocab_max = max(self._id2word)
@@ -110,15 +108,15 @@ class Vocab(object):
             self._id2tf = numpy.zeros(self.vocab_size, 'int')
             self._vocab_max = -1
             self._id_ngrams = {}
-        if any([n>1 for n in self.cfg['ngrams']]):
+        if any([n>1 for n in self.ngrams]):
             self.addBE()
 
     def save(self):
         '''
             Save the vocab dictionary to *cached_vocab*
         '''
-        if len(self.cfg['cached_vocab']) > 0:
-            zdump((self._id2word, self._word2id, self._id2tf, self._id_ngrams), self.cfg['cached_vocab'])
+        if len(self.cached_vocab) > 0:
+            zdump((self._id2word, self._word2id, self._id2tf, self._id_ngrams), self.cached_vocab)
 
 
     def accumword(self, word, fulfill=True, tfaccum = True):
@@ -138,24 +136,17 @@ class Vocab(object):
             if tfaccum: self._id2tf[self._word2id[word]] += 1
             return self._word2id[word]
         elif fulfill:
-            if self.cfg['hashgenerate']:
-                wordid = hashword(word, self.vocab_size)
-                if wordid > self._vocab_max:
-                    self._vocab_max = wordid
+            if self._vocab_max < self.vocab_size - 1:
+                self._vocab_max += 1
+                wordid = self._vocab_max
                 self._id2word[wordid] = word
                 self._id2tf[wordid] = 1
             else:
-                if self._vocab_max < self.vocab_size - 1:
-                    self._vocab_max += 1
-                    wordid = self._vocab_max
-                    self._id2word[wordid] = word
-                    self._id2tf[wordid] = 1
+                if self.outofvocab=='random':
+                    wordid = random.randint(0, self.vocab_size-1)
                 else:
-                    if self.cfg['outofvocab']=='random':
-                        wordid = random.randint(0, self.vocab_size-1)
-                    else:
-                        wordid = self._id_UNK
-                    self._id2tf[wordid] += 1
+                    wordid = self._id_UNK
+                self._id2tf[wordid] += 1
             self._word2id[word] = wordid
             return wordid
         else:
@@ -166,7 +157,7 @@ class Vocab(object):
         return self.vocab_size
 
 
-    def reduce_vocab(self, vocab_size=None, reorder=False):
+    def reduce(self, vocab_size=None, reorder=False):
         '''
             reduce vocab size by tf.
             
@@ -187,39 +178,28 @@ class Vocab(object):
         new_id2tf = numpy.zeros(self.vocab_size, 'int')
         new_id_ngrams = {}
         id_mapping = {}
-        if self.cfg['hashgenerate']:
-            for old_id in self._id2word:
-                word = self._id2word[old_id]
-                new_id = old_id % self.vocab_size
-                new_id2word[new_id] = word
-                new_word2id[word] = new_id
-                new_id2tf[new_id] = self._id2tf[old_id]
-            for old_id in self._id_ngrams:
-                new_id = old_id % self.vocab_size
-                new_id_ngrams[new_id] = [i % self.vocab_size for i in self._id_ngrams[old_id]]
-        else:
-            maxtf = self._id2tf.max()
-            for i in range(len(self._id_spec)):
-                self._id2tf[self._id_spec[i]] = maxtf + len(self._id_spec) - i #avoid remove spec vocab
-            sortedid = numpy.argsort(self._id2tf)[::-1]
-            new_id_N = 0
-            for old_id in sortedid:
-                if not old_id in self._id2word: continue
-                word = self._id2word[old_id]
-                if new_id_N >= vocab_size:
-                    if self.cfg['outofvocab']=='random':
-                        new_id = random.randint(0, vocab_size-1)
-                    else:
-                        new_id = self._id_UNK
+        maxtf = self._id2tf.max()
+        for i in range(len(self._id_spec)):
+            self._id2tf[self._id_spec[i]] = maxtf + len(self._id_spec) - i #avoid remove spec vocab
+        sortedid = numpy.argsort(self._id2tf)[::-1]
+        new_id_N = 0
+        for old_id in sortedid:
+            if not old_id in self._id2word: continue
+            word = self._id2word[old_id]
+            if new_id_N >= vocab_size:
+                if self.outofvocab=='random':
+                    new_id = random.randint(0, vocab_size-1)
                 else:
-                    new_id = new_id_N
-                    new_id2tf[new_id] = self._id2tf[old_id]
-                    new_id2word[new_id] = word
-                    new_id_N += 1
-                id_mapping[old_id] = new_id
-                new_word2id[word] = new_id
-            for old_id in self._id_ngrams:
-                new_id_ngrams[id_mapping[old_id]] = [id_mapping[i] for i in self._id_ngrams[old_id]]
+                    new_id = self._id_UNK
+            else:
+                new_id = new_id_N
+                new_id2tf[new_id] = self._id2tf[old_id]
+                new_id2word[new_id] = word
+                new_id_N += 1
+            id_mapping[old_id] = new_id
+            new_word2id[word] = new_id
+        for old_id in self._id_ngrams:
+            new_id_ngrams[id_mapping[old_id]] = [id_mapping[i] for i in self._id_ngrams[old_id]]
         self._id2word = new_id2word
         self._word2id = new_word2id
         self._id2tf = new_id2tf
@@ -338,11 +318,9 @@ class Vocab(object):
 
         '''
         if isinstance(sentence, str):
-            if self.seg_ins is None:
-                self.seg_ins = Segment(self.cfg)
-            sentence_seg = self.seg_ins.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
+            sentence_seg = self.tokenizer.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
             if charlevel and charngram:
-                sentence_seg += self.seg_char.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
+                sentence_seg += self.tokenizer_char.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
         elif sentence == None:
             if flatresult: return []
             else: return {}
@@ -350,7 +328,7 @@ class Vocab(object):
             sentence_seg = sentence
         
         if ngrams is None:
-            ngrams = copy.deepcopy(self.cfg['ngrams'])
+            ngrams = copy.deepcopy(self.ngrams)
         elif isinstance(ngrams, int):
             ngrams = list(range(1, ngrams+1))
             
@@ -387,7 +365,7 @@ class Vocab(object):
         if charlevel:
             ngrams.append('char')
         if charlevel and not charngram:
-            sentence_char = self.seg_char.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
+            sentence_char = self.tokenizer_char.seg(sentence, remove_stopwords=remove_stopwords)['tokens']
             ids['char'] = [func_add_word(t) for t in sentence_char]
             ids['char'] = [i for i in ids['char'] if i is not None]
         ids = {n:ids[n] for n in ngrams if n in ids}
@@ -410,7 +388,7 @@ class Vocab(object):
         '''
             return a numpy array of word vectors. The index of array is the word_ids
         '''
-        vectors = numpy.zeros((self._vocab_max+1, self.emb_ins.vec_len), 'float')
+        vectors = numpy.zeros((self._vocab_max+1, self.embedding.vec_len), 'float')
         for k in self._id2word:
             if k == 0:
                 vectors[k] = 0
@@ -443,9 +421,9 @@ class Vocab(object):
             Output:
                 - numpy array. The array index is the id index in input
         '''
-        if self.emb_ins is None:
+        if self.embedding is None:
             return None
-        vec = numpy.zeros((len(sentence_id), self.emb_ins.vec_len), 'float')
+        vec = numpy.zeros((len(sentence_id), self.embedding.vec_len), 'float')
         for i, sid in enumerate(sentence_id):
             vec[i] = self.id2vec(sid)
         return vec
@@ -462,9 +440,9 @@ class Vocab(object):
                 - 1d numpy array. If word_id is multigram's id, will return the sum of the vectors in this gram 
         '''
         if word_id in self._id_ngrams:
-            return numpy.sum([self.emb_ins[self._id2word[ii]] for ii in self._id_ngrams[word_id]], axis=0)
+            return numpy.sum([self.embedding[self._id2word[ii]] for ii in self._id_ngrams[word_id]], axis=0)
         else:
-            return self.emb_ins[self._id2word[word_id]]
+            return self.embedding[self._id2word[word_id]]
 
 
     def ave_vec(self, sentence_id):
@@ -477,14 +455,14 @@ class Vocab(object):
             Output:
                 - 1d numpy array
         '''
-        vec = numpy.zeros(self.emb_ins.vec_len, 'float')
+        vec = numpy.zeros(self.embedding.vec_len, 'float')
         tottf = 0
         for i, sid in enumerate(sentence_id):
             w = numpy.log(self.Nwords/(self._id2tf[sid]))
-            vec += self.emb_ins[self._id2word[sid]]*w
+            vec += self.embedding[self._id2word[sid]]*w
             tottf += w
         if tottf == 0:
-            return numpy.zeros(self.emb_ins.vec_len)
+            return numpy.zeros(self.embedding.vec_len)
         return vec/tottf
 
 

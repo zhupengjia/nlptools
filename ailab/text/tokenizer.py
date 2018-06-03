@@ -6,21 +6,18 @@ from ..utils import restpost
     Author: Pengjia Zhu (zhupengjia@gmail.com)
 '''
 
-class Segment_Base(object):
+class Tokenizer_Base(object):
     '''
         Parent class for other tokenizer classes, please don't use this class directly
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - stopwords_path: the path of stopwords
-                    - ner_name_replace: dictionary, replace the entity name to the mapped name
+            - stopwords_path: the path of stopwords, default is None
+            - ner_name_replace: dictionary, replace the entity name to the mapped name. Default is None
     '''
-    def __init__(self, cfg):
+    def __init__(self, stopwords_path = None, ner_name_replace = None):
         self.stopwords = {}
-        self.cfg = {'stopwords_path':None, 'ner_name_replace':{}}
-        for k in cfg: self.cfg[k] = cfg[k]
-        self.__loadStopwords(self.cfg['stopwords_path'])
+        self.__loadStopwords(stopwords_path)
+
 
     def __loadStopwords(self, stopwords_path):
         if stopwords_path is not None and os.path.exists(stopwords_path):
@@ -28,23 +25,23 @@ class Segment_Base(object):
                 for i in f.readlines():
                     self.stopwords[i.strip()] = ''
 
+
     def __call__(self, sentence):
         return self.seg(sentence)
 
 
-class Segment_CoreNLP(Segment_Base):
+class Tokenizer_CoreNLP(Tokenizer_Base):
     '''
         Stanford CoreNLP wrapper, Please check `stanford CoreNLP <https://stanfordnlp.github.io/CoreNLP/>`_ for more details
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - all keys mentioned in Segment_Base
-                    - CORENLP_URL: corenlp api url
+            - corenlp_url: corenlp api url
+            - stopwords_path: the path of stopwords, default is None
+            - ner_name_replace: dictionary, replace the entity name to the mapped name. Default is None
     '''
-    def __init__(self, cfg):
-        Segment_Base.__init__(self, cfg)
-        self.server_url = cfg['CORENLP_URL']
+    def __init__(self, corenlp_url, **args):
+        Tokenizer_Base.__init__(self, **args)
+        self.server_url = corenlp_url
 
     def _annotate(self, text, properties=None):
         assert isinstance(text, str)
@@ -104,8 +101,8 @@ class Segment_CoreNLP(Segment_Base):
                     continue
                 if pos_filter is not None and token['pos'] not in pos_filter:
                     continue
-                if self.cfg['ner_name_replace'] is not None and token['ner'] in self.cfg['ner_name_replace']:
-                    token['ner'] = self.cfg['ner_name_replace'][token['ner']]
+                if self.ner_name_replace is not None and token['ner'] in self.ner_name_replace:
+                    token['ner'] = self.ner_name_replace[token['ner']]
                 if entities_filter is not None and token['ner'] not in entities_filter:
                     continue
                 if len(token['lemma'])<1:
@@ -118,23 +115,19 @@ class Segment_CoreNLP(Segment_Base):
         return {"tokens":tokens, "texts":txts, "entities":entities, 'pos':pos}
    
 
-class Segment_Spacy(Segment_Base):
+class Tokenizer_Spacy(Tokenizer_Base):
     '''
         Spacy wrapper, Please check `Spacy <https://spacy.io/>`_ for more details
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - all keys mentioned in Segment_Base
-                    - cached_ner: if the key existed, will load the user defined model instead of default model.
+            - spacy_model: model name or model path used for spacy.load, default is 'en'
+            - stopwords_path: the path of stopwords, default is None
+            - ner_name_replace: dictionary, replace the entity name to the mapped name. Default is None
     '''
-    def __init__(self, cfg):
+    def __init__(self, spacy_model='en', **args):
         import spacy
-        Segment_Base.__init__(self, cfg)
-        if 'cached_ner' in cfg:
-            self.nlp = spacy.load(cfg['cached_ner'])
-        else:
-            self.nlp = spacy.load(cfg['LANGUAGE'])
+        Tokenizer_Base.__init__(self, **args)
+        self.nlp = spacy.load(spacy_model)
 
     def seg(self, sentence, remove_stopwords = True, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
         ''' segment sentence to words
@@ -166,8 +159,8 @@ class Segment_Spacy(Segment_Base):
             if dep_filter is not None and token.dep_ not in dep_filter:
                 continue
             entity = token.ent_type_
-            if self.cfg['ner_name_replace'] is not None and entity in self.cfg['ner_name_replace']:
-                entitiy = self.cfg['ner_name_replace'][entity]
+            if self.ner_name_replace is not None and entity in self.ner_name_replace:
+                entitiy = self.ner_name_replace[entity]
             if entities_filter is not None and entity not in entities_filter:
                 continue
             if len(token.lemma_)<1:
@@ -184,21 +177,19 @@ class Segment_Spacy(Segment_Base):
         return {"tokens":tokens, "tags":tags, "texts":txts, "entities":entities, 'pos':pos, 'dep':dep}
    
 
-class Segment_Jieba(Segment_Base):
+class Tokenizer_Jieba(Tokenizer_Base):
     '''
         Jieba wrapper, Please check `Jieba <https://github.com/fxsjy/jieba>`_ for more details
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - all keys mentioned in Segment_Base
-                    - seg_dict_path: if the key existed, will load the user definded model
+            - seg_dict_path: if the key existed, will load the user definded dict. Default is None
+            - stopwords_path: the path of stopwords, default is None
     '''
-    def __init__(self, cfg):
+    def __init__(self, seg_dict_path, **args):
         import jieba
-        Segment_Base.__init__(self, cfg)
-        if 'seg_dict_path' in cfg:
-            jieba.load_userdict(cfg['seg_dict_path'])
+        Tokenizer_Base.__init__(self, **args)
+        if seg_dict_path is not None:
+            jieba.load_userdict(seg_dict_path)
         self.nlp = jieba
 
     def seg(self, sentence, remove_stopwords=True):
@@ -211,7 +202,6 @@ class Segment_Jieba(Segment_Base):
             Output: dictionary with keys:
                 - tokens: list of tokens
         '''
-        #sentence = re.sub(r"[\s\u0020-\u007f\u2000-\u206f\u3000-\u303f\uff00-\uffef]+", " ", sentence)
         sentence = re.sub(r"[^\w\d]+", " ", sentence)
         tokens = []
         for x in self.nlp.cut(sentence, cut_all=False):
@@ -224,34 +214,33 @@ class Segment_Jieba(Segment_Base):
         return {"tokens":tokens}
      
 
-class Segment_LTP(Segment_Base):
+class Tokenizer_LTP(Tokenizer_Base):
     '''
         HIT-SCIR pyltp wrapper, Please check `pyltp <https://github.com/HIT-SCIR/pyltp>`_ for more details
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - all keys mentioned in Segment_Base
-                    - cws_model_path: path of cws model
-                    - pos_model_path: path of pos model
-                    - ner_model_path: path of ner model
-                    - 
+            - cws_model_path: path of cws model
+            - pos_model_path: path of pos model
+            - ner_model_path: path of ner model
+            - parser_model_path: path of parser model, default is None
+            - stopwords_path: the path of stopwords, default is None
+            - ner_name_replace: dictionary, replace the entity name to the mapped name. Default is None
     '''
-    def __init__(self, cfg):
-        Segment_Base.__init__(self, cfg)
+    def __init__(self, cws_model_path, pos_model_path, ner_model_path, parser_model_path, **args):
+        Tokenizer_Base.__init__(self, **args)
         from pyltp import Segmentor, Postagger, NamedEntityRecognizer, Parser
         self.seg_ins = Segmentor()
-        self.seg_ins.load(cfg['cws_model_path'])
+        self.seg_ins.load(cws_model_path)
         self.pos_ins = Postagger()
-        self.pos_ins.load(cfg['pos_model_path'])
-        if 'parser_model_path' in cfg and  os.path.exists(cfg['parser_model_path']):
+        self.pos_ins.load(pos_model_path)
+        if parser_model_path is not None and  os.path.exists(parser_model_path):
             self.parser_ins = Parser()
-            self.parser_ins.load(cfg['parser_model_path'])
+            self.parser_ins.load(parser_model_path)
         else:
             self.parser_ins = None
         self.ner_ins = []
 
-        for path in sorted(glob.glob(cfg['ner_model_path'])):
+        for path in sorted(glob.glob(ner_model_path)):
             try:
                 if os.path.getsize(path) > 1024: 
                     self.ner_ins.append(NamedEntityRecognizer())
@@ -265,7 +254,7 @@ class Segment_LTP(Segment_Base):
         for n in self.ner_ins:
             n.release()
 
-    def seg(self, sentence, remove_stopwords = True, tags_filter = None, entities_filter = None, entityjoin=True):
+    def seg(self, sentence, remove_stopwords = True, tags_filter = None, entities_filter = None, entityjoin=False):
         ''' segment sentence to words
             
             Input:
@@ -306,8 +295,8 @@ class Segment_LTP(Segment_Base):
                 entity_loc, entity = entity[0], entity[1]
             else:
                 entity_loc, entity = 'O', 'O'
-            if self.cfg['ner_name_replace'] is not None and entity in self.cfg['ner_name_replace']:
-                entity = self.cfg['ner_name_replace'][entity]
+            if self.ner_name_replace is not None and entity in self.ner_name_replace:
+                entity = self.ner_name_replace[entity]
             if tags_filter is not None and postags_[i] not in tags_filter:
                 continue
             if entities_filter is not None and entity not in entities_filter:
@@ -347,20 +336,18 @@ class Segment_LTP(Segment_Base):
         return {'tokens':words, 'tags': postags, 'entities':entities}
 
 
-class Segment_Mecab(Segment_Base):
+class Tokenizer_Mecab(Tokenizer_Base):
     '''
         Mecab wrapper, Please check `Mecab <https://taku910.github.io/mecab/>`_ for more details
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - all keys mentioned in Segment_Base
-                    - seg_dict_path: mecab model path
+            - seg_dict_path: mecab model path
+            - stopwords_path: the path of stopwords, default is None
     '''
-    def __init__(self, cfg):
+    def __init__(self, seg_dict_path, **args):
         import MeCab
-        self.mecab_ins = MeCab.Tagger('-d %s ' % cfg["seg_dict_path"])
-        Segment_Base.__init__(self, cfg)
+        self.mecab_ins = MeCab.Tagger('-d %s ' % seg_dict_path)
+        Tokenizer_Base.__init__(self, **args)
 
     
     def seg(self, sentence, remove_stopwords=False, tags_filter=None):
@@ -375,7 +362,6 @@ class Segment_Mecab(Segment_Base):
                 - tokens: list of tokens
                 - tags: list of detailed part-of-speech tags
         '''
-        #sentence = re.sub(r"[\s\u0020-\u007f\u2000-\u206f\u3000-\u303f\uff00-\uffef]+", " ", sentence)
         sentence = re.sub(r"[^\w\d]+", " ", sentence)
         tokens, tags = [], []
         m = self.mecab_ins.parseToNode(sentence)
@@ -401,99 +387,18 @@ class Segment_Mecab(Segment_Base):
         return {"tokens":tokens, "tags":tags}
     
 
-class Segment_Keras(Segment_Base):
+class Tokenizer_Rest(Tokenizer_Base):
     '''
-        Tokenizer wrote by Keras, use bi-lstm + crf, not finished, please don't use it
+        Tokenizer use rest_api
+        
+        Input:
+            - tokenizer: rest_api for tokenizer
+            - stopwords_path: the path of stopwords, default is None
+            - ner_name_replace: dictionary, replace the entity name to the mapped name. Default is None
     '''
-    def __init__(self, cfg):
-        from keras.models import Model, load_model
-        from ..utils import zload
-        from .vocab import Vocab
-        Segment_Base.__init__(self, cfg)
-        self.not_cuts = re.compile('([\da-zA-Z ]+)|[\.\+\,\-\!\?\/\:\;，。！？、；：]')
-        self.seg_dict = cfg['seg_dict_path']
-        self.model = load_model(os.path.join(self.seg_dict, 'seg.h5'))
-        self.v_word = Vocab({'cached_vocab': os.path.join(self.seg_dict, 'vocab.pkl')})
-        self.zy = {'BE':0.5, 'BM':0.5, 'EB':0.5, 'ES':0.5, 'ME':0.5, 'MM':0.5, 'SB':0.5, 'SS':0.5}
-        self.zy = {i:numpy.log(self.zy[i]) for i in  self.zy.keys()}
-        self.max_seq_len = 32
-
-    def viterbi(self, nodes):
-        paths = {'B':nodes[0]['B'], 'S':nodes[0]['S']}
-        for l in range(1,len(nodes)):
-            paths_ = paths.copy()
-            paths = {}
-            for i in nodes[l].keys():
-                nows = {}
-                for j in paths_.keys():
-                    if j[-1]+i in self.zy.keys():
-                        nows[j+i]= paths_[j]+nodes[l][i]+self.zy[j[-1]+i]
-                k = numpy.argmax(nows.values())
-                paths[list(nows.keys())[k]] = list(nows.values())[k]
-        return list(paths.keys())[numpy.argmax(paths.values())]
-    
-    def simple_cut(self, s):
-        if s:
-            s_id = numpy.array([self.v_word.word2id(ss) for ss in s], 'int32')
-            if len(s_id) > self.max_seq_len: s_id = s_id[:self.max_seq_len]
-            s_id = numpy.concatenate((s_id, numpy.zeros(self.max_seq_len-len(s_id), 'int32')))
-            
-            r = self.model.predict(s_id.reshape((1, len(s_id))))[0][:len(s)]
-            r = numpy.log(r)
-            
-            nodes = [dict(zip(['B','M','E','S'], i[1:])) for i in r]
-            t = self.viterbi(nodes)
-            words = []
-            for i in range(len(s)):
-                if t[i] in ['S', 'B']:
-                    words.append(s[i])
-                else:
-                    words[-1] += s[i]
-            return words
-        else:
-            return []
-
-    def seg(self, s):
-        result = []
-        j = 0
-        for i in self.not_cuts.finditer(s):
-            result.extend(self.simple_cut(s[j:i.start()]))
-            result.append(s[i.start():i.end()])
-            j = i.end()
-        result.extend(self.simple_cut(s[j:]))
-        return result
-
-    def seg_bak(self, sentence):
-        ids = [self.v_word.word2id(x) for x in sentence]
-        ids2 = []
-        for i in range(len(sentence)):
-            ids2.append([])
-            for ni in range(i-3, i+4):
-                if ni < 0 or ni >= len(ids2)-1:
-                    ids2[-1].append(0)
-                else:
-                    ids2[-1].append(ids[ni])
-        ids2 = numpy.array(ids2)
-        
-        labels = self.model.predict(ids2)
-        labels = numpy.argmax(labels, axis=1)
-        print(labels)
-        
-        tokens = []
-        token = ''
-        for i in range(len(sentence)):
-            token += sentence[i]
-            if self.v_label.id2word[labels[i]] in ['E', 'S']:
-                tokens.append(token)
-                token = ''
-        tokens.append(token)
-        return [x for x in tokens if len(x)>0]
-
-
-class Segment_Rest(Segment_Base):
-    def __init__(self, cfg):
-        Segment_Base.__init__(self, cfg)
-        self.rest_url = cfg['TOKENIZER']
+    def __init__(self, tokenizer, **args):
+        Tokenizer_Base.__init__(self, **args)
+        self.rest_url = tokenizer
     
     def seg(self, sentence, remove_stopwords = True, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
         txts, tokens, entities, pos= [], [], [], []
@@ -511,8 +416,8 @@ class Segment_Rest(Segment_Base):
                 continue
             if 'entities' in data:
                 entity = data['entities'][i]
-                if self.cfg['ner_name_replace'] is not None and data['entities'][i] in self.cfg['ner_name_replace']:
-                    data['entities'][i] = self.cfg['ner_name_replace'][data['entities'][i]]
+                if self.ner_name_replace is not None and data['entities'][i] in self.ner_name_replace:
+                    data['entities'][i] = self.ner_name_replace[data['entities'][i]]
                 if entities_filter is not None and 'entities' in data and data['entities'][i] not in entities_filter:
                     continue
             for k in data: filtereddata[k].append(data[k][i])
@@ -520,22 +425,19 @@ class Segment_Rest(Segment_Base):
 
 
 # natural segment
-class Segment_Simple(Segment_Base):
+class Tokenizer_Simple(Tokenizer_Base):
     '''
         Tokenizer use regex
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - all keys mentioned in Segment_Base
-                    - TOKENIZER REGEX: regex string, default is [\s\.\:\;\&\'\"\/\\\(\)\[\]\{\}\%\$\#\!\?\^\&\+\`\~（）《》【】「」；：‘“’”？／。、，]
+            - tokenizer_regex: regex string, default is [\s\.\:\;\&\'\"\/\\\(\)\[\]\{\}\%\$\#\!\?\^\&\+\`\~（）《》【】「」；：‘“’”？／。、，]
+            - stopwords_path: the path of stopwords, default is None
+            - ner_name_replace: dictionary, replace the entity name to the mapped name. Default is None
     '''
-    def __init__(self, cfg):
-        Segment_Base.__init__(self, cfg)
-        if not 'TOKENIZER_REGEX' in self.cfg:
+    def __init__(self, tokenizer_regex=None, **args):
+        Tokenizer_Base.__init__(self, **args)
+        if tokenizer_regex is None:
             tokenizer_regex = ur'[\s\.\:\;\&\'\"\/\\\(\)\[\]\{\}\%\$\#\!\?\^\&\+\`\~（）《》【】「」；：‘“’”？／。、，]'
-        else:
-            tokenizer_regex = self.cfg['TOKENIZER_REGEX']
         self.re_punc = re.compile(tokenizer_regex)
     
     def seg(self, sentence, remove_stopwords = True):
@@ -555,17 +457,15 @@ class Segment_Simple(Segment_Base):
 
 
 # character level segment
-class Segment_Char(Segment_Base):
+class Tokenizer_Char(Tokenizer_Base):
     '''
         Split sentence to character list
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - all keys mentioned in Segment_Base
+            - stopwords_path: the path of stopwords, default is None
     '''
-    def __init__(self, cfg):
-        Segment_Base.__init__(self, cfg)
+    def __init__(self, **args):
+        Tokenizer_Base.__init__(self, **args)
 
     def seg(self, sentence, remove_stopwords = True):
         ''' segment sentence to characters
@@ -587,52 +487,39 @@ class Segment_Char(Segment_Base):
         return {'tokens': tokens}
 
 
-class Segment(object):
+class Tokenizer(object):
     '''
         Tokenizer tool, integrate with several tools 
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys: 
-                    - TOKENIZER: string, choose for tokenizer tool:
-                        1. *corenlp*: stanford CoreNLP
-                        2. *spacy*: spacy
-                        3. *jieba*: jieba
-                        4. *ltp*: HIT-SCIR pyltp
-                        5. *mecab*: mecab
-                        6. *simple*: regex
-                        7. *char*: will split to char level
-                        8. *http://**: will use restapi
-                    - LANGUAGE: if *TOKENIZER* not exists, will check the *LANGUAGE* config:
-                        1. cn: will use jieba
-                        2. yue: will use jieba
-                        3. en: will use spacy
-                        4. jp: will use mecab
+            - tokenizer: string, choose for tokenizer tool:
+                1. *corenlp*: stanford CoreNLP
+                2. *spacy*: spacy
+                3. *jieba*: jieba
+                4. *ltp*: HIT-SCIR pyltp
+                5. *mecab*: mecab
+                6. *simple*: regex
+                7. *char*: will split to char level
+                8. *http://**: will use restapi
 
         Example Usage:
-            - seg = Segment(cfg); seg.seg(sentence)
+            - seg = Tokenizer(**args); seg.seg(sentence)
             - support __call__ method: seg(sentence)
     '''
-    def __new__(cls, cfg):
-        tokenizers = {'corenlp':Segment_CoreNLP, \
-                      'spacy':Segment_Spacy, \
-                      'jieba':Segment_Jieba, \
-                      'ltp':Segment_LTP, \
-                      'mecab': Segment_Mecab, \
-                      'simple':Segment_Simple,\
-                      'char': Segment_Char}
-        languages = {'cn':'jieba', \
-                     'yue':'jieba', \
-                     'en':'spacy', \
-                     'jp': 'mecab'}
-        if 'TOKENIZER' in cfg:
-            if cfg['TOKENIZER'] in tokenizers:
-                return tokenizers[cfg['TOKENIZER']](cfg)
-            elif 'http' in cfg['TOKENIZER']:
-                return Segment_Rest(cfg) 
-        if 'LANGUAGE' in cfg and cfg['LANGUAGE'] in languages:
-            return tokenizers[languages[cfg['LANGUAGE']]](cfg)
-        return Segment_Simple(cfg)
+    def __new__(cls, **args):
+        tokenizers = {'corenlp':Tokenizer_CoreNLP, \
+                      'spacy':Tokenizer_Spacy, \
+                      'jieba':Tokenizer_Jieba, \
+                      'ltp':Tokenizer_LTP, \
+                      'mecab': Tokenizer_Mecab, \
+                      'simple':Tokenizer_Simple,\
+                      'char': Tokenizer_Char}
+        if 'tokenizer' in args:
+            if args['tokenizer'] in tokenizers:
+                return tokenizers[args['tokenizer']](**args)
+            elif 'http' in args['tokenizer']:
+                return Tokenizer_Rest(**args) 
+        return Tokenizer_Simple(**args)
 
 
 

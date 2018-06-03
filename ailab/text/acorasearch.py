@@ -15,7 +15,7 @@ class AcoraSearch:
 
         Input:
             - keywords: a keywords list to build an index
-            - vocab: ailab.text.vocab object, used to convert word to id, default is None(avoid converting word to id)
+            - vocab: text.vocab object, used to convert word to id, default is None(avoid converting word to id)
     '''
     def __init__(self, keywords, vocab=None):
         from acora import AcoraBuilder

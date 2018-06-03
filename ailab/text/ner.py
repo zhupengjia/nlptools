@@ -13,37 +13,31 @@ class NER_Base(object):
         Parent class for other NER classes, please don't use this class directly
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - keywords: dictionary of {entityname: keywords list file path}, entity recognition via keywords list
-                    - ner: list, entity recognition via NER, will only remain the entity names in list
-                    - regex: dictionary of {entityname: regex}, entity recognition via REGEX.
-                    - stopwords_path: the path of stopwords
-                    - ner_name_replace: dictionary, replace the entity name to the mapped name
+            - keywords: dictionary of {entityname: keywords list file path}, entity recognition via keywords list, default is None
+            - ner: list, entity recognition via NER, will only remain the entity names in list. Default is None
+            - regex: dictionary of {entityname: regex}, entity recognition via REGEX. Default is None
+            - stopwords_path: the path of stopwords, default is None
+            - ner_name_replace: dictionary, replace the entity name to the mapped name
     '''
-    def __init__(self, cfg):
-        self.cfg = cfg
+    def __init__(self, keywords = None, ner = None, regex = None, **args):
         self.custom_regex = {}
         self.keywords_regex = {}
         self.keywords_index = None
         self.entity_replace = {}
-        if 'keywords' not in self.cfg or self.cfg['keywords'] is None:
-            self.cfg['keywords'] = {}
-        if 'ner' not in self.cfg or self.cfg['ner'] is None:
-            self.cfg['ner'] = []
-        if 'regex' not in self.cfg or self.cfg['regex'] is None:
-            self.cfg['regex'] = {}
-        self.replace_blacklist = list(set(list(self.cfg['keywords'].keys()) + self.cfg['ner'] + list(self.cfg['regex'].keys()))) 
+        self.keywords = keywords if keywords is not None else {}
+        self.ner = ner if ner is not None else []
+        self.regex = regex if regex is not None else {}
+        self.replace_blacklist = list(set(list(self.keywords.keys()) + self.ner + list(self.regex.keys()))) 
         self.build_keywords_regex()
 
 
     def __read_keywords(self):
         keywords = {}
-        for k in self.cfg['keywords']:
-            if not os.path.exists(self.cfg['keywords'][k]):
+        for k in self.keywords:
+            if not os.path.exists(self.keywords[k]):
                 continue
             keywords[k] = []
-            with open(self.cfg['keywords'][k]) as f:
+            with open(self.keywords[k]) as f:
                 for l in f:
                     l = l.strip()
                     if len(l) < 1 or l[0] == '#':
@@ -77,16 +71,16 @@ class NER_Base(object):
             self.keywords_regex[k] = '|'.join(keyword)
 
     
-    def build_keywords_index(self, emb_ins):
+    def build_keywords_index(self, **args):
         '''
-            Build the keywords index via annoy search(word vector search). Any available cfg keys please check ailab.text.annoysearch
+            Build the keywords index via annoy search(word vector search). Any available parameters please check text.annoysearch
 
             Input:
-                - emb_ins: instance of ailab.text.embedding
+                - please check parameters in text.annoysearch
         '''
         from .annoysearch import AnnoySearch
         keywords = self.__read_keywords()
-        self.keywords_index = AnnoySearch(self.cfg, emb_ins)
+        self.keywords_index = AnnoySearch(**args)
         self.keywords_kw2e = {}
         for k in keywords:
             for kw in keywords[k]:
@@ -157,8 +151,8 @@ class NER_Base(object):
         if entities is None:
             entities = {}
         replaced = sentence
-        regex = dict(**self.cfg['regex'], **self.custom_regex, **self.keywords_regex)
-        for reg in list(self.cfg['regex'].keys()) + list(self.custom_regex.keys()) + list(self.keywords_regex.keys()):
+        regex = dict(**self.regex, **self.custom_regex, **self.keywords_regex)
+        for reg in list(self.regex.keys()) + list(self.custom_regex.keys()) + list(self.keywords_regex.keys()):
             for entity in re.finditer(regex[reg], replaced):
                 if not reg in entities:
                     entities[reg] = []
@@ -219,7 +213,7 @@ class NER_Base(object):
         else:
             tokens = sentence
         for i, e in enumerate(tokens['entities']):
-            if len(e) > 0 and e in self.cfg['ner'] and  not tokens['tokens'][i] in replace_blacklist:
+            if len(e) > 0 and e in self.ner and  not tokens['tokens'][i] in replace_blacklist:
                 if e in entities:
                     entities[e].append(tokens['tokens'][i])
                 else:
@@ -232,7 +226,7 @@ class NER_Base(object):
                     continue
                 if i > 0 and i < len(tokens['tokens'])-1 and tokens['tokens'][i-1] == '$':
                     replaced.append('$' + tokens['tokens'][i].upper())
-                elif e not in self.cfg['ner'] or len(e) < 1:
+                elif e not in self.ner or len(e) < 1:
                     replaced.append( tokens['tokens'][i] )
                 else:
                     replaced.append( '$' + e.upper())
@@ -245,17 +239,16 @@ class NER_Base(object):
             return entities
 
 
-class NER_CoreNLP(NER_Base, Segment_CoreNLP):
+class NER_CoreNLP(NER_Base, Tokenizer_CoreNLP):
     '''
-        The NER part uses stanford CoreNLP. The class inherit from NER_Base and ailab.text.Segment_CoreNLP
+        The NER part uses stanford CoreNLP. The class inherit from NER_Base and text.Tokenizer_CoreNLP
         
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys: please check the needed keys from NER_Base and ailab.text.Segment_CoreNLP
+            - please check the needed parameters from NER_Base and text.Tokenizer_CoreNLP
     '''
-    def __init__(self, cfg):
-        NER_Base.__init__(self,cfg)
-        Segment_CoreNLP.__init__(self, cfg)
+    def __init__(self, **args):
+        NER_Base.__init__(self, **args)
+        Tokenizer_CoreNLP.__init__(self, **args)
     
     def train(self, entities, data, n_iter=50):
         '''
@@ -264,17 +257,16 @@ class NER_CoreNLP(NER_Base, Segment_CoreNLP):
         raise('The function of CoreNLP ner training is not finished')
 
 
-class NER_Spacy(NER_Base, Segment_Spacy):
+class NER_Spacy(NER_Base, Tokenizer_Spacy):
     '''
         The NER part uses Spacy. The class inherit from NER_Base and Spacy
         
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys: please check the needed keys from NER_Base and ailab.text.Segment_Spacy
+            -please check the needed parameters from NER_Base and text.Tokenizer_Spacy
     '''
-    def __init__(self, cfg):
-        NER_Base.__init__(self, cfg)
-        Segment_Spacy.__init__(self, cfg)
+    def __init__(self, **args):
+        NER_Base.__init__(self, **args)
+        Tokenizer_Spacy.__init__(self, **args)
         prefix_re = re.compile(r'''^[\‘\[\{\<\(\"\']''')
         suffix_re = re.compile(r'''[\]\}\>\)\"\'\,\.\!\?]$''')
         infix_re = re.compile(r'''[\<\>\{\}\(\)\/\-~\:\,\!\'\’]''')
@@ -284,13 +276,15 @@ class NER_Spacy(NER_Base, Segment_Spacy):
                 suffix_search=suffix_re.search, \
                 infix_finditer=infix_re.finditer)
 
-    def train(self, entities, data, n_iter = 50):
+    def train(self, entities, data, spacy_model, n_iter = 50):
         '''
             Train user defined NER model via spacy api.
             
             Input:
                 - entities: entity name list
                 - data: format of [(text, annotations), ...]. Please check `spacy document <https://spacy.io/usage/training>`_ for more details
+                - spacy_model: string, filepath to save
+                - n_iter: iteration
 
         '''
         import random
@@ -312,20 +306,19 @@ class NER_Spacy(NER_Base, Segment_Spacy):
                 losses={}
                 for text, annotations in data:
                     self.nlp.update([text], [annotations], sgd = optimizer, losses=losses)
-        self.nlp.to_disk(self.cfg['cached_ner'])
+        self.nlp.to_disk(spacy_model)
     
 
-class NER_LTP(NER_Base, Segment_LTP):
+class NER_LTP(NER_Base, Tokenizer_LTP):
     '''
-        The NER part uses PyLTP. The class inherit from NER_Base and ailab.text.Segment_LTP
+        The NER part uses PyLTP. The class inherit from NER_Base and text.Tokenizer_LTP
         
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys: please check the needed keys from NER_Base and ailab.text.Segment_LTP
+            - please check the needed parameters from NER_Base and text.Tokenizer_LTP
     '''
-    def __init__(self, cfg):
-        NER_Base.__init__(self, cfg)
-        Segment_LTP.__init__(self, cfg)
+    def __init__(self, **args):
+        NER_Base.__init__(self, **args)
+        Tokenizer_LTP.__init__(self, **args)
 
     
     def train_predeal(self, data):
@@ -345,8 +338,8 @@ class NER_LTP(NER_Base, Segment_LTP):
                     tokens += words_['tokens']
                     tags += words_['tags']
                     entities += words_['entities']
-            if entity in self.cfg['ner_name_replace']:
-                entity = self.cfg['ner_name_replace'][entity]
+            if entity in self.ner_name_replace:
+                entity = self.ner_name_replace[entity]
             tmpdata = data[0][start:end]
             if len(tmpdata.strip()) < 1:
                 continue
@@ -386,10 +379,10 @@ class NER_LTP(NER_Base, Segment_LTP):
                 - data: list of tuple with format of (text, [(start, end, entityname), ])
                 - maxiter: iteration number
         '''
-        nfiles = len(glob.glob(self.cfg['ner_model_path']))
+        nfiles = len(glob.glob(self.ner_model_path))
         tmp_file = '/tmp/ner_train_' + uuid.uuid4().hex
         tmp_ner_file = tmp_file + '.ner'
-        father_dir = os.path.dirname(self.cfg['ner_model_path'])
+        father_dir = os.path.dirname(self.ner_model_path)
         new_ner_file = os.path.join(father_dir, '{0}_trained.ner'.format(nfiles))
         with open(tmp_file, 'w') as f:
             for d in data:
@@ -403,17 +396,16 @@ class NER_LTP(NER_Base, Segment_LTP):
         self.ner_ins[-1].load(new_ner_file)
 
 
-class NER_Rest(NER_Base, Segment_Rest):
+class NER_Rest(NER_Base, Tokenizer_Rest):
     '''
-        The NER part uses restapi. The class inherit from NER_Base and ailab.text.Segment_Rest
+        The NER part uses restapi. The class inherit from NER_Base and text.Tokenizer_Rest
         
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys: please check the needed keys from NER_Base and ailab.text.Segment_Rest
+            - please check the needed parameters from NER_Base and text.Tokenizer_Rest
     '''
-    def __init__(self, cfg):
-        NER_Base.__init__(self, cfg)
-        Segment_Rest.__init__(self, cfg)
+    def __init__(self, **args):
+        NER_Base.__init__(self, **args)
+        Tokenizer_Rest.__init__(self, **args)
     
     def train(self, entities, data, n_iter=50):
         '''
@@ -427,34 +419,25 @@ class NER(object):
         Entity recognition tool, integrate with several tools 
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys: 
-                    - TOKENIZER: string, choose for NER class:
-                        1. *corenlp*: will use NER_CoreNLP
-                        2. *spacy*: will use NER_Spacy
-                        3. *ltp*: will use NER_LTP
-                        4. *http://**: will use NER_Rest
-                    - LANGUAGE: if *TOKENIZER* not exists, will check the *LANGUAGE* config:
-                        1. cn: will use NER_LTP
-                        2. en: will use NER_Spacy
+            - tokenizer: string, choose for NER class:
+                1. *corenlp*: will use NER_CoreNLP
+                2. *spacy*: will use NER_Spacy
+                3. *ltp*: will use NER_LTP
+                4. *http://**: will use NER_Rest
 
         Example Usage:
-            - ner = NER(cfg); ner.get(sentence)
+            - ner = NER(**args); ner.get(sentence)
     '''
-    def __new__(cls, cfg):
+    def __new__(cls, **args):
         tokenizers = {'corenlp':NER_CoreNLP, \
                       'spacy':NER_Spacy, \
                       'ltp':NER_LTP}
-        languages = {'cn':'ltp', \
-                     'en':'spacy'}
-        if 'TOKENIZER' in cfg:
-            if cfg['TOKENIZER'] in tokenizers:
-                return tokenizers[cfg['TOKENIZER']](cfg)
-            elif 'http' in cfg['TOKENIZER']:
-                return NER_Rest(cfg) 
-        if 'LANGUAGE' in cfg and cfg['LANGUAGE'] in languages:
-            return tokenizers[languages[cfg['LANGUAGE']]](cfg)
-        raise('Error! %s language is not supported'%cfg['LANGUAGE'])
+        if 'tokenizer' in args:
+            if args['tokenizer'] in tokenizers:
+                return tokenizers[args['tokenizer']](**args)
+            elif 'http' in args['tokenizer']:
+                return NER_Rest(**args) 
+        raise('Error! No available tokenizer founded!!!')
 
 
 

@@ -35,12 +35,12 @@ class TopicModel(object):
     '''
         Parent class for LDA and LSI, please don't use this class directly
     '''
-    def __init__(self, cfg):
-        self.cfg = cfg
+    def __init__(self, N_topic):
+        self.N_topic = N_topic 
 
     def __getitem__(self, corpus):
         return np.transpose(gensim.matutils.corpus2dense(self.model[corpus], \
-                num_terms=self.cfg['N_topic']))
+                num_terms=N_topic))
 
 
 class LSI(TopicModel):
@@ -48,22 +48,21 @@ class LSI(TopicModel):
         LSI
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - lsi_path: saved path for lsi model
-                    - N_topic: topic number
+            - lsi_path: saved path for lsi model
+            - N_topic: topic number
     '''
-    def __init__(self, cfg):
-        TopicModel.__init__(self, cfg)
+    def __init__(self, lsi_path, N_topic):
+        TopicModel.__init__(self, N_topic)
+        self.lsi_path = lsi_path
 
     def build(self, corpus):
-        if not os.path.exists(self.cfg["lsi_path"]):
+        if not os.path.exists(self.lsi_path):
             self.model= models.LsiModel(corpus,
-                                   num_topics=self.cfg['N_topic'],
+                                   num_topics=self.N_topic,
                                    onepass=False)
-            self.model.save(self.cfg['lsi_path'])
+            self.model.save(self.lsi_path)
         else:
-            self.model = models.LsiModel.load(self.cfg['lsi_path'])
+            self.model = models.LsiModel.load(self.lsi_path)
    
 
 class LDA(TopicModel):
@@ -71,21 +70,20 @@ class LDA(TopicModel):
         LDA
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - lda_path: saved path for lda model
-                    - N_topic: topic number
+            - lda_path: saved path for lda model
+            - N_topic: topic number
     '''
-    def __init__(self, cfg):
-        TopicModel.__init__(self, cfg)
+    def __init__(self, lda_path, N_topic):
+        TopicModel.__init__(self, N_topic)
+        self.lda_path = lda_path
 
     def build(self, corpus):
-        if not os.path.exists(self.cfg["lda_path"]):
+        if not os.path.exists(self.lda_path):
             self.model = models.LdaMulticore(corpus,
-                                       num_topics=self.cfg['N_topic'])
-            self.model.save(self.cfg['lda_path'])
+                                       num_topics=self.N_topic)
+            self.model.save(self.lda_path)
         else:
-            self.model = models.LdaMulticore.load(self.cfg['lda_path'])
+            self.model = models.LdaMulticore.load(self.lda_path)
 
 
 

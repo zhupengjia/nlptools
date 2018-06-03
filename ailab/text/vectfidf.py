@@ -4,6 +4,7 @@ from collections import Counter
 from sklearn.metrics.pairwise import pairwise_distances
 from functools import partial
 from ..utils import zload, zdump, setLogger
+from .vocab import Vocab
 
 '''
     Author: Pengjia Zhu (zhupengjia@gmail.com)
@@ -31,22 +32,20 @@ class VecTFIDF(object):
         Modified TF-IDF algorithm with wordvector
 
         Input:
-            - cfg: dictionary or ailab.utils.config object
-                - needed keys:
-                    - freqwords_path: path of freqword list, will force set the count of each word in the list to a large number
-                    - cached_index: path of cached index file
-            - vocab_ins: instance of ailab.text.vocab
+            - vocab: instance of text.vocab, default is None
+            - freqwords_path: path of freqword list, will force set the count of each word in the list to a large number
+            - cached_index: path of cached index file
     '''
-    def __init__(self, cfg, vocab_ins):
-        self.cfg = {'freqwords_path':'', 'cached_index':''}
-        for k in cfg: self.cfg[k] = cfg[k]
-        self.logger = setLogger(self.cfg)
-        self.vocab = vocab_ins 
+    def __init__(self, vocab = None, cached_index = '', freqwords_path=''):
+        self.cached_index = cached_index
+        self.freqwords_path = freqwords_path
+        self.vocab = vocab 
+        if self.vocab is None: self.vocab = Vocab()
         self.distance_metric = 'cosine'
         self.scorelimit = 0.6
         self.freqwords = {}
         self.word_idfs = None
-        self.__loadFreqwords(self.cfg['freqwords_path'])
+        self.__loadFreqwords(self.freqwords_path)
 
     def __loadFreqwords(self, freqwords_path=None):
         if os.path.exists(freqwords_path):
@@ -149,8 +148,8 @@ class VecTFIDF(object):
                 - count_matrix: a sparse matrix for each id count in corpus
                 - word_idfs: the idf list for a word list
         '''
-        if not local_use and os.path.exists(self.cfg['cached_index']) and not retrain:
-            tmp = zload(self.cfg['cached_index'])
+        if not local_use and os.path.exists(self.cached_index) and not retrain:
+            tmp = zload(self.cached_index)
             self.count_matrix = tmp[0]
             self.word_idfs = tmp[1]
             return
@@ -160,8 +159,8 @@ class VecTFIDF(object):
         if not local_use:
             self.count_matrix = count_matrix
             self.word_idfs = word_idfs
-            if len(self.cfg['cached_index']) > 0:
-                zdump((count_matrix, word_idfs), self.cfg['cached_index'])
+            if len(self.cached_index) > 0:
+                zdump((count_matrix, word_idfs), self.cached_index)
                 self.vocab.save()
         else:
             return count_matrix, word_idfs
@@ -181,7 +180,6 @@ class VecTFIDF(object):
         '''
         tf = self.tf(word_ids, sentence_ids)
         idf = word_idfs[word_ids]
-        #self.logger.debug('VecTFIDF: word_ids, ' + str(word_ids) + ' sentence_ids' + str(sentence_ids) + ' tf,' + str(tf) + " idf," + str(idf))
         return tf*idf
 
     #vec TF-IDF
