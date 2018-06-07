@@ -5,7 +5,7 @@ from scipy.spatial.distance import cosine
 
 
 '''
-    Author: Zhiqiang Yao, Pengjia Zhu (zhupengjia@gmail.com)
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
 '''
 
 class DocSim(object):
@@ -13,7 +13,7 @@ class DocSim(object):
         Calculate similarities between sentences
 
         Input:
-            - vocab: ailab.text.vocab object
+            - vocab: text.vocab object
     '''
     def __init__(self, vocab):
         self.vocab = vocab

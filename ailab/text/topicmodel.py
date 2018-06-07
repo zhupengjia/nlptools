@@ -16,7 +16,7 @@ class Corpus(interfaces.CorpusABC):
         Corpus class inherit from gensim.interfaces.CorpusABC
         
         Input:
-            - docbow: format of [(id, tf), ...], can be the output from ailab.text.vocab.doc2bow
+            - docbow: format of [(id, tf), ...], can be the output from text.vocab.doc2bow
                 
     '''
     def __init__(self, docbow):
