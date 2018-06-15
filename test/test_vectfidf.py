@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import re, sys
-from ailab.text import *
+from nlptools.text import *
 
 cfg = {'APPNAME':'test', 'vec_len':10, 'LANGUAGE':'en', 'cached_w2v':'/tmp/w2v.pkl', 'cached_vocab':'/tmp/vocab.pkl', 'cached_index':'/tmp/tfidf.index', 'freqwords_path':'data/en_freqwords.txt'}
 e = Embedding(cfg)

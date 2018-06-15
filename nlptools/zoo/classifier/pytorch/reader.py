@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from ailab.utils import zload, zdump
-from ailab.text import Segment, Embedding, Vocab
+from nlptools.utils import zload, zdump
+from nlptools.text import Segment, Embedding, Vocab
 import os, pandas, sys, numpy, math, torch
 from torch.autograd import Variable
 

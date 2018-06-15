@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from ailab.text.tokenizer import Segment_Simple
-from ailab.utils import zload
+from nlptools.text.tokenizer import Segment_Simple
+from nlptools.utils import zload
 import sys
 
 cfg = {'TOKENIZER':'simple', 'stopwords_path':'stopwords.txt'}

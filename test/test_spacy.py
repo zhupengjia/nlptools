@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from ailab.text.ner import NER_Spacy
-from ailab.utils import zload
+from nlptools.text.ner import NER_Spacy
+from nlptools.utils import zload
 import sys
 
 cfg = {

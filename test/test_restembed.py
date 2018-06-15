@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from ailab.text.embedding import Embedding_Rest
+from nlptools.text.embedding import Embedding_Rest
 
 cfg = {'embedding_restapi':'http://127.0.0.1:8000/api/query/' }
 t = Embedding_Rest(cfg)

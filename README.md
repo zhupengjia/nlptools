@@ -1,4 +1,4 @@
-## AILab Repo
+## NLPTools Repo
 * This repo is a tool package for frequently used NLP tools. For more details please check [README](http://n2.c3.acnailab.com/code/ailab/index.html)
 
 * Build
@@ -7,39 +7,39 @@
 * Code tree
     - test
         - pytest codes
-    - ailab/utils
+    - nlptools/utils
         some common utils
-        - ailab/utils/utils.py
+        - nlptools/utils/utils.py
             - common tools
-        - ailab/utils/qnaread.py
+        - nlptools/utils/qnaread.py
             - table read from mysql, xls, csv, etc.
-        - ailab/utils/config.py
+        - nlptools/utils/config.py
             - parse yaml config
-        -  ailab/utils/logger.py
+        -  nlptools/utils/logger.py
             - create logger
-    - ailab/text
+    - nlptools/text
         some nlp tools
-         -  ailab/text/docsim.pyx
+         -  nlptools/text/docsim.pyx
             * calculate distance between vectors
-         -  ailab/text/embedding.pyx
+         -  nlptools/text/embedding.pyx
             * read word2vec from redis/dynamodb/file/api
-         -  ailab/text/tokenizer.pyx
+         -  nlptools/text/tokenizer.pyx
             * tokenizer, support jieba/mecab/ltp/corenlp/spacy/simple
-         -  ailab/text/ner.pyx
+         -  nlptools/text/ner.pyx
             * ner training and predict class, also included keyword/regex entity extraction 
-         -  ailab/text/translate.pyx
+         -  nlptools/text/translate.pyx
             * google api for translate
-         -  ailab/text/vocab.pyx
+         -  nlptools/text/vocab.pyx
             * dictionary class, word/character <-> id, vec, bow 
-         -  ailab/text/topicmodel.pyx
+         -  nlptools/text/topicmodel.pyx
             * lsi, lda model
-         -  ailab/text/acorasearch.pyx
+         -  nlptools/text/acorasearch.pyx
             * search using acora, a keyword search engine
-         -  ailab/text/annoysearch.pyx
+         -  nlptools/text/annoysearch.pyx
             * use annoy for fast vector based search
-         -  ailab/text/synonyms.pyx
+         -  nlptools/text/synonyms.pyx
             * get synonyms via word embedding
-    - ailab/zoo
+    - nlptools/zoo
         some models
 
 ## Version

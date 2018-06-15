@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import time, sys
-from ailab.text import Synonyms, Embedding
+from nlptools.text import Synonyms, Embedding
 
 cfg = {'synonyms_path': '/home/pzhu/data/word2vec/synonyms_zhwiki.pkl',\
         'tokenizer': 'jieba',\

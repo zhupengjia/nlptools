@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 sys.path.append('..')
-from ailab.zoo.tagging.bilstm_crf import BiLSTM_CRF, prepare_sequence
+from nlptools.zoo.tagging.bilstm_crf import BiLSTM_CRF, prepare_sequence
 import torch
 from torch import optim
 

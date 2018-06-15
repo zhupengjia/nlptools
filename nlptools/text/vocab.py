@@ -21,7 +21,7 @@ class Vocab(object):
             - embedding: instance of text.embedding, default is None(use random vector)
 
         Some special operation:
-            - __add__: join several ailab.text.vocab together
+            - __add__: join several vocab together
             - __call__: get ids for sentence list. Input is [sentence, ...], or [token_list, ...]
             - __getitem__: get id for word
             - __len__: get vocab size

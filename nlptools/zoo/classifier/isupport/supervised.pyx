@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from ailab.utils import zload
+from nlptools.utils import zload
 from .models import v1
 import numpy as np
 import sys

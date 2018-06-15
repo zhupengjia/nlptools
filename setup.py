@@ -17,13 +17,13 @@ def read(fname):
 
 
 setup(
-    name = "ailab",
-    version = "0.1.2",
+    name = "nlptools",
+    version = "0.2",
     author = "Pengjia Zhu",
     author_email = "zhupengjia@gmail.com",
-    description = ("ailab"),
+    description = ("nlptools"),
     license = "Commercial",
-    keywords = "ailab",
+    keywords = "nlptools",
     url = "",
     packages= find_packages(),
     # entry_points={
@@ -41,7 +41,7 @@ setup(
         "requests"
         ],
     tests_require=['pytest'],
-    ext_modules = cythonize(["ailab/*/*.pyx", "ailab/*/*/*/*.pyx"]),
+    ext_modules = cythonize(["nlptools/*/*.pyx", "nlptools/*/*/*/*.pyx"]),
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",

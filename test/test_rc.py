@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import re, json
-from ailab.zoo.comprehension.DrQA.drqa import DrQA
+from nlptools.zoo.comprehension.DrQA.drqa import DrQA
 
 homedir = '/Users/pengjia.zhu/'
 cfg = {'APPNAME':'test',\

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from ailab.utils import Config as cfg
+from nlptools.utils import Config as cfg
 
 a = cfg('test_config.yaml')
 a['x'] = [12, 13]

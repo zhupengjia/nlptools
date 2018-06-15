@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from ailab.text.tokenizer import Segment_CoreNLP
+from nlptools.text.tokenizer import Segment_CoreNLP
 
 cfg = {'CORENLP_URL':'http://127.0.0.1:9000'}
 t = Segment_CoreNLP(cfg)

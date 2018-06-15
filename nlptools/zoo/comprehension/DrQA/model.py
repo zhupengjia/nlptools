@@ -10,7 +10,7 @@ import copy
 from torch.autograd import Variable
 from .rnn_reader import RnnDocReader
 
-from ailab.utils import setLogger
+from nlptools.utils import setLogger
 
 
 class DocReader(object):

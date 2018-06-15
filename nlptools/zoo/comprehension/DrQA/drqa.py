@@ -3,8 +3,8 @@
 
 from collections import Counter
 from .model import DocReader
-from ailab.utils import zload, zdump, normalize
-from ailab.text import *
+from nlptools.utils import zload, zdump, normalize
+from nlptools.text import *
 import torch, json, os, re, sys
 
 class DrQA(object):

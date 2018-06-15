@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from ailab.text.tokenizer import Segment_Rest
+from nlptools.text.tokenizer import Segment_Rest
 
 cfg = {'TOKENIZER':'http://127.0.0.1:8000/api/tokenize/'}
 t = Segment_Rest(cfg)
