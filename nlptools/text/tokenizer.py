@@ -437,7 +437,7 @@ class Tokenizer_Simple(Tokenizer_Base):
     def __init__(self, tokenizer_regex=None, **args):
         Tokenizer_Base.__init__(self, **args)
         if tokenizer_regex is None:
-            tokenizer_regex = ur'[\s\.\:\;\&\'\"\/\\\(\)\[\]\{\}\%\$\#\!\?\^\&\+\`\~（）《》【】「」；：‘“’”？／。、，]'
+            tokenizer_regex = '''[\s\.\:\;\&\'\"\/\\\(\)\[\]\{\}\%\$\#\!\?\^\&\+\`\~（）《》【】「」；：‘“’”？／。、，]'''
         self.re_punc = re.compile(tokenizer_regex)
     
     def seg(self, sentence, remove_stopwords = True):

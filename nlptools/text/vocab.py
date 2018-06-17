@@ -30,8 +30,9 @@ class Vocab(object):
     def __init__(self, cached_vocab='', vocab_size=1000000, outofvocab='unk', embedding=None):
         self.cached_vocab = cached_vocab
         self.outofvocab = outofvocab
+        self._id_spec = []
         self.embedding = embedding if embedding is not None else Embedding_Random()
-        self.vocab_size = int(self.vocab_size)
+        self.vocab_size = int(vocab_size)
         if self.vocab_size < 30:
             self.vocab_size = 2**int(self.vocab_size)
         self.__get_cached_vocab()
@@ -90,17 +91,19 @@ class Vocab(object):
         return list(zip(ids, tfs))
 
 
-    def __get_cached_vocab(self, forceinit):
+    def __get_cached_vocab(self):
         ifinit = True
         self._id_UNK = 0
         if os.path.exists(self.cached_vocab):
             try:
-                self._word2id, self._id2tf = zload(self.cached_vocab)
+                data = zload(self.cached_vocab)
+                self._word2id = data['word2id']
+                self._id2tf = data['id2tf']
                 if len(self._word2id) > 0:
                     ifinit = False
                 self.vocab_size = len(self._id2tf)
             except Exception as err:
-                print('warning!!! cached vocab read failed!!! ' + err)
+                print('warning!!! cached vocab read failed!!! will build a new vocab. ' + err)
         if ifinit:
             self._word2id = bidict()
             self._id2tf = numpy.zeros(self.vocab_size, 'int')
@@ -111,7 +114,7 @@ class Vocab(object):
             Save the vocab dictionary to *cached_vocab*
         '''
         if len(self.cached_vocab) > 0:
-            zdump((self._word2id, self._id2tf), self.cached_vocab)
+            zdump({'word2id':self._word2id, 'id2tf':self._id2tf}, self.cached_vocab)
 
 
     def word2id(self, word):
@@ -130,7 +133,7 @@ class Vocab(object):
             return self._word2id[word]
         else:
             wordid = len(self._word2id)
-            if wordid < self.vocab.size - 1 and self.update:
+            if wordid < self.vocab_size - 1 and self.update:
                 self._word2id[word] = wordid
                 self._id2tf[wordid] = 1
             else:
@@ -168,14 +171,12 @@ class Vocab(object):
                 - vocab_size: int, the target vocab_size, if None will reduce to the current number of words. Default is None
                 - reorder: bool, check if the dictionary reorder by tf. Default is False. Parameter only usable when vocab_size is None. If the vocab_size is not None, the dictionary will always be reordered
         '''
-        if vocab_size is None:
+        if vocab_size is None or vocab_size >= self.vocab_size:
             self.vocab_size = len(self._word2id)
             self._id2tf = self._id2tf[:self.vocab_size]
             vocab_size = self.vocab_size
             if not reorder:
                 return
-        elif vocab_size >= self.vocab_size:
-            return
         new_word2id = bidict()
         new_id2tf = numpy.zeros(vocab_size, 'int')
         maxtf = self._id2tf.max()

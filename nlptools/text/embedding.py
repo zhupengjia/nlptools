@@ -24,7 +24,6 @@ class Embedding_Base(object):
             - base64: bool, if True, will return BASE64 instead of vector
     '''
     def __init__(self, vec_len=300, vec_type='float64', cached_w2v='', w2v_adddim=0, base64=False):
-        self.__get_cached_vec()
         if w2v_adddim:
             self.vec_len = int(vec_len) + 1
         else:
@@ -33,6 +32,7 @@ class Embedding_Base(object):
         self.vec_type =vec_type
         self.w2v_adddim = w2v_adddim
         self.base64 = base64
+        self.__get_cached_vec()
    
 
     def distance(self, word1, word2):
