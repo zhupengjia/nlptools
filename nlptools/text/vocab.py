@@ -19,6 +19,7 @@ class Vocab(object):
             - vocab_size: int, the dictionary size, default is 1M. If the number<30, then the size is 2**vocab_size, else the size is *vocab_size*.
             - outofvocab: string, the behavior of outofvocab token, default is 'unk'. Two options: 'unk' and 'random'. 'unk' will fill with 'unk', 'random' will fill with a random token
             - embedding: instance of text.embedding, default is None(use random vector)
+            - special_char: bool, check if add 4 special characters, default is False
 
         Some special operation:
             - __add__: join several vocab together
@@ -27,7 +28,7 @@ class Vocab(object):
             - __len__: get vocab size
             - __contains__: checkout if word or id in vocab
     '''
-    def __init__(self, cached_vocab='', vocab_size=1000000, outofvocab='unk', embedding=None):
+    def __init__(self, cached_vocab='', vocab_size=1000000, outofvocab='unk', embedding=None, special_char=False):
         self.cached_vocab = cached_vocab
         self.outofvocab = outofvocab
         self._id_spec = []
@@ -37,6 +38,8 @@ class Vocab(object):
             self.vocab_size = 2**int(self.vocab_size)
         self.__get_cached_vocab()
         self.update=True
+        if special_char:
+            self.addBE()
 
 
     def addBE(self):
@@ -57,6 +60,13 @@ class Vocab(object):
                 - v: bool, True for update, False for freeze
         '''
         self.update = v
+
+
+    def freeze(self):
+        '''
+            Freeze the vocab
+        '''
+        self.update = False
 
 
     def doc2bow(self, wordlist = None, idlist=None):
