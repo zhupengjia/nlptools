@@ -205,8 +205,10 @@ class Vocab(object):
         self.vocab_size = vocab_size
     
 
-    #merge another vocab
     def __add__(self, other):
+        '''
+            merge another vocab
+        '''
         for w in other._word2id:
             _id_other = other._word2id[w]
             if w in self._word2id:
@@ -217,6 +219,13 @@ class Vocab(object):
                 self._id2tf[_id] = other._id2tf[_id_other]
         return self
 
+        
+    def __eq__(self, other):
+        '''
+            compare two vocabs
+        '''
+        return self._word2id == other.__word2id
+    
 
     def __getitem__(self, key):
         '''
@@ -257,9 +266,9 @@ class Vocab(object):
         return ids
 
 
-    def id2sentence(self, ids):
+    def ids2string(self, ids):
         '''
-            convert id back to sentence
+            convert ids to string
 
             Input: 
                 - ids: list of ids
@@ -282,33 +291,33 @@ class Vocab(object):
         return vectors
 
 
-    def senid2tf(self, sentence_id):
+    def ids2tf(self, ids):
         '''
-            get counts for each word in token list
+            get counts for each ids
             
             Input:
-                - sentence_id: token list
+                - ids: id list
 
             Output:
                 - count list
         '''
-        return [self._id2tf[x] for x in sentence_id]
+        return [self._id2tf[x] for x in ids]
 
 
-    def senid2vec(self, sentence_id):
+    def ids2vec(self, ids):
         '''
-            get vord vectors for each word in token list
+            get word vectors for each word in id list
             
             Input:
-                - sentence_id: token list
+                - ids: id list
 
             Output:
                 - numpy array. The array index is the id index in input
         '''
         if self.embedding is None:
             return None
-        vec = numpy.zeros((len(sentence_id), self.embedding.vec_len), 'float')
-        for i, sid in enumerate(sentence_id):
+        vec = numpy.zeros((len(ids), self.embedding.vec_len), 'float')
+        for i, sid in enumerate(ids):
             vec[i] = self.id2vec(sid)
         return vec
 
