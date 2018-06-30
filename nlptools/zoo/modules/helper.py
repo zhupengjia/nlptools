@@ -95,3 +95,8 @@ def set_incremental_state(module, incremental_state, key, value):
         full_key = _get_full_incremental_state_key(module, key)
         incremental_state[full_key] = value
 
+def fill_with_neg_inf(t):
+    """FP16-compatible function that fills a tensor with -inf."""
+    return t.float().fill_(float('-inf')).type_as(t)
+
+

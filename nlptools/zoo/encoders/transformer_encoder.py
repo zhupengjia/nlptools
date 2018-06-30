@@ -11,25 +11,17 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from fairseq import utils
-
-from fairseq.modules import (
-    LearnedPositionalEmbedding, MultiheadAttention,
-    SinusoidalPositionalEmbedding,
-)
-
-from . import (
-    FairseqIncrementalDecoder, FairseqEncoder, FairseqModel,
-    register_model, register_model_architecture,
-)
+from ..modules.learned_positional_embedding import LearnedPositionalEmbedding
+from ..modules.multihead_attention import MultiheadAttention
+from ..modules.sinusoidal_positional_embedding import SinusoidalPositionalEmbedding
 
 
-class TransformerEncoder(FairseqEncoder):
+class TransformerEncoder(Encoder_Base):
     """Transformer encoder."""
 
-    def __init__(self, args, dictionary, embed_tokens, left_pad=True):
-        super().__init__(dictionary)
-        self.dropout = args.dropout
+    def __init__(self, vocab, embed_tokens, encoder_learned_pos, encoder_layers, encoder_embed_dim, encoder_attention_heads, encoder_normalize_before, encoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout, left_pad=True):
+        super().__init__(vocab)
+        self.dropout = dropout
 
         embed_dim = embed_tokens.embedding_dim
         self.padding_idx = embed_tokens.padding_idx
@@ -39,13 +31,13 @@ class TransformerEncoder(FairseqEncoder):
         self.embed_positions = PositionalEmbedding(
             1024, embed_dim, self.padding_idx,
             left_pad=left_pad,
-            learned=args.encoder_learned_pos,
+            learned=encoder_learned_pos,
         )
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
-            TransformerEncoderLayer(args)
-            for i in range(args.encoder_layers)
+            TransformerEncoderLayer(encoder_embed_dim, encoder_attention_heads, encoder_normalize_before, encoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout)
+            for i in range(encoder_layers)
         ])
 
     def forward(self, src_tokens, src_lengths):
@@ -106,18 +98,18 @@ class TransformerEncoderLayer(nn.Module):
     be enabled by setting `normalize_before=True`.
     """
 
-    def __init__(self, args):
+    def __init__(self, encoder_embed_dim, encoder_attention_heads, encoder_normalize_before, encoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout):
         super().__init__()
-        self.embed_dim = args.encoder_embed_dim
+        self.embed_dim = encoder_embed_dim
         self.self_attn = MultiheadAttention(
-            self.embed_dim, args.encoder_attention_heads,
-            dropout=args.attention_dropout,
+            self.embed_dim, encoder_attention_heads,
+            dropout=attention_dropout,
         )
-        self.dropout = args.dropout
-        self.relu_dropout = args.relu_dropout
-        self.normalize_before = args.encoder_normalize_before
-        self.fc1 = Linear(self.embed_dim, args.encoder_ffn_embed_dim)
-        self.fc2 = Linear(args.encoder_ffn_embed_dim, self.embed_dim)
+        self.dropout = dropout
+        self.relu_dropout = relu_dropout
+        self.normalize_before = encoder_normalize_before
+        self.fc1 = Linear(self.embed_dim, encoder_ffn_embed_dim)
+        self.fc2 = Linear(encoder_ffn_embed_dim, self.embed_dim)
         self.layer_norms = nn.ModuleList([LayerNorm(self.embed_dim) for i in range(2)])
 
     def forward(self, x, encoder_padding_mask):

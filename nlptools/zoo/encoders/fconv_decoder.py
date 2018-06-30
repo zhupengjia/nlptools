@@ -13,6 +13,7 @@ import torch.nn.functional as F
 from ..modules.adaptive_softmax import AdaptiveSoftmax
 from ..modules.helper import get_incremental_state, set_incremental_state
 from .decoder_base import IncrementalDecoder
+from .fconv_encoder import Embedding, PositionalEmbedding, Linear
 
 
 class FConvDecoder(IncrementalDecoder):

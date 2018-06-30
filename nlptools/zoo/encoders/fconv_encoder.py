@@ -11,7 +11,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..modules import GradMultiply, LearnedPositionalEmbedding
+from ..modules.grad_multiply import GradMultiply
+from ..modules.learned_positional_embedding import LearnedPositionalEmbedding
 
 from .encoder_base import Encoder_Base
 
