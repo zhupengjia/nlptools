@@ -9,48 +9,36 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from nlptools.utils import eval_str_list
+from ..modules.model_base import ModelBase
 
-from fairseq import options, utils
-from fairseq.modules import (
-    AdaptiveSoftmax, BeamableMM, GradMultiply, LearnedPositionalEmbedding,
-    LinearizedConvolution,
-)
-
-from . import (
-    FairseqEncoder, FairseqIncrementalDecoder, FairseqModel,
-    FairseqLanguageModel, register_model, register_model_architecture,
-)
-
-
-class FConvLanguageModel(FairseqLanguageModel):
+class FConvLanguageModel(ModelBase):
     def __init__(self, decoder):
         super().__init__()
         self.decoder = decoder
 
     @classmethod
-    def build_model(cls, args, task):
+    def build_model(cls, vocab, tokens_per_sample, max_target_positions=None, decoder_embed_dim=128, decoder_layers=[(1268, 4)] * 13, decoder_attention=False, adaptive_softmax_cutoff=None, dropout=0.1, criterion=None, normalization_constant=0.5):
         """Build a new model instance."""
-        # make sure all arguments are present in older models
-        base_lm_architecture(args)
 
-        if hasattr(args, 'max_target_positions'):
-            args.tokens_per_sample = args.max_target_positions
+        if max_target_positions is not None:
+            tokens_per_sample = max_target_positions
 
         decoder = FConvDecoder(
-            dictionary=task.target_dictionary,
-            embed_dim=args.decoder_embed_dim,
-            convolutions=eval(args.decoder_layers),
-            out_embed_dim=args.decoder_embed_dim,
-            attention=eval(args.decoder_attention),
-            dropout=args.dropout,
-            max_positions=args.tokens_per_sample,
+            vocab=vocab,
+            embed_dim=decoder_embed_dim,
+            out_embed_dim=decoder_embed_dim,
+            max_positions=tokens_per_sample,
+            convolutions=decoder_layers,
+            attention=decoder_attention,
+            dropout=dropout,
             share_embed=False,
             positional_embeddings=False,
             adaptive_softmax_cutoff=(
-                options.eval_str_list(args.adaptive_softmax_cutoff, type=int)
-                if args.criterion == 'adaptive_loss' else None
+                eval_str_list(adaptive_softmax_cutoff, type=int)
+                if criterion == 'adaptive_loss' else None
             ),
-            normalization_constant=args.normalization_constant,
+            normalization_constant=normalization_constant,
         )
         return FConvLanguageModel(decoder)
 

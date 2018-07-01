@@ -210,6 +210,20 @@ def distance2similarity(distance):
     return 1./(1+distance)
 
 
+def eval_str_list(x, type=float):
+    '''
+        apply type to list x, if x is a string, then eval first
+    '''
+    if x is None:
+        return None
+    if isinstance(x, str):
+        x = eval(x)
+    try:
+        return list(map(type, x))
+    except TypeError:
+        return [type(x)]
+
+
 #language detection
 def lang_detect(string):
     '''
