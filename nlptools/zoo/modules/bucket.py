@@ -2,14 +2,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-
-
-PAD_ID = 0
-PAD_TAG = '<PAD>'
-SOS_ID = 1
-SOS_TAG = '<SOS>'
-EOS_ID = 2
-EOS_TAG = '<EOS>'
+from nlptools.text import Vocab
 
 
 def prepare_sequence(seq, to_ix, batch_mode=False):
@@ -40,7 +33,7 @@ def prepare_lm_data(inputs):
             padded[len(input):] = pad
         return padded
     
-    ans = [(shift(input, 1, SOS_ID), shift(input, -1, EOS_ID)) \
+    ans = [(shift(input, 1, Vocab.BOS_ID), shift(input, -1, Vocab.EOS_ID)) \
             for input in inputs]
     inputs, targets = zip(*ans)
     return np.array(inputs, dtype=np.object),\
@@ -147,13 +140,13 @@ def demo_data():
     ]
 
 
-    word_to_ix = {PAD_TAG:PAD_ID, SOS_TAG:SOS_ID, EOS_TAG:EOS_ID}
+    word_to_ix = {Vocab.PAD:Vocab.PAD_ID, Vocab.BOS:Vocab.BOS_ID, Vocab.EOS:Vocab.EOS_ID}
     for sent, tags in training_data:
         for word in sent:
             if word not in word_to_ix:
                 word_to_ix[word] = len(word_to_ix)
 
-    tag_to_ix = {PAD_TAG: PAD_ID, SOS_TAG:SOS_TAG, EOS_TAG: EOS_ID, "DET": 3, "NN": 4, "V": 5}
+    tag_to_ix = {Vocab.PAD: Vocab.PAD_ID, Vocab.BOS:Vocab.BOS_TAG, Vocab.EOS: Vocab.EOS_ID, "DET": 3, "NN": 4, "V": 5}
     inputs, tags = zip(*training_data)
     
     inputs = prepare_sequence(inputs, word_to_ix, True)

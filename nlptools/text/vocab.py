@@ -9,6 +9,7 @@ from ..utils import zload, zdump, normalize, flat_list
     Author: Pengjia Zhu (zhupengjia@gmail.com)
 '''
 
+
 # get TF of vocabs and vectors
 class Vocab(object):
     '''
@@ -28,7 +29,10 @@ class Vocab(object):
             - __len__: get vocab size
             - __contains__: checkout if word or id in vocab
     '''
-    def __init__(self, cached_vocab='', vocab_size=1000000, outofvocab='unk', embedding=None, special_char=False):
+    PAD, BOS, EOS, UNK = '<pad>', '<bos>', '<eos>', '<unk>'
+    PAD_ID, BOS_ID, EOS_ID, UNK_ID = 0, 1, 2, 3
+
+    def __init__(self, cached_vocab='', vocab_size=1000000, outofvocab='unk', embedding=None, special_char=True):
         self.cached_vocab = cached_vocab
         self.outofvocab = outofvocab
         self._id_spec = []
@@ -40,16 +44,14 @@ class Vocab(object):
         self.update=True
         if special_char:
             self.addBE()
-
+    
 
     def addBE(self):
         '''
             Add 4 special characters to dictionary, '<pad>', '<eos>', '<bos>','<unk>'
         '''
-        self._word_spec = ['<pad>', '<eos>', '<bos>','<unk>']
+        self._word_spec = [self.PAD, self.BOS, self.EOS, self.UNK]
         self._id_spec = [self.word2id(w) for w in self._word_spec]
-        self.PAD, self.EOS, self.BOS, self.UNK = tuple(self._word_spec)
-        self._id_PAD, self._id_EOS, self._id_BOS, self._id_UNK = tuple(self._id_spec)
 
 
     def setupdate(self, v=True):
@@ -103,7 +105,6 @@ class Vocab(object):
 
     def __get_cached_vocab(self):
         ifinit = True
-        self._id_UNK = 0
         if os.path.exists(self.cached_vocab):
             try:
                 data = zload(self.cached_vocab)
@@ -150,7 +151,7 @@ class Vocab(object):
                if self.outofvocab=='random':
                    wordid = random.randint(0, self.vocab_size-1)
                else:
-                   wordid = self._id_UNK
+                   wordid = self.UNK_ID
             return wordid
     
     
