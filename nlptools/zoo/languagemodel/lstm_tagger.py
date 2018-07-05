@@ -4,8 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from ..reader.bucket import BucketData, prepare_sequence
-from ..reader.bucket import PAD_ID
+from nlptools.text import Vocab
+from ..modules.bucket import BucketData, prepare_sequence
 
 
 def to_one_hot(inputs, num_class):
@@ -73,7 +73,7 @@ class LSTMTagger(nn.Module):
     
     
     def sequence_loss(self, inputs, targets):
-        loss_function = nn.NLLLoss(ignore_index=PAD_ID)
+        loss_function = nn.NLLLoss(ignore_index=Vocab.PAD_ID)
         targets_one_hot = to_one_hot(targets, self.tagset_size)
         outputs = self(inputs).view(targets_one_hot.shape)
         xent = outputs * targets_one_hot
@@ -84,7 +84,7 @@ class LSTMTagger(nn.Module):
 
     def train(self, inputs, targets, num_epoch=20, save_path='autosave.torch'):
         # NLL is equivalent to the multi-category cross-entropy.
-        loss_function = nn.NLLLoss(ignore_index=PAD_ID)
+        loss_function = nn.NLLLoss(ignore_index=Vocab.PAD_ID)
         optimizer = optim.Adam(self.parameters(), lr=0.001)
     
         for epoch in range(num_epoch):
@@ -93,6 +93,7 @@ class LSTMTagger(nn.Module):
                 
             buckets = BucketData(inputs, targets, self.bucket_config)
             for batch_inputs, batch_tags in buckets:
+                print(batch_inputs)
                 self.zero_grad()
                 self.hidden = self.init_hidden()
                
