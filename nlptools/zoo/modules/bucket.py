@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from nlptools.text import Vocab
+from torch.nn.utils.rnn import pack_padded_sequence, pad_sequence
 
 
 def prepare_sequence(seq, to_ix, batch_mode=False):
@@ -24,7 +25,6 @@ def prepare_lm_data(inputs):
     #print('>>')
     def shift(input, offset, pad):
         padded = input.new_zeros(len(input) + abs(offset))
-        #padded = np.zeros(len(input) + abs(offset),'int')
         if offset > 0:
             padded[offset:] = input
             padded[:offset] = pad
@@ -42,15 +42,19 @@ def prepare_lm_data(inputs):
 
 class BucketData:
     
-    def __init__(self, inputs, tags, max_words = 1000, max_seq_len=None):
+    def __init__(self, inputs, tags, max_words = 1000, max_seq_len=None, pack=True):
         '''
         Args:
-            data: list of inputs, should be in the shape of (num_instance, time_step).
+            - inputs: list of inputs, should be in the shape of (num_instance, time_step).
               However, usually the input is not an numpy nd-array, and usually is a local batch 
               of the entire dataset. 
-            max_words: max words in one batch, used to decide the batch size
-            max_seq_len: maximum sequence length, if None then will not filter anything
+            - tags: list of tags, same format as inputs
+            - max_words: max words in one batch, used to decide the batch size
+            - max_seq_len: maximum sequence length, if None then will not filter anything
+            - pack: bool, check if return data packed, default is True 
         '''
+        self.pack = pack
+
         # build a list of lengths for the input data
         self.len_list = np.asarray(list(map(len, inputs)), dtype=np.integer)
         # save the sort_idx such that the original input order can be preserved. 
@@ -65,8 +69,6 @@ class BucketData:
         self.max_words = max_words
         self.max_seq_len = max_seq_len
         
-        self.build_buckets()    
-
 
     def __iter__(self):
         tot_words = 0
@@ -99,16 +101,65 @@ class BucketData:
             
 
     def build_bucket(self, indexes):
-        indexes = numpy.array(indexes, 'int')
-        
+        indexes = np.array(indexes, 'int')
+
+        #choose index
+        inputs = self.sorted_inputs[indexes]
+        tags = self.sorted_tags[indexes]
+        lengths = self.sorted_len[indexes] 
+
+        #pad together
+        inputs = pad_sequence(inputs, batch_first=True, padding_value=Vocab.PAD_ID)
+        tags = pad_sequence(tags, batch_first=True, padding_value=Vocab.PAD_ID)
+       
+        #pack
+        if self.pack:
+            inputs = pack_padded_sequence(inputs, lengths, batch_first=True)
+            tags = pack_padded_sequence(tags, lengths, batch_first=True)
+
+        return inputs, tags
 
 
+def demo_data():
+    
+    training_data = [
+        ("The dog ate the apple".split(), ["DET", "NN", "V", "DET", "NN"]),
+        ("Everybody read that book".split(), ["NN", "V", "DET", "NN"]),
+        ("The dog".split(), ["DET", "NN"]),
+        ("The dog ate the apple".split(), ["DET", "NN", "V", "DET", "NN"]),
+        ("Everybody read that book".split(), ["NN", "V", "DET", "NN"]),
+        ("Everybody read that book Everybody read that book".split(), ["NN", "V", "DET", "NN", "NN", "V", "DET", "NN"]),
+        ("Everybody read that book The dog ate the apple".split(), ["NN", "V", "DET", "NN", "DET", "NN", "V", "DET", "NN"]),
+        ("Everybody read that book".split(), ["NN", "V", "DET", "NN"]),
+        ("The dog ate the apple".split(), ["DET", "NN", "V", "DET", "NN"]),
+        ("Everybody read that book Everybody read that book".split(), ["NN", "V", "DET", "NN", "NN", "V", "DET", "NN"])
+    ]
 
 
+    word_to_ix = {Vocab.PAD:Vocab.PAD_ID, Vocab.BOS:Vocab.BOS_ID, Vocab.EOS:Vocab.EOS_ID}
+    for sent, tags in training_data:
+        for word in sent:
+            if word not in word_to_ix:
+                word_to_ix[word] = len(word_to_ix)
+
+    tag_to_ix = {Vocab.PAD: Vocab.PAD_ID, Vocab.BOS:Vocab.BOS_ID, Vocab.EOS: Vocab.EOS_ID, "DET": 3, "NN": 4, "V": 5}
+    inputs, tags = zip(*training_data)
+    
+    inputs = prepare_sequence(inputs, word_to_ix, True)
+    tags = prepare_sequence(tags, tag_to_ix, True)
+    
+    return inputs, tags, len(word_to_ix), len(tag_to_ix)
 
 
+if __name__ == '__main__':
+    inputs, tags, _, _ = demo_data()
+    print(inputs)
+    print(tags)
 
-
+    data = BucketData(inputs, tags, 20)
+    for batch_inputs, batch_tags in data:
+        print('>> batch inputs: ', batch_inputs)
+        print('>> batch tags: ', batch_tags)
 
 
 
