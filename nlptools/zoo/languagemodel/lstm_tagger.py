@@ -21,7 +21,7 @@ class LSTMTagger(nn.Module):
     def __init__(self, 
                  embedding_dim, hidden_dim, 
                  vocab_size, tagset_size,
-                 num_layers, batch_size=1, 
+                 num_layers, batch_size=1, max_len=128, 
                  bucket_config=None, device=None):
         
         super(LSTMTagger, self).__init__()
@@ -33,7 +33,8 @@ class LSTMTagger(nn.Module):
         
         self.vocab_size = vocab_size
         self.tagset_size = tagset_size
-        
+        self.max_len = max_len
+
         self.num_layers = num_layers
         self.batch_size = batch_size
         
@@ -93,15 +94,14 @@ class LSTMTagger(nn.Module):
                 
             buckets = BucketData(inputs, targets, self.bucket_config)
             for batch_inputs, batch_tags in buckets:
-                print(batch_inputs)
                 self.zero_grad()
                 self.hidden = self.init_hidden()
                
                 batch_inputs = batch_inputs.to(self.device)
                 batch_tags = batch_tags.to(self.device)
 
-                #print('batch_inputs', batch_inputs.size())
-                #print('tags', batch_tags.size())
+                print('batch_inputs', batch_inputs)
+                print('tags', batch_tags.size())
                 
                 tag_scores = self(batch_inputs)
                 
@@ -111,6 +111,7 @@ class LSTMTagger(nn.Module):
                 loss = loss_function(tag_scores_flatten, targets_flatten)
                 loss.backward()
                 optimizer.step()
+                sys.exit()
             #if epoch % 10 == 0: 
             print('Epoch loss {}'.format(loss))
             torch.save(self.state_dict(), save_path)
@@ -120,62 +121,4 @@ class LSTMTagger(nn.Module):
         self.load_state_dict(torch.load(save_path))
 
 
-
-    
-def main():
-    from bucket import demo_data, prepare_lm_data
-
-    '''
-    PART I. Training
-    '''
-    
-    inputs, targets, vocab_size, tagset_size = demo_data()
-    inputs, targets = prepare_lm_data(inputs)
-    print('vocab_size: {}, tagset_size: {}'.format(vocab_size, tagset_size))
-    print('data before trainig:')
-    print(inputs)
-    print(targets)
-    
-    model = LSTMTagger(
-            embedding_dim=8, hidden_dim=8, 
-            # VERY IMPORTANT! to use the vocab_size as the tagset_size
-            vocab_size=vocab_size, tagset_size=vocab_size,
-            num_layers=1
-    )
-    
-    '''
-        `bucket_config = [(4, 3), (8, 2)]` means that:
-        batch_size for seq_len up to 4 is 3
-        batch_size for seq_len up to 8 is 2
-        batch_size for seq_len more than 8 is 1
-    '''
-    
-    model.bucket_config = [(4, 3), (8, 2)]
-    model.train(inputs, targets, num_epoch=200)
-    
-    '''
-    PART II. TESTING
-    '''
-    
-    model = LSTMTagger(
-            embedding_dim=8, hidden_dim=8, 
-            # VERY IMPORTANT! to use the vocab_size as the tagset_size
-            vocab_size=vocab_size, tagset_size=vocab_size,
-            num_layers=1
-    )
-    model.load_params('autosave.torch')
-    
-    inputs, targets, vocab_size, tagset_size = demo_data()
-    inputs, targets = prepare_lm_data(inputs)
-    
-    buckets = BucketData(inputs, targets, [(4, 3), (8, 2)])
-    for batch_inputs, batch_tags in buckets:
-        xent = model.sequence_loss(batch_inputs, batch_tags)
-        print('batch inputs:', batch_inputs)
-        print('cross entropy:', xent)
-        print('-' * 20)
-    
-    
-if __name__ == '__main__':
-    main()
 
