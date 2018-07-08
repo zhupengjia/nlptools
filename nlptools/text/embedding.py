@@ -17,20 +17,20 @@ class Embedding_Base(object):
         Parent class for other embedding classes to read the word vectors, please don't use this class directly
 
         Input:
-            - vec_len: int, vector length, default is 300
-            - vec_type: type of saved vector, default is float64
-            - cached_w2v: the cache path in local, default is ''
-            - w2v_adddim: 0 for random, 1 for random but with additional dim, default is 0
+            - dim: int, vector length, default is 300
+            - data_type: type of saved vector, default is float64
+            - cached_data: the cache path in local, default is ''
+            - additional_dim: 0 for random, 1 for random but with additional dim, default is 0
             - base64: bool, if True, will return BASE64 instead of vector
     '''
-    def __init__(self, vec_len=300, vec_type='float64', cached_w2v='', w2v_adddim=0, base64=False):
-        if w2v_adddim:
-            self.vec_len = int(vec_len) + 1
+    def __init__(self, dim=300, data_type='float64', cached_data='', additional_dim=0, base64=False):
+        if additional_dim:
+            self.dim = int(dim) + 1
         else:
-            self.vec_len = int(vec_len)
-        self.cached_w2v = cached_w2v
-        self.vec_type =vec_type
-        self.w2v_adddim = w2v_adddim
+            self.dim = int(dim)
+        self.cached_data = cached_data
+        self.data_type =data_type
+        self.additional_dim = additional_dim
         self.base64 = base64
         self.__get_cached_vec()
    
@@ -48,22 +48,29 @@ class Embedding_Base(object):
         return cosine(vec1, vec2)
 
 
+    def __len__(self):
+        if self.additional_dim:
+            return self.dim+1
+        else:
+            return self.dim
+
+
     def __get_cached_vec(self):
-        if os.path.exists(self.cached_w2v):
-            self.cached_vec = zload(self.cached_w2v)
+        if os.path.exists(self.cached_data):
+            self.cached_vec = zload(self.cached_data)
         else:
             self.cached_vec = {}
    
     
     def _postdeal(self, v = None, returnbase64 = False):
-        if self.w2v_adddim:
+        if self.additional_dim:
             if v:
                 v = np.concatenate((v, np.zeros(1)))
             else:
-                v = np.concatenate((np.random.randn(self.vec_len - 1), np.ones(1)))
+                v = np.concatenate((np.random.randn(self.dim - 1), np.ones(1)))
         else:
             if v is None:
-                v = np.random.randn(self.vec_len)
+                v = np.random.randn(self.dim)
         if returnbase64:
             v = base64.b64encode(v.tostring()).decode()
         return v
@@ -71,10 +78,10 @@ class Embedding_Base(object):
 
     def save(self):
         '''
-            Save the word vectors in memory to *cached_w2v*
+            Save the word vectors in memory to *cached_data*
         '''
-        if len(self.cached_w2v) > 0:
-            zdump(self.cached_vec, self.cached_w2v)
+        if len(self.cached_data) > 0:
+            zdump(self.cached_vec, self.cached_data)
 
 
 class Embedding_File(Embedding_Base):
@@ -165,7 +172,7 @@ class Embedding_Random(Embedding_Base):
     '''
     def __init__(self, **args):
         Embedding_Base.__init__(self, **args)
-        self.vec_len = int(self.vec_len)
+        self.dim = int(self.dim)
 
     def __getitem__(self, word):
         if word in self.cached_vec:
@@ -210,7 +217,7 @@ class Embedding_Dynamodb(Embedding_Base):
             if self.base64:
                 v = vector_binary
             else:
-                vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.vec_type)
+                vector = np.fromstring(base64.b64decode(vector_binary), dtype=self.data_type)
                 v = self._postdeal(vector)
         self.cached_vec[word] = v
         return v
@@ -226,7 +233,7 @@ class Embedding_Rest(Embedding_Base):
 
         Input:
             - embedding_restapi: string, restapi url 
-            - vec_type: the type of vector used in restapi, float64, float32, float
+            - data_type: the type of vector used in restapi, float64, float32, float
          
         Usage:
             - emb_ins[word]: return the vector or BASE64 format vector
@@ -241,7 +248,7 @@ class Embedding_Rest(Embedding_Base):
             return self.cached_vec[word]
         vector = restpost(self.rest_url, {'text':word})
         if not base64:
-            vector = np.fromstring(base64.b64decode(vector), dtype=self.vec_type)
+            vector = np.fromstring(base64.b64decode(vector), dtype=self.data_type)
             vector = self._postdeal(vector)
         self.cached_vec[word] = vector
         return vector

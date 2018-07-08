@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import sys, torch
+from nlptools.text import Vocab
+from nlptools.text.embedding import Embedding_Random
 from nlptools.zoo.modules.bucket import demo_data, prepare_lm_data
 from nlptools.zoo.languagemodel.lstm_tagger import LSTMTagger
 
-device = torch.device('cpu')
 
 def main():
 
@@ -11,29 +12,26 @@ def main():
     PART I. Training
     '''
     
-    inputs, targets, vocab_size, tagset_size = demo_data()
+    inputs, targets, word_to_ix, tag_to_ix = demo_data()
     inputs, targets = prepare_lm_data(inputs)
-    print('vocab_size: {}, tagset_size: {}'.format(vocab_size, tagset_size))
+    print('vocab_size: {}, tagset_size: {}'.format(len(word_to_ix), len(tag_to_ix)))
     print('data before trainig:')
     print(inputs)
     print(targets)
     
+    vocab = Vocab.load_from_dict(word_to_ix)
+    vocab.embedding = Embedding_Random(dim = 8)
+
+
     model = LSTMTagger(
-            embedding_dim=8, hidden_dim=8, 
+            vocab, hidden_dim=8, 
             # VERY IMPORTANT! to use the vocab_size as the tagset_size
-            vocab_size=vocab_size, tagset_size=vocab_size,
-            num_layers=1, device=device
+            tagset_size=vocab.vocab_size,
+            num_layers=1
     )
     
-    '''
-        `bucket_config = [(4, 3), (8, 2)]` means that:
-        batch_size for seq_len up to 4 is 3
-        batch_size for seq_len up to 8 is 2
-        batch_size for seq_len more than 8 is 0
-    '''
     
-    model.bucket_config = [(4, 3), (8, 2)]
-    model.train(inputs, targets, num_epoch=200)
+    model.train(inputs, targets, num_epoch=200, max_words=20)
    
 
 

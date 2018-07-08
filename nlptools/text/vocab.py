@@ -119,6 +119,21 @@ class Vocab(object):
             self._word2id = bidict()
             self._id2tf = numpy.zeros(self.vocab_size, 'int')
 
+    
+    @classmethod
+    def load_from_dict(cls, word2idx):
+        '''
+            load from dictionary
+
+            Input:
+                - word2idx, dictionary with format {word:idx, ...}
+        '''
+        vocab_size = len(word2idx)
+        vocab = cls(vocab_size, special_char=False)
+        vocab._word2id = bidict(word2idx)
+        vocab._id2tf = numpy.zeros(vocab_size, 'int')
+        return vocab
+
 
     def save(self):
         '''
@@ -172,6 +187,11 @@ class Vocab(object):
 
     def __len__(self):
         return len(self._word2id)
+
+
+    @property
+    def embedding_dim(self):
+        return self.embedding.dim
 
 
     def reduce(self, vocab_size=None, reorder=False):
@@ -281,7 +301,7 @@ class Vocab(object):
         '''
             return a numpy array of word vectors. The index of array is the word_ids
         '''
-        vectors = numpy.zeros((self.vocab_size, self.embedding.vec_len), 'float')
+        vectors = numpy.zeros((self.vocab_size, self.embedding.dim), 'float')
         for w in self._word2id:
             wordid = self._word2id[w]
             if wordid == 0:
@@ -317,7 +337,7 @@ class Vocab(object):
         '''
         if self.embedding is None:
             return None
-        vec = numpy.zeros((len(ids), self.embedding.vec_len), 'float')
+        vec = numpy.zeros((len(ids), self.embedding.dim), 'float')
         for i, sid in enumerate(ids):
             vec[i] = self.id2vec(sid)
         return vec

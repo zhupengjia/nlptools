@@ -108,7 +108,7 @@ class BucketData:
         tags = self.sorted_tags[indexes]
         lengths = self.sorted_len[indexes] 
 
-        #pad together
+        #join together
         inputs = pad_sequence(inputs, batch_first=True, padding_value=Vocab.PAD_ID)
         tags = pad_sequence(tags, batch_first=True, padding_value=Vocab.PAD_ID)
        
@@ -148,7 +148,7 @@ def demo_data():
     inputs = prepare_sequence(inputs, word_to_ix, True)
     tags = prepare_sequence(tags, tag_to_ix, True)
     
-    return inputs, tags, len(word_to_ix), len(tag_to_ix)
+    return inputs, tags, word_to_ix, tag_to_ix
 
 
 if __name__ == '__main__':
