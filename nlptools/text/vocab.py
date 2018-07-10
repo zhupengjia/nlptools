@@ -24,7 +24,8 @@ class Vocab(object):
 
         Some special operation:
             - __add__: join several vocab together
-            - __call__: get ids for sentence list. Input is [sentence, ...], or [token_list, ...]
+            - __str__: print status of vocab
+            - __call__: get ids for token list
             - __getitem__: get id for word
             - __len__: get vocab size
             - __contains__: checkout if word or id in vocab
@@ -207,6 +208,7 @@ class Vocab(object):
             self._id2tf = self._id2tf[:self.vocab_size]
             vocab_size = self.vocab_size
             if not reorder:
+                self.freeze()
                 return
         new_word2id = bidict()
         new_id2tf = numpy.zeros(vocab_size, 'int')
@@ -224,7 +226,17 @@ class Vocab(object):
         self._word2id = new_word2id
         self._id2tf = new_id2tf
         self.vocab_size = vocab_size
-    
+        self.freeze()
+
+    def __str__(self):
+        info = '-'*30
+        info += '\nvocab max size: {}'.format(self.vocab_size)
+        info += '\nvocab size: {}'.format(len(self._word2id))
+        info += '\nhas special characters: {}'.format(len(self._id_spec) > 0)
+        info += '\nallow update: {}'.format(self.update)
+        info += '\n' + '-'*30
+        return info
+
 
     def __add__(self, other):
         '''
@@ -265,36 +277,42 @@ class Vocab(object):
         return key in self._word2id
 
 
-    def words2id(self, tokens, useBE=True):
+    def __call__(self, tokens, batch=False):
+        '''
+            see words2id
+        '''
+        return self.words2id(tokens, batch)
+
+
+    def words2id(self, tokens, batch=False):
         '''
             tokens to token ids
             
             Input:
-                - sentence: string or token list
-                - useBE: bool, True will add <BOS> and <EOS> for multi-grams ids. False will not. Default is True
-                - update: bool, check if use tf accumulate, default is True
-                - remove_stopwords: bool, check if remove stopwords, default is True
-                - flatresult: bool, check if flat the final result. Please check the output. Default is True
+                - tokens: token list
+                - batch: if the input sequence is a batches, default is False
 
             Output:
-                - if flatresult is True, then return a list of ids
-                - if flatresult is False, then return a dictionary, key is the n of n-grams and 'char', like 1,2,3,..,,char , value is the word id list.
+                - list of ids
 
         '''
+        if batch:
+            return numpy.asarray([self.words2id(t) for t in tokens], dtype=numpy.object) 
+
         ids = [self.word2id(t) for t in tokens]
-        ids = [i for i in ids if i is not None]
+        ids = numpy.array([i for i in ids if i is not None], 'int')
         
         return ids
 
 
-    def ids2string(self, ids):
+    def ids2word(self, ids):
         '''
-            convert ids to string
+            convert ids to word
 
             Input: 
                 - ids: list of ids
         '''
-        return ' '.join([self._word2id.inv[i] for i in ids])
+        return [self._word2id.inv[i] for i in ids if i in self._word2id.inv]
 
     
     def dense_vectors(self):

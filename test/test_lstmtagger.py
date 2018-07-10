@@ -12,21 +12,21 @@ def main():
     PART I. Training
     '''
     
-    inputs, targets, word_to_ix, tag_to_ix = demo_data()
+    inputs, targets, word_vocab, tag_vocab = demo_data()
     inputs, targets = prepare_lm_data(inputs)
-    print('vocab_size: {}, tagset_size: {}'.format(len(word_to_ix), len(tag_to_ix)))
+    print('vocab_size: {}, tagset_size: {}'.format(len(word_vocab), len(tag_vocab)))
     print('data before trainig:')
     print(inputs)
     print(targets)
-    
-    vocab = Vocab.load_from_dict(word_to_ix)
-    vocab.embedding = Embedding_Random(dim = 8)
+
+
+    word_vocab.embedding = Embedding_Random(dim = 8)
 
 
     model = LSTMTagger(
-            vocab, hidden_dim=8, 
+            word_vocab, hidden_dim=8, 
             # VERY IMPORTANT! to use the vocab_size as the tagset_size
-            tagset_size=vocab.vocab_size,
+            tagset_size=word_vocab.vocab_size,
             num_layers=1
     )
     

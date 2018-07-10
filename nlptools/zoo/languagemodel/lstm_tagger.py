@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 import torch.autograd as autograd
 import torch.optim as optim
+from torch.nn.utils.rnn import pack_padded_sequence
 from ..modules.bucket import BucketData
 
 class LSTMTagger(nn.Module):
@@ -37,7 +38,7 @@ class LSTMTagger(nn.Module):
                 sentence: The input sentence, word idx not mapped into embedding space, in the shape of `(batch?, len)`
                 `nn.Embedding` would accept any shape tensor with value type Long 
         """
-        embeds = self.word_embeddings(sentence)
+        embeds = self.embedding(sentence)
         # now make the len to be inferred
         lstm_out, self.hidden = self.lstm(
             embeds)
@@ -59,12 +60,16 @@ class LSTMTagger(nn.Module):
             print('Starting epoch {}'.format(epoch))
                 
             buckets = BucketData(inputs, targets, max_words = max_words)
-            for batch_inputs, batch_tags in buckets:
+            for batch_inputs, batch_tags ,batch_lengths, in buckets:
                 self.zero_grad()
-               
-                batch_inputs = batch_inputs.to(self.device)
-                batch_tags = batch_tags.to(self.device)
+              
+                batch_inputs = torch.LongTensor(batch_inputs, device=self.device)
+                batch_tags = torch.LongTensor(batch_tags, device=self.device)
 
+                batch_inputs = pack_padded_sequence(batch_inputs, batch_lengths, batch_first=True)
+                batch_tags = pack_padded_sequence(batch_tags, batch_lengths, batch_first=True)
+
+                print(batch_inputs)
                 #print('batch_inputs', batch_inputs.size())
                 #print('tags', batch_tags.size())
                 

@@ -224,26 +224,16 @@ def eval_str_list(x, type=float):
         return [type(x)]
 
 
-#language detection
-def lang_detect(string):
+def pad_sequence(M, padding_value=0):
     '''
-        language detection using langdetect
-        
-        input:
-            - string
-        
-        output:
-            - most possible language
+        pad array of numpy array to matrix
     '''
-    from langdetect import detect
-    import numpy
-    langs = []
-    for s in re.split('\n', string):
-        try: langs.append(detect(s))
-        except: continue
-    if len(langs) < 1: return None
-    langs, langsnum = numpy.unique(langs, return_counts=True)
-    return langs[numpy.argmax(langsnum)]
+    maxlen = max(len(x) for x in M)
+    seq = numpy.zeros((len(M), maxlen), dtype=M[0].dtype) + padding_value
+    for i, m in enumerate(M):
+        seq[i][:len(m)] = m
+    return seq
+
 
 
 

@@ -1,39 +1,12 @@
 #!/usr/bin/env python
 import numpy as np
-import torch
-import torch.nn as nn
 from nlptools.text import Vocab
-from torch.nn.utils.rnn import pack_padded_sequence, pad_sequence
-
-
-def prepare_sequence(seq, to_ix, batch_mode=False):
-    '''
-    Args:
-        seq: the input sequence
-        to_ix: the dictionary
-        batch_mode: if the input sequence is are batches
-    '''
-    if batch_mode:
-        return np.asarray([prepare_sequence(_, to_ix) for _ in seq], dtype=np.object)
-    return torch.tensor([to_ix[w] for w in seq], dtype=torch.long)
-
+from nlptools.utils import pad_sequence
 
 
 def prepare_lm_data(inputs):
-
-    #print(inputs)
-    #print('>>')
-    def shift(input, offset, pad):
-        padded = input.new_zeros(len(input) + abs(offset))
-        if offset > 0:
-            padded[offset:] = input
-            padded[:offset] = pad
-        else:
-            padded[:len(input)] = input
-            padded[len(input):] = pad
-        return padded
-    
-    ans = [(shift(input, 1, Vocab.BOS_ID), shift(input, -1, Vocab.EOS_ID)) \
+    ans = [(np.pad(input, (1,0), 'constant', constant_values=Vocab.BOS_ID),
+           np.pad(input, (0,1), 'constant', constant_values=Vocab.EOS_ID))
             for input in inputs]
     inputs, targets = zip(*ans)
     return np.array(inputs, dtype=np.object),\
@@ -42,7 +15,7 @@ def prepare_lm_data(inputs):
 
 class BucketData:
     
-    def __init__(self, inputs, tags, max_words = 1000, max_seq_len=None, pack=True):
+    def __init__(self, inputs, tags, max_words = 1000, max_seq_len=None):
         '''
         Args:
             - inputs: list of inputs, should be in the shape of (num_instance, time_step).
@@ -51,9 +24,7 @@ class BucketData:
             - tags: list of tags, same format as inputs
             - max_words: max words in one batch, used to decide the batch size
             - max_seq_len: maximum sequence length, if None then will not filter anything
-            - pack: bool, check if return data packed, default is True 
         '''
-        self.pack = pack
 
         # build a list of lengths for the input data
         self.len_list = np.asarray(list(map(len, inputs)), dtype=np.integer)
@@ -109,15 +80,13 @@ class BucketData:
         lengths = self.sorted_len[indexes] 
 
         #join together
-        inputs = pad_sequence(inputs, batch_first=True, padding_value=Vocab.PAD_ID)
-        tags = pad_sequence(tags, batch_first=True, padding_value=Vocab.PAD_ID)
-       
-        #pack
-        if self.pack:
-            inputs = pack_padded_sequence(inputs, lengths, batch_first=True)
-            tags = pack_padded_sequence(tags, lengths, batch_first=True)
+        inputs = pad_sequence(inputs, padding_value=Vocab.PAD_ID)
+        tags = pad_sequence(tags, padding_value=Vocab.PAD_ID)
 
-        return inputs, tags
+        #inputs = pack_padded_sequence(inputs, lengths, batch_first=True)
+        #tags = pack_padded_sequence(tags, lengths, batch_first=True)
+
+        return inputs, tags, lengths
 
 
 def demo_data():
@@ -135,20 +104,19 @@ def demo_data():
         ("Everybody read that book Everybody read that book".split(), ["NN", "V", "DET", "NN", "NN", "V", "DET", "NN"])
     ]
 
-
-    word_to_ix = {Vocab.PAD:Vocab.PAD_ID, Vocab.BOS:Vocab.BOS_ID, Vocab.EOS:Vocab.EOS_ID}
-    for sent, tags in training_data:
-        for word in sent:
-            if word not in word_to_ix:
-                word_to_ix[word] = len(word_to_ix)
-
-    tag_to_ix = {Vocab.PAD: Vocab.PAD_ID, Vocab.BOS:Vocab.BOS_ID, Vocab.EOS: Vocab.EOS_ID, "DET": 3, "NN": 4, "V": 5}
+    word_vocab = Vocab()
+    tag_vocab = Vocab()
+    
     inputs, tags = zip(*training_data)
+
     
-    inputs = prepare_sequence(inputs, word_to_ix, True)
-    tags = prepare_sequence(tags, tag_to_ix, True)
-    
-    return inputs, tags, word_to_ix, tag_to_ix
+    inputs = word_vocab(inputs, batch=True)
+    tags = tag_vocab(tags, batch=True)
+  
+    word_vocab.reduce()
+    tag_vocab.reduce()
+
+    return inputs, tags, word_vocab, tag_vocab
 
 
 if __name__ == '__main__':
