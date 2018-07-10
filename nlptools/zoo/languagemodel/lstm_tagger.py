@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 import torch.autograd as autograd
 import torch.optim as optim
-from torch.nn.utils.rnn import pack_padded_sequence
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from ..modules.bucket import BucketData
 
 class LSTMTagger(nn.Module):
@@ -24,6 +24,8 @@ class LSTMTagger(nn.Module):
         
         self.device = torch.device(device)
 
+        self.tagset_size = tagset_size
+
         self.embedding.weight.data = torch.FloatTensor(vocab.dense_vectors()).to(self.device)
 
 
@@ -32,21 +34,26 @@ class LSTMTagger(nn.Module):
         self.hidden2tag = nn.Linear(hidden_dim, tagset_size)
     
     
-    def forward(self, sentence):
+    def forward(self, sentence, lengths):
         """
             Args: 
                 sentence: The input sentence, word idx not mapped into embedding space, in the shape of `(batch?, len)`
                 `nn.Embedding` would accept any shape tensor with value type Long 
         """
         embeds = self.embedding(sentence)
+
+        embeds = pack_padded_sequence(embeds, lengths,  batch_first=True)
+
         # now make the len to be inferred
         lstm_out, self.hidden = self.lstm(
             embeds)
+        lstm_out, _ = pad_packed_sequence(lstm_out) 
         
         tag_space = self.hidden2tag(lstm_out)
 
         tag_score = F.log_softmax(tag_space, dim=2)
-        
+
+
         return tag_score
 
 
@@ -66,14 +73,10 @@ class LSTMTagger(nn.Module):
                 batch_inputs = torch.LongTensor(batch_inputs, device=self.device)
                 batch_tags = torch.LongTensor(batch_tags, device=self.device)
 
-                batch_inputs = pack_padded_sequence(batch_inputs, batch_lengths, batch_first=True)
-                batch_tags = pack_padded_sequence(batch_tags, batch_lengths, batch_first=True)
-
-                print(batch_inputs)
                 #print('batch_inputs', batch_inputs.size())
                 #print('tags', batch_tags.size())
                 
-                tag_scores = self(batch_inputs)
+                tag_scores = self(batch_inputs, batch_lengths)
                 
                 tag_scores_flatten = tag_scores.view(-1, self.tagset_size)
                 targets_flatten = batch_tags.view(-1)
