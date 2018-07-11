@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from ..modules.adaptive_softmax import AdaptiveSoftmax
 from ..modules.helper import get_incremental_state, set_incremental_state
 from .decoder_base import IncrementalDecoder
-from .fconv_encoder import Embedding, PositionalEmbedding, Linear
+from .fconv_encoder import Embedding, extend_conv_spec, PositionalEmbedding, Linear
 
 
 class FConvDecoder(IncrementalDecoder):
@@ -228,4 +228,65 @@ class FConvDecoder(IncrementalDecoder):
             x = x.transpose(0, 1)
         return x
 
+
+class AttentionLayer(nn.Module):
+    def __init__(self, conv_channels, embed_dim, normalization_constant=0.5, bmm=None):
+        super().__init__()
+        self.normalization_constant = normalization_constant
+        # projects from output of convolution to embedding dimension
+        self.in_projection = Linear(conv_channels, embed_dim)
+        # projects from embedding dimension to convolution size
+        self.out_projection = Linear(embed_dim, conv_channels)
+
+        self.bmm = bmm if bmm is not None else torch.bmm
+
+    def forward(self, x, target_embedding, encoder_out, encoder_padding_mask):
+        residual = x
+
+        # attention
+        x = (self.in_projection(x) + target_embedding) * math.sqrt(self.normalization_constant)
+        x = self.bmm(x, encoder_out[0])
+
+        # don't attend over padding
+        if encoder_padding_mask is not None:
+            x = x.float().masked_fill(
+                encoder_padding_mask.unsqueeze(1),
+                float('-inf')
+            ).type_as(x)  # FP16 support: cast to float and back
+
+        # softmax over last dim
+        sz = x.size()
+        x = F.softmax(x.view(sz[0] * sz[1], sz[2]), dim=1)
+        x = x.view(sz)
+        attn_scores = x
+
+        x = self.bmm(x, encoder_out[1])
+
+        # scale attention output (respecting potentially different lengths)
+        s = encoder_out[1].size(1)
+        if encoder_padding_mask is None:
+            x = x * (s * math.sqrt(1.0 / s))
+        else:
+            s = s - encoder_padding_mask.type_as(x).sum(dim=1, keepdim=True)  # exclude padding
+            s = s.unsqueeze(-1)
+            x = x * (s * s.rsqrt())
+
+        # project back
+        x = (self.out_projection(x) + residual) * math.sqrt(self.normalization_constant)
+        return x, attn_scores
+
+    def make_generation_fast_(self, beamable_mm_beam_size=None, **kwargs):
+        """Replace torch.bmm with BeamableMM."""
+        if beamable_mm_beam_size is not None:
+            del self.bmm
+            self.add_module('bmm', BeamableMM(beamable_mm_beam_size))
+
+
+def LinearizedConv1d(in_channels, out_channels, kernel_size, dropout=0, **kwargs):
+    """Weight-normalized Conv1d layer optimized for decoding"""
+    m = LinearizedConvolution(in_channels, out_channels, kernel_size, **kwargs)
+    std = math.sqrt((4 * (1.0 - dropout)) / (m.kernel_size[0] * in_channels))
+    nn.init.normal_(m.weight, mean=0, std=std)
+    nn.init.constant_(m.bias, 0)
+    return nn.utils.weight_norm(m, dim=2)
 
