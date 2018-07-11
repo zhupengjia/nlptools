@@ -13,18 +13,12 @@ from nlptools.utils import eval_str_list
 from ..modules.model_base import ModelBase
 
 class FConvLanguageModel(ModelBase):
-    def __init__(self, decoder):
+    def __init__(self, vocab, tokens_per_sample, max_target_positions=None, decoder_embed_dim=128, decoder_layers=[(1268, 4)] * 13, decoder_attention=False, adaptive_softmax_cutoff=None, dropout=0.1, criterion=None, normalization_constant=0.5):
         super().__init__()
-        self.decoder = decoder
-
-    @classmethod
-    def build_model(cls, vocab, tokens_per_sample, max_target_positions=None, decoder_embed_dim=128, decoder_layers=[(1268, 4)] * 13, decoder_attention=False, adaptive_softmax_cutoff=None, dropout=0.1, criterion=None, normalization_constant=0.5):
-        """Build a new model instance."""
-
         if max_target_positions is not None:
             tokens_per_sample = max_target_positions
-
-        decoder = FConvDecoder(
+        
+        self.decoder = FConvDecoder(
             vocab=vocab,
             embed_dim=decoder_embed_dim,
             out_embed_dim=decoder_embed_dim,
@@ -40,7 +34,7 @@ class FConvLanguageModel(ModelBase):
             ),
             normalization_constant=normalization_constant,
         )
-        return FConvLanguageModel(decoder)
+
 
     def forward(self, src_tokens):
         return self.decoder(src_tokens)
