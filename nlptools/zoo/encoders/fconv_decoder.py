@@ -12,8 +12,10 @@ import torch.nn.functional as F
 
 from ..modules.adaptive_softmax import AdaptiveSoftmax
 from ..modules.helper import get_incremental_state, set_incremental_state
+from ..modules.linearized_convolution import LinearizedConv1d
 from .decoder_base import IncrementalDecoder
 from .fconv_encoder import Embedding, extend_conv_spec, PositionalEmbedding, Linear
+
 
 
 class FConvDecoder(IncrementalDecoder):
@@ -282,11 +284,4 @@ class AttentionLayer(nn.Module):
             self.add_module('bmm', BeamableMM(beamable_mm_beam_size))
 
 
-def LinearizedConv1d(in_channels, out_channels, kernel_size, dropout=0, **kwargs):
-    """Weight-normalized Conv1d layer optimized for decoding"""
-    m = LinearizedConvolution(in_channels, out_channels, kernel_size, **kwargs)
-    std = math.sqrt((4 * (1.0 - dropout)) / (m.kernel_size[0] * in_channels))
-    nn.init.normal_(m.weight, mean=0, std=std)
-    nn.init.constant_(m.bias, 0)
-    return nn.utils.weight_norm(m, dim=2)
 

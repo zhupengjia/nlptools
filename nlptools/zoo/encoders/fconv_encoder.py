@@ -183,7 +183,7 @@ def Linear(in_features, out_features, dropout=0):
 
 def ConvTBC(in_channels, out_channels, kernel_size, dropout=0, **kwargs):
     """Weight-normalized Conv1d layer"""
-    from fairseq.modules import ConvTBC
+    from ..modules.conv_tbc import ConvTBC
     m = ConvTBC(in_channels, out_channels, kernel_size, **kwargs)
     std = math.sqrt((4 * (1.0 - dropout)) / (m.kernel_size[0] * in_channels))
     nn.init.normal_(m.weight, mean=0, std=std)
