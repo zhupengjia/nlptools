@@ -15,15 +15,6 @@ class ModelBase(nn.Module):
         super().__init__()
         self._is_generation_fast = False
 
-    @staticmethod
-    def add_args(parser):
-        """Add model-specific arguments to the parser."""
-        pass
-
-    @classmethod
-    def build_model(cls, args, task):
-        """Build a new model instance."""
-        raise NotImplementedError
 
     def get_targets(self, sample, net_output):
         """Get targets from either the sample or the net's output."""

@@ -23,11 +23,9 @@ def main():
     word_vocab.embedding = Embedding_Random(dim = 8)
 
 
-    model = LSTMTagger(
-            word_vocab, hidden_dim=8, 
-            # VERY IMPORTANT! to use the vocab_size as the tagset_size
-            tagset_size=word_vocab.vocab_size,
-            num_layers=1
+    model = FConvLanguageModel(
+            word_vocab,
+            decoder_layers = [(32, 4)]*13
     )
     
     

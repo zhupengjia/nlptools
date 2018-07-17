@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import time
 import torch, sys
 import torch.nn.functional as F
 import torch.nn as nn

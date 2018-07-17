@@ -5,11 +5,10 @@
 # the root directory of this source tree. An additional grant of patent rights
 # can be found in the PATENTS file in the same directory.
 
-import torch
+import torch, math
+import torch.nn as nn
 import torch.nn.functional as F
-
 from .helper import get_incremental_state, set_incremental_state
-
 from .conv_tbc import ConvTBC
 
 

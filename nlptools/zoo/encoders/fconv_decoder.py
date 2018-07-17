@@ -22,7 +22,7 @@ class FConvDecoder(IncrementalDecoder):
     """Convolutional decoder"""
 
     def __init__(
-        self, vocab, embed_dim=512, embed_dict=None, out_embed_dim=256,
+        self, vocab, out_embed_dim=256,
         max_positions=1024, convolutions=((512, 3),) * 20, attention=True,
         dropout=0.1, share_embed=False, positional_embeddings=True,
         adaptive_softmax_cutoff=None, normalization_constant=0.5,
@@ -44,9 +44,10 @@ class FConvDecoder(IncrementalDecoder):
                              'length equal to the number of layers.')
 
         num_embeddings = vocab.vocab_size
-        padding_idx = vocab.PAD
+        padding_idx = vocab.PAD_ID
+        embed_dim = vocab.embedding_dim
         self.embed_tokens = Embedding(num_embeddings, embed_dim, padding_idx)
-        self.embed_tokens.weight.data = vocab.dense_vectors()
+        self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
 
         self.embed_positions = PositionalEmbedding(
             max_positions,
