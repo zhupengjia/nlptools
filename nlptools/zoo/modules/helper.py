@@ -100,3 +100,24 @@ def fill_with_neg_inf(t):
     return t.float().fill_(float('-inf')).type_as(t)
 
 
+def convert_padding_direction(src_tokens, padding_idx, right_to_left=False, left_to_right=False):
+    assert right_to_left ^ left_to_right
+    pad_mask = src_tokens.eq(padding_idx)
+    if not pad_mask.any():
+        # no padding, return early
+        return src_tokens
+    if left_to_right and not pad_mask[:, 0].any():
+        # already right padded
+        return src_tokens
+    if right_to_left and not pad_mask[:, -1].any():
+        # already left padded
+        return src_tokens
+    max_len = src_tokens.size(1)
+    range = buffered_arange(max_len).type_as(src_tokens).expand_as(src_tokens)
+    num_pads = pad_mask.long().sum(dim=1, keepdim=True)
+    if right_to_left:
+        index = torch.remainder(range - num_pads, max_len)
+    else:
+        index = torch.remainder(range + num_pads, max_len)
+    return src_tokens.gather(1, index)
+

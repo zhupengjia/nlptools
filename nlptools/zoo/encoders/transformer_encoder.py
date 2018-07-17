@@ -15,6 +15,8 @@ from ..modules.learned_positional_embedding import LearnedPositionalEmbedding
 from ..modules.multihead_attention import MultiheadAttention
 from ..modules.sinusoidal_positional_embedding import SinusoidalPositionalEmbedding
 
+from .encoder_base import Encoder_Base
+
 
 class TransformerEncoder(Encoder_Base):
     """Transformer encoder."""
