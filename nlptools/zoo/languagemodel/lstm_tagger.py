@@ -76,7 +76,7 @@ class LSTMTagger(nn.Module):
                 #print('tags', batch_tags.size())
                 
                 tag_scores = self(batch_inputs, batch_lengths)
-                
+                    
                 tag_scores_flatten = tag_scores.view(-1, self.tagset_size)
                 targets_flatten = batch_tags.view(-1)
                 

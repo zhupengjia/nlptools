@@ -17,6 +17,7 @@ class FConvLanguageModel(ModelBase):
             tokens_per_sample = max_target_positions
         
         self.vocab = vocab
+        self.vocab_size = vocab.vocab_size
         self.device = torch.device(device)
 
         self.decoder = FConvDecoder(
@@ -60,17 +61,12 @@ class FConvLanguageModel(ModelBase):
                 batch_inputs = torch.LongTensor(batch_inputs, device=self.device)
                 batch_tags = torch.LongTensor(batch_tags, device=self.device)
 
-                print('batch_inputs', batch_inputs)
-                print('tags', batch_tags)
+                #print('batch_inputs', batch_inputs)
+                #print('tags', batch_tags)
                 
-                tag_scores = self(batch_inputs)
+                tag_scores = self.get_normalized_probs(self(batch_inputs), log_probs=True)
                 
-                #print(tag_scores)
-                    
-                sys.exit()
-
-
-                tag_scores_flatten = tag_scores.view(-1, self.tagset_size)
+                tag_scores_flatten = tag_scores.view(-1, self.vocab_size)
                 targets_flatten = batch_tags.view(-1)
                 
                 loss = loss_function(tag_scores_flatten, targets_flatten)
