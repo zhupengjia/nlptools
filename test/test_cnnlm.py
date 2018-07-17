@@ -3,7 +3,7 @@ import sys, torch
 from nlptools.text import Vocab
 from nlptools.text.embedding import Embedding_Random
 from nlptools.zoo.modules.bucket import demo_data, prepare_lm_data
-from nlptools.zoo.languagemodel.fconv_lm import FConvLanguageModel
+from nlptools.zoo.tagging.fconv_lm import FConvLanguageModel
 
 
 def main():

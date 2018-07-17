@@ -3,7 +3,7 @@ import sys, torch
 from nlptools.text import Vocab
 from nlptools.text.embedding import Embedding_Random
 from nlptools.zoo.modules.bucket import demo_data, prepare_lm_data
-from nlptools.zoo.languagemodel.lstm_tagger import LSTMTagger
+from nlptools.zoo.tagging.lstm_tagger import LSTMTagger
 
 
 def main():
