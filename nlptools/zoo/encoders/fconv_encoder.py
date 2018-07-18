@@ -15,7 +15,7 @@ class FConvEncoder(Encoder_Base):
     """Convolutional encoder"""
 
     def __init__(
-        self, vocab, embed_dim=512, max_positions=1024,
+        self, vocab, max_positions=1024,
         convolutions=((512, 3),) * 20, dropout=0.1, normalization_constant=0.5,
         left_pad=True,
     ):
@@ -26,9 +26,11 @@ class FConvEncoder(Encoder_Base):
         self.num_attention_layers = None
 
         num_embeddings = vocab.vocab_size
-        self.padding_idx = vocab.PAD
+        self.padding_idx = vocab.PAD_ID
+        embed_dim = vocab.embedding_dim
+
         self.embed_tokens = Embedding(num_embeddings, embed_dim, self.padding_idx)
-        self.embed_tokens.weight.data = vocab.dense_vectors()
+        self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
 
         self.embed_positions = PositionalEmbedding(
             max_positions,
