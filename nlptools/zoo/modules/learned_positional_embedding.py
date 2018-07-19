@@ -27,9 +27,10 @@ class LearnedPositionalEmbedding(nn.Embedding):
             # positions is the same for every token when decoding a single step
             positions = input.data.new(1, 1).fill_(self.padding_idx + input.size(1))
         else:
-            positions = utils.make_positions(input.data, self.padding_idx, self.left_pad)
+            positions = make_positions(input.data, self.padding_idx, self.left_pad)
         return super().forward(positions)
 
     def max_positions(self):
         """Maximum number of supported positions."""
         return self.num_embeddings - self.padding_idx - 1
+

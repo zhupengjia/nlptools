@@ -2,7 +2,8 @@
 import sys, torch
 from nlptools.text import Vocab
 from nlptools.text.embedding import Embedding_Random
-from nlptools.zoo.modules.bucket import demo_data, prepare_lm_data
+from nlptools.zoo.demodata.demo_tagging import demo_tagging
+from nlptools.zoo.modules.bucket import prepare_lm_data
 from nlptools.zoo.tagging.lstm_tagger import LSTMTagger
 
 
@@ -12,16 +13,14 @@ def main():
     PART I. Training
     '''
     
-    inputs, targets, word_vocab, tag_vocab = demo_data()
+    inputs, targets, word_vocab, tag_vocab = demo_tagging()
     inputs, targets = prepare_lm_data(inputs)
     print('vocab_size: {}, tagset_size: {}'.format(len(word_vocab), len(tag_vocab)))
     print('data before trainig:')
     print(inputs)
     print(targets)
 
-
     word_vocab.embedding = Embedding_Random(dim = 8)
-
 
     model = LSTMTagger(
             word_vocab, hidden_dim=8, 
@@ -49,7 +48,7 @@ def main():
     )
     model.load_params('autosave.torch')
     
-    inputs, targets, vocab_size, tagset_size = demo_data()
+    inputs, targets, vocab_size, tagset_size = demo_tagging()
     inputs, targets = prepare_lm_data(inputs)
     
     buckets = BucketData(inputs, targets, [(4, 3), (8, 2)])

@@ -15,27 +15,25 @@ def prepare_lm_data(inputs):
 
 class BucketData:
     
-    def __init__(self, inputs, tags, max_words = 1000, max_seq_len=None):
+    def __init__(self, inputs, max_words = 1000, max_seq_len=None):
         '''
         Args:
-            - inputs: list of inputs, should be in the shape of (num_instance, time_step).
+            - inputs: list of data like [inputs list, tags list, ...], each one should be in the shape of (num_instance, time_step).
               However, usually the input is not an numpy nd-array, and usually is a local batch 
               of the entire dataset. 
-            - tags: list of tags, same format as inputs
             - max_words: max words in one batch, used to decide the batch size
             - max_seq_len: maximum sequence length, if None then will not filter anything
         '''
 
         # build a list of lengths for the input data
-        self.len_list = np.asarray(list(map(len, inputs)), dtype=np.integer)
+        self.len_list = np.asarray(list(map(len, inputs[0])), dtype=np.integer)
         # save the sort_idx such that the original input order can be preserved. 
         self.sort_idx = np.argsort(self.len_list)[::-1]
         
         # now, let's sort the length
         self.sorted_len = self.len_list[self.sort_idx]
 
-        self.sorted_inputs = inputs[self.sort_idx]
-        self.sorted_tags = tags[self.sort_idx]
+        self.sorted_inputs = [ipt[self.sort_idx] for ipt in inputs]
 
         self.max_words = max_words
         self.max_seq_len = max_seq_len
@@ -75,48 +73,13 @@ class BucketData:
         indexes = np.array(indexes, 'int')
 
         #choose index
-        inputs = self.sorted_inputs[indexes]
-        tags = self.sorted_tags[indexes]
+        inputs = [ipt[indexes] for ipt in self.sorted_inputs]
         lengths = self.sorted_len[indexes] 
 
         #join together
-        inputs = pad_sequence(inputs, padding_value=Vocab.PAD_ID)
-        tags = pad_sequence(tags, padding_value=Vocab.PAD_ID)
+        inputs = tuple([pad_sequence(ipt, padding_value=Vocab.PAD_ID) for ipt in inputs])
 
-        #inputs = pack_padded_sequence(inputs, lengths, batch_first=True)
-        #tags = pack_padded_sequence(tags, lengths, batch_first=True)
-
-        return inputs, tags, lengths
-
-
-def demo_data():
-    
-    training_data = [
-        ("The dog ate the apple".split(), ["DET", "NN", "V", "DET", "NN"]),
-        ("Everybody read that book".split(), ["NN", "V", "DET", "NN"]),
-        ("The dog".split(), ["DET", "NN"]),
-        ("The dog ate the apple".split(), ["DET", "NN", "V", "DET", "NN"]),
-        ("Everybody read that book".split(), ["NN", "V", "DET", "NN"]),
-        ("Everybody read that book Everybody read that book".split(), ["NN", "V", "DET", "NN", "NN", "V", "DET", "NN"]),
-        ("Everybody read that book The dog ate the apple".split(), ["NN", "V", "DET", "NN", "DET", "NN", "V", "DET", "NN"]),
-        ("Everybody read that book".split(), ["NN", "V", "DET", "NN"]),
-        ("The dog ate the apple".split(), ["DET", "NN", "V", "DET", "NN"]),
-        ("Everybody read that book Everybody read that book".split(), ["NN", "V", "DET", "NN", "NN", "V", "DET", "NN"])
-    ]
-
-    word_vocab = Vocab()
-    tag_vocab = Vocab()
-    
-    inputs, tags = zip(*training_data)
-
-    
-    inputs = word_vocab(inputs, batch=True)
-    tags = tag_vocab(tags, batch=True)
-  
-    word_vocab.reduce()
-    tag_vocab.reduce()
-
-    return inputs, tags, word_vocab, tag_vocab
+        return inputs, lengths
 
 
 if __name__ == '__main__':

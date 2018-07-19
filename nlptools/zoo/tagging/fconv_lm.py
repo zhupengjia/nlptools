@@ -3,7 +3,6 @@
 import torch, sys
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.autograd as autograd
 import torch.optim as optim
 from nlptools.utils import eval_str_list
 from ..modules.model_base import ModelBase
@@ -54,8 +53,8 @@ class FConvLanguageModel(ModelBase):
             #if epoch % 10 == 0: 
             print('Starting epoch {}'.format(epoch))
                 
-            buckets = BucketData(inputs, targets, max_words = max_words)
-            for batch_inputs, batch_tags ,batch_lengths, in buckets:
+            buckets = BucketData([inputs, targets], max_words = max_words)
+            for (batch_inputs, batch_tags) ,batch_lengths, in buckets:
                 self.zero_grad()
               
                 batch_inputs = torch.LongTensor(batch_inputs, device=self.device)

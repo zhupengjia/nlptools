@@ -65,8 +65,8 @@ class LSTMTagger(nn.Module):
             #if epoch % 10 == 0: 
             print('Starting epoch {}'.format(epoch))
                 
-            buckets = BucketData(inputs, targets, max_words = max_words)
-            for batch_inputs, batch_tags ,batch_lengths, in buckets:
+            buckets = BucketData([inputs, targets], max_words = max_words)
+            for (batch_inputs, batch_tags) ,batch_lengths, in buckets:
                 self.zero_grad()
               
                 batch_inputs = torch.LongTensor(batch_inputs, device=self.device)
