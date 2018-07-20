@@ -4,8 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..modules import helper
 from .lstm_encoder import Embedding
+from .decoder_base import Decoder_Base
 
 
 class AttentionLayer(nn.Module):
@@ -41,24 +41,25 @@ class AttentionLayer(nn.Module):
         return x, attn_scores
 
 
-class LSTMDecoder(FairseqIncrementalDecoder):
+class LSTMDecoder(Decoder_Base):
     """LSTM decoder."""
     def __init__(
         self, vocab, hidden_size=512, out_embed_dim=512,
         num_layers=1, dropout_in=0.1, dropout_out=0.1, attention=True,
-        encoder_embed_dim=512, encoder_output_units=512, pretrained_embed=None,
+        encoder_output_units=512, pretrained_embed=None,
     ):
-        super().__init__(dictionary)
+        super().__init__(vocab)
         self.dropout_in = dropout_in
         self.dropout_out = dropout_out
         self.hidden_size = hidden_size
 
-        num_embeddings = len(dictionary)
-        padding_idx = dictionary.pad()
-        if pretrained_embed is None:
-            self.embed_tokens = Embedding(num_embeddings, embed_dim, padding_idx)
-        else:
-            self.embed_tokens = pretrained_embed
+        num_embeddings = vocab.vocab_size
+        padding_idx = vocab.PAD_ID
+        embed_dim = vocab.embedding_dim
+        
+        self.embed_tokens = Embedding(num_embeddings, embed_dim, padding_idx)
+        if pretrained_embed:
+            self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
 
         self.encoder_output_units = encoder_output_units
         assert encoder_output_units == hidden_size, \
@@ -96,16 +97,11 @@ class LSTMDecoder(FairseqIncrementalDecoder):
         # B x T x C -> T x B x C
         x = x.transpose(0, 1)
 
-        # initialize previous states (or get from cache during incremental generation)
-        cached_state = helper.get_incremental_state(self, incremental_state, 'cached_state')
-        if cached_state is not None:
-            prev_hiddens, prev_cells, input_feed = cached_state
-        else:
-            _, encoder_hiddens, encoder_cells = encoder_out[:3]
-            num_layers = len(self.layers)
-            prev_hiddens = [encoder_hiddens[i] for i in range(num_layers)]
-            prev_cells = [encoder_cells[i] for i in range(num_layers)]
-            input_feed = x.data.new(bsz, self.encoder_output_units).zero_()
+        _, encoder_hiddens, encoder_cells = encoder_out[:3]
+        num_layers = len(self.layers)
+        prev_hiddens = [encoder_hiddens[i] for i in range(num_layers)]
+        prev_cells = [encoder_cells[i] for i in range(num_layers)]
+        input_feed = x.data.new(bsz, self.encoder_output_units).zero_()
 
         attn_scores = x.data.new(srclen, seqlen, bsz).zero_()
         outs = []
@@ -137,10 +133,7 @@ class LSTMDecoder(FairseqIncrementalDecoder):
             # save final output
             outs.append(out)
 
-        # cache previous states (no-op except during incremental generation)
-        helper.set_incremental_state(
-            self, incremental_state, 'cached_state', (prev_hiddens, prev_cells, input_feed))
-
+        
         # collect outputs across time steps
         x = torch.cat(outs, dim=0).view(seqlen, bsz, self.hidden_size)
 
@@ -158,19 +151,6 @@ class LSTMDecoder(FairseqIncrementalDecoder):
 
         return x, attn_scores
 
-    def reorder_incremental_state(self, incremental_state, new_order):
-        super().reorder_incremental_state(incremental_state, new_order)
-        cached_state = helper.get_incremental_state(self, incremental_state, 'cached_state')
-        if cached_state is None:
-            return
-
-        def reorder_state(state):
-            if isinstance(state, list):
-                return [reorder_state(state_i) for state_i in state]
-            return state.index_select(0, new_order)
-
-        new_state = tuple(map(reorder_state, cached_state))
-        helper.set_incremental_state(self, incremental_state, 'cached_state', new_state)
 
     def max_positions(self):
         """Maximum output length supported by the decoder."""

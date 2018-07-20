@@ -14,7 +14,7 @@ class LSTMEncoder(Encoder_Base):
     def __init__(
         self, vocab,  hidden_size=512, num_layers=1,
         dropout_in=0.1, dropout_out=0.1, bidirectional=False,
-        left_pad=True, pretrained_embed=True, padding_value=0.,
+        left_pad=True, pretrained_embed=True
     ):
         super().__init__(vocab)
         self.num_layers = num_layers
@@ -40,7 +40,6 @@ class LSTMEncoder(Encoder_Base):
             bidirectional=bidirectional,
         )
         self.left_pad = left_pad
-        self.padding_value = padding_value
 
         self.output_units = hidden_size
         if bidirectional:
@@ -77,7 +76,7 @@ class LSTMEncoder(Encoder_Base):
         packed_outs, (final_hiddens, final_cells) = self.lstm(packed_x, (h0, c0))
 
         # unpack outputs and apply dropout
-        x, _ = nn.utils.rnn.pad_packed_sequence(packed_outs, padding_value=self.padding_value)
+        x, _ = nn.utils.rnn.pad_packed_sequence(packed_outs, padding_value=self.padding_idx)
         x = F.dropout(x, p=self.dropout_out, training=self.training)
         assert list(x.size()) == [seqlen, bsz, self.output_units]
 
