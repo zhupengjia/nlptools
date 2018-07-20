@@ -14,14 +14,18 @@ from .encoder_base import Encoder_Base
 class TransformerEncoder(Encoder_Base):
     """Transformer encoder."""
 
-    def __init__(self, vocab, embed_tokens, encoder_learned_pos, encoder_layers, encoder_embed_dim, encoder_attention_heads, encoder_normalize_before, encoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout, left_pad=True):
+    def __init__(self, vocab, predtrained_embed=True, encoder_layers=3, encoder_learned_pos=False, encoder_attention_heads=4, encoder_ffn_embed_dim=512, encoder_normalize_before=False, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=True):
         super().__init__(vocab)
         self.dropout = dropout
 
-        embed_dim = embed_tokens.embedding_dim
-        self.padding_idx = embed_tokens.padding_idx
+        num_embeddings = vocab.vocab_size
+        embed_dim = vocab.embedding_dim
+        self.padding_idx = vocab.PAD_ID
 
-        self.embed_tokens = embed_tokens
+        self.embed_tokens = Embedding(num_embeddings, embed_dim, self.padding_idx)
+        if pretrained_embed:
+            self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
+
         self.embed_scale = math.sqrt(embed_dim)
         self.embed_positions = PositionalEmbedding(
             1024, embed_dim, self.padding_idx,
@@ -31,7 +35,7 @@ class TransformerEncoder(Encoder_Base):
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
-            TransformerEncoderLayer(encoder_embed_dim, encoder_attention_heads, encoder_normalize_before, encoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout)
+            TransformerEncoderLayer(embed_dim, encoder_attention_heads, encoder_normalize_before, encoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout)
             for i in range(encoder_layers)
         ])
 
@@ -70,15 +74,6 @@ class TransformerEncoder(Encoder_Base):
     def max_positions(self):
         """Maximum input length supported by the encoder."""
         return self.embed_positions.max_positions()
-
-    def upgrade_state_dict(self, state_dict):
-        if isinstance(self.embed_positions, SinusoidalPositionalEmbedding):
-            if 'encoder.embed_positions.weights' in state_dict:
-                del state_dict['encoder.embed_positions.weights']
-            if 'encoder.embed_positions._float_tensor' not in state_dict:
-                state_dict['encoder.embed_positions._float_tensor'] = torch.FloatTensor()
-        return state_dict
-
 
 
 class TransformerEncoderLayer(nn.Module):

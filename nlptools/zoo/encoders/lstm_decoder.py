@@ -44,7 +44,7 @@ class AttentionLayer(nn.Module):
 class LSTMDecoder(FairseqIncrementalDecoder):
     """LSTM decoder."""
     def __init__(
-        self, dictionary, embed_dim=512, hidden_size=512, out_embed_dim=512,
+        self, vocab, hidden_size=512, out_embed_dim=512,
         num_layers=1, dropout_in=0.1, dropout_out=0.1, attention=True,
         encoder_embed_dim=512, encoder_output_units=512, pretrained_embed=None,
     ):

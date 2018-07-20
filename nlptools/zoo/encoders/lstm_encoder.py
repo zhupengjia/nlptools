@@ -12,24 +12,26 @@ from .encoder_base import Encoder_Base
 class LSTMEncoder(Encoder_Base):
     """LSTM encoder."""
     def __init__(
-        self, dictionary, embed_dim=512, hidden_size=512, num_layers=1,
+        self, vocab,  hidden_size=512, num_layers=1,
         dropout_in=0.1, dropout_out=0.1, bidirectional=False,
-        left_pad=True, pretrained_embed=None, padding_value=0.,
+        left_pad=True, pretrained_embed=True, padding_value=0.,
     ):
-        super().__init__(dictionary)
+        super().__init__(vocab)
         self.num_layers = num_layers
         self.dropout_in = dropout_in
         self.dropout_out = dropout_out
         self.bidirectional = bidirectional
         self.hidden_size = hidden_size
 
-        num_embeddings = len(dictionary)
-        self.padding_idx = dictionary.pad()
-        if pretrained_embed is None:
-            self.embed_tokens = Embedding(num_embeddings, embed_dim, self.padding_idx)
-        else:
-            self.embed_tokens = pretrained_embed
+        num_embeddings = vocab.vocab_size
+        embed_dim = vocab.embedding_dim
+        self.padding_idx = vocab.PAD_ID
 
+        self.embed_tokens = Embedding(num_embeddings, embed_dim, self.padding_idx)
+        if pretrained_embed:
+            self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
+
+        
         self.lstm = LSTM(
             input_size=embed_dim,
             hidden_size=hidden_size,

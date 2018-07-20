@@ -10,9 +10,6 @@ from torch import nn
 from torch.nn import Parameter
 import torch.nn.functional as F
 
-from .helper import fill_with_neg_inf, get_incremental_state, set_incremental_state 
-
-
 class MultiheadAttention(nn.Module):
     """Multi-headed attention.
 
@@ -45,8 +42,7 @@ class MultiheadAttention(nn.Module):
             nn.init.constant_(self.out_proj.bias, 0.)
 
     def forward(self, query, key, value, mask_future_timesteps=False,
-                key_padding_mask=None, incremental_state=None,
-                need_weights=True, static_kv=False):
+                key_padding_mask=None, need_weights=True, static_kv=False):
         """Input shape: Time x Batch x Channel
 
         Self-attention can be implemented by passing in the same arguments for
@@ -63,17 +59,6 @@ class MultiheadAttention(nn.Module):
         assert embed_dim == self.embed_dim
         assert list(query.size()) == [tgt_len, bsz, embed_dim]
         assert key.size() == value.size()
-
-        if incremental_state is not None:
-            saved_state = self._get_input_buffer(incremental_state)
-            if 'prev_key' in saved_state:
-                # previous time steps are cached - no need to recompute
-                # key and value if they are static
-                if static_kv:
-                    assert kv_same and not qkv_same
-                    key = value = None
-        else:
-            saved_state = None
 
         if qkv_same:
             # self-attention
@@ -94,15 +79,6 @@ class MultiheadAttention(nn.Module):
             v = self.in_proj_v(value)
         q *= self.scaling
 
-        if saved_state is not None:
-            if 'prev_key' in saved_state:
-                k = torch.cat((saved_state['prev_key'], k), dim=0)
-            if 'prev_value' in saved_state:
-                v = torch.cat((saved_state['prev_value'], v), dim=0)
-            saved_state['prev_key'] = k
-            saved_state['prev_value'] = v
-            self._set_input_buffer(incremental_state, saved_state)
-
         src_len = k.size(0)
 
         if key_padding_mask is not None:
@@ -116,8 +92,7 @@ class MultiheadAttention(nn.Module):
         attn_weights = torch.bmm(q, k.transpose(1, 2))
         assert list(attn_weights.size()) == [bsz * self.num_heads, tgt_len, src_len]
 
-        # only apply masking at training time (when incremental state is None)
-        if mask_future_timesteps and incremental_state is None:
+        if mask_future_timesteps:
             assert query.size() == key.size(), \
                 'mask_future_timesteps only applies to self-attention'
             attn_weights += self.buffered_mask(attn_weights).unsqueeze(0)
@@ -182,25 +157,3 @@ class MultiheadAttention(nn.Module):
             self._mask = torch.triu(fill_with_neg_inf(self._mask.resize_(dim, dim)), 1)
         return self._mask[:dim, :dim]
 
-    def reorder_incremental_state(self, incremental_state, new_order):
-        """Reorder buffered internal state (for incremental generation)."""
-        input_buffer = self._get_input_buffer(incremental_state)
-        if input_buffer is not None:
-            for k in input_buffer.keys():
-                input_buffer[k] = input_buffer[k].index_select(1, new_order)
-            self._set_input_buffer(incremental_state, input_buffer)
-
-    def _get_input_buffer(self, incremental_state):
-        return get_incremental_state(
-            self,
-            incremental_state,
-            'attn_state',
-        ) or {}
-
-    def _set_input_buffer(self, incremental_state, buffer):
-        set_incremental_state(
-            self,
-            incremental_state,
-            'attn_state',
-            buffer,
-        )

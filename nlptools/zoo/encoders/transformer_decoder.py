@@ -9,36 +9,40 @@ import torch.nn.functional as F
 from ..modules.multihead_attention import MultiheadAttention
 
 from .decoder_base import Decoder_Base
-from .transformer_encoder import LayerNorm, Linear, PositiuonalEmbedding
+from .transformer_encoder import LayerNorm, Embedding, Linear, PositiuonalEmbedding
 
 class TransformerDecoder(Decoder_Base):
     """Transformer decoder."""
 
-    def __init__(self, args, dictionary, embed_tokens, left_pad=False):
-        super().__init__(dictionary)
-        self.dropout = args.dropout
-        self.share_input_output_embed = args.share_decoder_input_output_embed
+    def __init__(self, vocab, pretrained_embed=True, decoder_layers=6, decoder_learned_pos=False, decoder_attention_heads=8, decoder_ffn_embed_dim=1024, decoder_normalize_before=False, share_embed=True, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=False):
+        super().__init__(vocab)
+        self.dropout = dropout
 
-        embed_dim = embed_tokens.embedding_dim
-        padding_idx = embed_tokens.padding_idx
+        num_embeddings = vocab.vocab_size
+        embed_dim = vocab.embedding_dim
+        padding_idx = vocab.PAD_ID
 
-        self.embed_tokens = embed_tokens
+        self.embed_tokens = Embedding(num_embeddings, embed_dim, padding_idx)
+        if pretrained_embed:
+            self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
+
         self.embed_scale = math.sqrt(embed_dim)
         self.embed_positions = PositionalEmbedding(
             1024, embed_dim, padding_idx,
             left_pad=left_pad,
-            learned=args.decoder_learned_pos,
+            learned=decoder_learned_pos,
         )
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
-            TransformerDecoderLayer(args)
-            for i in range(args.decoder_layers)
+            TransformerDecoderLayer(decoder_embed_dim, decoder_attention_heads, decoder_normalize_before, decoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout)
+            for i in range(decoder_layers)
         ])
+        
+        self.fc3 = Linear(embed_dim, num_embeddings, dropout=dropout)
+        if share_embed:
+            self.fc3.weight = self.embed_tokens.weight
 
-        if not self.share_input_output_embed:
-            self.embed_out = nn.Parameter(torch.Tensor(len(dictionary), embed_dim))
-            nn.init.normal_(self.embed_out, mean=0, std=embed_dim ** -0.5)
 
     def forward(self, prev_output_tokens, encoder_out):
         # embed positions
@@ -57,18 +61,14 @@ class TransformerDecoder(Decoder_Base):
             x, attn = layer(
                 x,
                 encoder_out['encoder_out'],
-                encoder_out['encoder_padding_mask'],
-                incremental_state,
+                encoder_out['encoder_padding_mask']
             )
 
         # T x B x C -> B x T x C
         x = x.transpose(0, 1)
 
         # project back to size of vocabulary
-        if self.share_input_output_embed:
-            x = F.linear(x, self.embed_tokens.weight)
-        else:
-            x = F.linear(x, self.embed_out)
+        x = self.fc3(x)
 
         return x, attn
 
@@ -88,25 +88,25 @@ class TransformerDecoder(Decoder_Base):
 class TransformerDecoderLayer(nn.Module):
     """Decoder layer block."""
 
-    def __init__(self, args):
+    def __init__(self, decoder_embed_dim, decoder_attention_heads, decoder_normalize_before, decoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout):
         super().__init__()
-        self.embed_dim = args.decoder_embed_dim
+        self.embed_dim = decoder_embed_dim
         self.self_attn = MultiheadAttention(
-            self.embed_dim, args.decoder_attention_heads,
-            dropout=args.attention_dropout,
+            self.embed_dim, decoder_attention_heads,
+            dropout=attention_dropout,
         )
-        self.dropout = args.dropout
-        self.relu_dropout = args.relu_dropout
-        self.normalize_before = args.decoder_normalize_before
+        self.dropout = dropout
+        self.relu_dropout = relu_dropout
+        self.normalize_before = decoder_normalize_before
         self.encoder_attn = MultiheadAttention(
-            self.embed_dim, args.decoder_attention_heads,
-            dropout=args.attention_dropout,
+            self.embed_dim, decoder_attention_heads,
+            dropout=attention_dropout,
         )
-        self.fc1 = Linear(self.embed_dim, args.decoder_ffn_embed_dim)
-        self.fc2 = Linear(args.decoder_ffn_embed_dim, self.embed_dim)
+        self.fc1 = Linear(self.embed_dim, decoder_ffn_embed_dim)
+        self.fc2 = Linear(decoder_ffn_embed_dim, self.embed_dim)
         self.layer_norms = nn.ModuleList([LayerNorm(self.embed_dim) for i in range(3)])
 
-    def forward(self, x, encoder_out, encoder_padding_mask, incremental_state):
+    def forward(self, x, encoder_out, encoder_padding_mask):
         residual = x
         x = self.maybe_layer_norm(0, x, before=True)
         x, _ = self.self_attn(
@@ -114,7 +114,6 @@ class TransformerDecoderLayer(nn.Module):
             key=x,
             value=x,
             mask_future_timesteps=True,
-            incremental_state=incremental_state,
             need_weights=False,
         )
         x = F.dropout(x, p=self.dropout, training=self.training)
@@ -128,7 +127,6 @@ class TransformerDecoderLayer(nn.Module):
             key=encoder_out,
             value=encoder_out,
             key_padding_mask=encoder_padding_mask,
-            incremental_state=incremental_state,
             static_kv=True,
         )
         x = F.dropout(x, p=self.dropout, training=self.training)

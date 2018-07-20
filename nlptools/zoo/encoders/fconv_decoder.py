@@ -15,14 +15,13 @@ class FConvDecoder(Decoder_Base):
     """Convolutional decoder"""
 
     def __init__(
-        self, vocab, out_embed_dim=256,
+        self, vocab, predtrained_embed=True, out_embed_dim=256,
         max_positions=1024, convolutions=((512, 3),) * 20, attention=True,
         dropout=0.1, share_embed=False, positional_embeddings=True,
         adaptive_softmax_cutoff=None, normalization_constant=0.5,
         left_pad=False,
     ):
         super().__init__(vocab)
-        self.register_buffer('version', torch.Tensor([2]))
         self.dropout = dropout
         self.normalization_constant = normalization_constant
         self.left_pad = left_pad
@@ -39,8 +38,10 @@ class FConvDecoder(Decoder_Base):
         num_embeddings = vocab.vocab_size
         padding_idx = vocab.PAD_ID
         embed_dim = vocab.embedding_dim
+        
         self.embed_tokens = Embedding(num_embeddings, embed_dim, padding_idx)
-        self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
+        if pretrained_embed:
+            self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
 
         self.embed_positions = PositionalEmbedding(
             max_positions,
@@ -79,8 +80,7 @@ class FConvDecoder(Decoder_Base):
 
         if adaptive_softmax_cutoff is not None:
             assert not share_embed
-            self.adaptive_softmax = AdaptiveSoftmax(num_embeddings, in_channels, adaptive_softmax_cutoff,
-                                                    dropout=dropout)
+            self.adaptive_softmax = AdaptiveSoftmax(num_embeddings, in_channels, adaptive_softmax_cutoff, dropout=dropout)
         else:
             self.fc2 = Linear(in_channels, out_embed_dim)
             if share_embed:
@@ -177,16 +177,6 @@ class FConvDecoder(Decoder_Base):
     def max_positions(self):
         """Maximum output length supported by the decoder."""
         return self.embed_positions.max_positions() if self.embed_positions is not None else float('inf')
-
-    def upgrade_state_dict(self, state_dict):
-        if state_dict.get('decoder.version', torch.Tensor([1]))[0] < 2:
-            # old models use incorrect weight norm dimension
-            for i, conv in enumerate(self.convolutions):
-                # reconfigure weight norm
-                nn.utils.remove_weight_norm(conv)
-                self.convolutions[i] = nn.utils.weight_norm(conv, dim=0)
-            state_dict['decoder.version'] = torch.Tensor([1])
-        return state_dict
 
 
     def _split_encoder_out(self, encoder_out):
