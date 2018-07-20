@@ -8,10 +8,10 @@ import torch.nn.functional as F
 
 from ..modules.multihead_attention import MultiheadAttention
 
-from .decoder_base import IncrementalDecoder
+from .decoder_base import Decoder_Base
 from .transformer_encoder import LayerNorm, Linear, PositiuonalEmbedding
 
-class TransformerDecoder(FairseqIncrementalDecoder):
+class TransformerDecoder(Decoder_Base):
     """Transformer decoder."""
 
     def __init__(self, args, dictionary, embed_tokens, left_pad=False):
@@ -40,16 +40,9 @@ class TransformerDecoder(FairseqIncrementalDecoder):
             self.embed_out = nn.Parameter(torch.Tensor(len(dictionary), embed_dim))
             nn.init.normal_(self.embed_out, mean=0, std=embed_dim ** -0.5)
 
-    def forward(self, prev_output_tokens, encoder_out, incremental_state=None):
+    def forward(self, prev_output_tokens, encoder_out):
         # embed positions
-        positions = self.embed_positions(
-            prev_output_tokens,
-            incremental_state=incremental_state,
-        )
-
-        if incremental_state is not None:
-            prev_output_tokens = prev_output_tokens[:, -1:]
-            positions = positions[:, -1:]
+        positions = self.embed_positions(prev_output_tokens)
 
         # embed tokens and positions
         x = self.embed_scale * self.embed_tokens(prev_output_tokens)

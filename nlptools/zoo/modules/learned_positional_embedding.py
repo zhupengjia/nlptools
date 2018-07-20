@@ -21,13 +21,9 @@ class LearnedPositionalEmbedding(nn.Embedding):
         super().__init__(num_embeddings, embedding_dim, padding_idx)
         self.left_pad = left_pad
 
-    def forward(self, input, incremental_state=None):
+    def forward(self, input):
         """Input is expected to be of size [bsz x seqlen]."""
-        if incremental_state is not None:
-            # positions is the same for every token when decoding a single step
-            positions = input.data.new(1, 1).fill_(self.padding_idx + input.size(1))
-        else:
-            positions = make_positions(input.data, self.padding_idx, self.left_pad)
+        positions = make_positions(input.data, self.padding_idx, self.left_pad)
         return super().forward(positions)
 
     def max_positions(self):

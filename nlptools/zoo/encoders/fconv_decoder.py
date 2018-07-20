@@ -6,14 +6,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..modules.adaptive_softmax import AdaptiveSoftmax
-from ..modules.helper import get_incremental_state, set_incremental_state
 from ..modules.linearized_convolution import LinearizedConv1d
-from .decoder_base import IncrementalDecoder
+from .decoder_base import Decoder_Base
 from .fconv_encoder import Embedding, extend_conv_spec, PositionalEmbedding, Linear
 
 
-
-class FConvDecoder(IncrementalDecoder):
+class FConvDecoder(Decoder_Base):
     """Convolutional decoder"""
 
     def __init__(
@@ -52,6 +50,7 @@ class FConvDecoder(IncrementalDecoder):
         ) if positional_embeddings else None
 
         self.fc1 = Linear(embed_dim, in_channels, dropout=dropout)
+
         self.projections = nn.ModuleList()
         self.convolutions = nn.ModuleList()
         self.attention = nn.ModuleList()
@@ -93,22 +92,20 @@ class FConvDecoder(IncrementalDecoder):
             else:
                 self.fc3 = Linear(out_embed_dim, num_embeddings, dropout=dropout)
 
-    def forward(self, prev_output_tokens, encoder_out_dict=None, incremental_state=None):
+    def forward(self, prev_output_tokens, encoder_out_dict=None):
         if encoder_out_dict is not None:
             encoder_out = encoder_out_dict['encoder_out']
             encoder_padding_mask = encoder_out_dict['encoder_padding_mask']
 
             # split and transpose encoder outputs
-            encoder_a, encoder_b = self._split_encoder_out(encoder_out, incremental_state)
+            encoder_a, encoder_b = self._split_encoder_out(encoder_out)
 
         if self.embed_positions is not None:
-            pos_embed = self.embed_positions(prev_output_tokens, incremental_state)
+            pos_embed = self.embed_positions(prev_output_tokens)
         else:
             pos_embed = 0
 
-        if incremental_state is not None:
-            prev_output_tokens = prev_output_tokens[:, -1:]
-        x = self._embed_tokens(prev_output_tokens, incremental_state)
+        x = self.embed_tokens(prev_output_tokens)
 
         # embed tokens and combine with positional embeddings
         x += pos_embed
@@ -119,7 +116,7 @@ class FConvDecoder(IncrementalDecoder):
         x = self.fc1(x)
 
         # B x T x C -> T x B x C
-        x = self._transpose_if_training(x, incremental_state)
+        x = x.transpose(0, 1)
 
         # temporal convolutions
         avg_attn_scores = None
@@ -134,12 +131,12 @@ class FConvDecoder(IncrementalDecoder):
                 residual = None
 
             x = F.dropout(x, p=self.dropout, training=self.training)
-            x = conv(x, incremental_state)
+            x = conv(x)
             x = F.glu(x, dim=2)
 
             # attention
             if attention is not None:
-                x = self._transpose_if_training(x, incremental_state)
+                x = x.transpose(0, 1)
 
                 x, attn_scores = attention(x, target_embedding, (encoder_a, encoder_b), encoder_padding_mask)
                 attn_scores = attn_scores / num_attn_layers
@@ -148,7 +145,7 @@ class FConvDecoder(IncrementalDecoder):
                 else:
                     avg_attn_scores.add_(attn_scores)
 
-                x = self._transpose_if_training(x, incremental_state)
+                x = x.transpose(0, 1)
 
             # residual
             if residual is not None:
@@ -156,7 +153,7 @@ class FConvDecoder(IncrementalDecoder):
             residuals.append(x)
 
         # T x B x C -> B x T x C
-        x = self._transpose_if_training(x, incremental_state)
+        x = x.transpose(0, 1)
 
         # project back to size of vocabulary if not using adaptive softmax
         if self.fc2 is not None and self.fc3 is not None:
@@ -176,12 +173,6 @@ class FConvDecoder(IncrementalDecoder):
         else:
             return super().get_normalized_probs(net_output, log_probs, sample)
 
-    def reorder_incremental_state(self, incremental_state, new_order):
-        super().reorder_incremental_state(incremental_state, new_order)
-        encoder_out = get_incremental_state(self, incremental_state, 'encoder_out')
-        if encoder_out is not None:
-            encoder_out = tuple(eo.index_select(0, new_order) for eo in encoder_out)
-            set_incremental_state(self, incremental_state, 'encoder_out', encoder_out)
 
     def max_positions(self):
         """Maximum output length supported by the decoder."""
@@ -197,34 +188,15 @@ class FConvDecoder(IncrementalDecoder):
             state_dict['decoder.version'] = torch.Tensor([1])
         return state_dict
 
-    def _embed_tokens(self, tokens, incremental_state):
-        if incremental_state is not None:
-            # keep only the last token for incremental forward pass
-            tokens = tokens[:, -1:]
-        return self.embed_tokens(tokens)
 
-    def _split_encoder_out(self, encoder_out, incremental_state):
+    def _split_encoder_out(self, encoder_out):
         """Split and transpose encoder outputs.
-
-        This is cached when doing incremental inference.
         """
-        cached_result = get_incremental_state(self, incremental_state, 'encoder_out')
-        if cached_result is not None:
-            return cached_result
-
         # transpose only once to speed up attention layers
         encoder_a, encoder_b = encoder_out
         encoder_a = encoder_a.transpose(1, 2).contiguous()
         result = (encoder_a, encoder_b)
-
-        if incremental_state is not None:
-            set_incremental_state(self, incremental_state, 'encoder_out', result)
         return result
-
-    def _transpose_if_training(self, x, incremental_state):
-        if incremental_state is None:
-            x = x.transpose(0, 1)
-        return x
 
 
 class AttentionLayer(nn.Module):
@@ -273,11 +245,6 @@ class AttentionLayer(nn.Module):
         x = (self.out_projection(x) + residual) * math.sqrt(self.normalization_constant)
         return x, attn_scores
 
-    def make_generation_fast_(self, beamable_mm_beam_size=None, **kwargs):
-        """Replace torch.bmm with BeamableMM."""
-        if beamable_mm_beam_size is not None:
-            del self.bmm
-            self.add_module('bmm', BeamableMM(beamable_mm_beam_size))
 
 
 

@@ -30,38 +30,6 @@ class Decoder_Base(nn.Module):
         return state_dict
 
 
-class IncrementalDecoder(Decoder_Base):
-    """Base class for incremental decoders."""
-
-    def __init__(self, vocab):
-        super().__init__(vocab)
-
-    def forward(self, prev_output_tokens, encoder_out, incremental_state=None):
-        raise NotImplementedError
-
-    def reorder_incremental_state(self, incremental_state, new_order):
-        """Reorder incremental state.
-
-        This should be called when the order of the input has changed from the
-        previous time step. A typical use case is beam search, where the input
-        order changes between time steps based on the selection of beams.
-        """
-        def apply_reorder_incremental_state(module):
-            if module != self and hasattr(module, 'reorder_incremental_state'):
-                module.reorder_incremental_state(
-                    incremental_state,
-                    new_order,
-                )
-        self.apply(apply_reorder_incremental_state)
-
-    def set_beam_size(self, beam_size):
-        """Sets the beam size in the decoder and all children."""
-        if getattr(self, '_beam_size', -1) != beam_size:
-            def apply_set_beam_size(module):
-                if module != self and hasattr(module, 'set_beam_size'):
-                    module.set_beam_size(beam_size)
-            self.apply(apply_set_beam_size)
-            self._beam_size = beam_size
 
 
 
