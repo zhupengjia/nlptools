@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from nlptools.utils import eval_str_list
-from ..modules.model_base import ModelBase
+from .model_base import ModelBase
 from ..encoders.fconv_decoder import FConvDecoder
 from ..modules.bucket import BucketData
 

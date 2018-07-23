@@ -1,13 +1,6 @@
-# Copyright (c) 2017-present, Facebook, Inc.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the LICENSE file in
-# the root directory of this source tree. An additional grant of patent rights
-# can be found in the PATENTS file in the same directory.
+#!/usr/bin/env python
 
-import math
-
-import torch
+import torch, math
 import torch.nn as nn
 
 from .helper import make_positions
@@ -51,7 +44,7 @@ class SinusoidalPositionalEmbedding(nn.Module):
             emb[padding_idx, :] = 0
         return emb
 
-    def forward(self, input, incremental_state=None):
+    def forward(self, input):
         """Input is expected to be of size [bsz x seqlen]."""
         # recompute/expand embeddings if needed
         bsz, seq_len = input.size()
@@ -63,10 +56,6 @@ class SinusoidalPositionalEmbedding(nn.Module):
                 self.padding_idx,
             )
         self.weights = self.weights.type_as(self._float_tensor)
-
-        if incremental_state is not None:
-            # positions is the same for every token when decoding a single step
-            return self.weights[self.padding_idx + seq_len, :].expand(bsz, 1, -1)
 
         positions = make_positions(input.data, self.padding_idx, self.left_pad)
         return self.weights.index_select(0, positions.view(-1)).view(bsz, seq_len, -1).detach()

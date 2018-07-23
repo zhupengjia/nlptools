@@ -12,10 +12,7 @@ from .encoder_base import Encoder_Base
 class LSTMEncoder(Encoder_Base):
     """LSTM encoder."""
     def __init__(
-        self, vocab,  hidden_size=512, num_layers=1,
-        dropout_in=0.1, dropout_out=0.1, bidirectional=False,
-        left_pad=True, pretrained_embed=True
-    ):
+        self, vocab,  pretrained_embed=True, hidden_size=512, num_layers=1, bidirectional=False, dropout_in=0.1, dropout_out=0.1, left_pad=True):
         super().__init__(vocab)
         self.num_layers = num_layers
         self.dropout_in = dropout_in

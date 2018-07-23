@@ -14,7 +14,7 @@ from .encoder_base import Encoder_Base
 class TransformerEncoder(Encoder_Base):
     """Transformer encoder."""
 
-    def __init__(self, vocab, predtrained_embed=True, encoder_layers=3, encoder_learned_pos=False, encoder_attention_heads=4, encoder_ffn_embed_dim=512, encoder_normalize_before=False, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=True):
+    def __init__(self, vocab, pretrained_embed=True, layers=3, learned_pos=False, attention_heads=4, ffn_embed_dim=512, normalize_before=False, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=True):
         super().__init__(vocab)
         self.dropout = dropout
 
@@ -30,13 +30,13 @@ class TransformerEncoder(Encoder_Base):
         self.embed_positions = PositionalEmbedding(
             1024, embed_dim, self.padding_idx,
             left_pad=left_pad,
-            learned=encoder_learned_pos,
+            learned=learned_pos,
         )
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
-            TransformerEncoderLayer(embed_dim, encoder_attention_heads, encoder_normalize_before, encoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout)
-            for i in range(encoder_layers)
+            TransformerEncoderLayer(embed_dim, attention_heads, normalize_before, ffn_embed_dim, dropout, attention_dropout, relu_dropout)
+            for i in range(layers)
         ])
 
     def forward(self, src_tokens, src_lengths):
@@ -88,18 +88,18 @@ class TransformerEncoderLayer(nn.Module):
     be enabled by setting `normalize_before=True`.
     """
 
-    def __init__(self, encoder_embed_dim, encoder_attention_heads, encoder_normalize_before, encoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout):
+    def __init__(self, embed_dim, attention_heads, normalize_before, ffn_embed_dim, dropout, attention_dropout, relu_dropout):
         super().__init__()
-        self.embed_dim = encoder_embed_dim
+        self.embed_dim = embed_dim
         self.self_attn = MultiheadAttention(
-            self.embed_dim, encoder_attention_heads,
+            self.embed_dim, attention_heads,
             dropout=attention_dropout,
         )
         self.dropout = dropout
         self.relu_dropout = relu_dropout
-        self.normalize_before = encoder_normalize_before
-        self.fc1 = Linear(self.embed_dim, encoder_ffn_embed_dim)
-        self.fc2 = Linear(encoder_ffn_embed_dim, self.embed_dim)
+        self.normalize_before = normalize_before
+        self.fc1 = Linear(self.embed_dim, ffn_embed_dim)
+        self.fc2 = Linear(ffn_embed_dim, self.embed_dim)
         self.layer_norms = nn.ModuleList([LayerNorm(self.embed_dim) for i in range(2)])
 
     def forward(self, x, encoder_padding_mask):

@@ -1,14 +1,10 @@
-# Copyright (c) 2017-present, Facebook, Inc.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the LICENSE file in
-# the root directory of this source tree. An additional grant of patent rights
-# can be found in the PATENTS file in the same directory.
+#!/usr/bin/env python
 
 import torch
 from torch import nn
 from torch.nn import Parameter
 import torch.nn.functional as F
+from .helper import fill_with_neg_inf
 
 class MultiheadAttention(nn.Module):
     """Multi-headed attention.

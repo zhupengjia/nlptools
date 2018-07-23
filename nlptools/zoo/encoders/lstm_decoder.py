@@ -44,10 +44,9 @@ class AttentionLayer(nn.Module):
 class LSTMDecoder(Decoder_Base):
     """LSTM decoder."""
     def __init__(
-        self, vocab, hidden_size=512, out_embed_dim=512,
+        self, vocab, pretrained_embed=True, out_embed_dim=512, hidden_size=512, 
         num_layers=1, dropout_in=0.1, dropout_out=0.1, attention=True,
-        encoder_output_units=512, pretrained_embed=None,
-    ):
+        encoder_output_units=512, share_embed=False):
         super().__init__(vocab)
         self.dropout_in = dropout_in
         self.dropout_out = dropout_out
@@ -77,13 +76,14 @@ class LSTMDecoder(Decoder_Base):
         if hidden_size != out_embed_dim:
             self.additional_fc = Linear(hidden_size, out_embed_dim)
         self.fc_out = Linear(out_embed_dim, num_embeddings, dropout=dropout_out)
+        if share_embed:
+            self.fc_out.weight = self.embed_tokens.weight
 
-    def forward(self, prev_output_tokens, encoder_out_dict, incremental_state=None):
+
+    def forward(self, prev_output_tokens, encoder_out_dict):
         encoder_out = encoder_out_dict['encoder_out']
         encoder_padding_mask = encoder_out_dict['encoder_padding_mask']
 
-        if incremental_state is not None:
-            prev_output_tokens = prev_output_tokens[:, -1:]
         bsz, seqlen = prev_output_tokens.size()
 
         # get outputs from encoder

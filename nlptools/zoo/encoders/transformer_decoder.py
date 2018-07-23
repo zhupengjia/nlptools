@@ -9,12 +9,12 @@ import torch.nn.functional as F
 from ..modules.multihead_attention import MultiheadAttention
 
 from .decoder_base import Decoder_Base
-from .transformer_encoder import LayerNorm, Embedding, Linear, PositiuonalEmbedding
+from .transformer_encoder import LayerNorm, Embedding, Linear, PositionalEmbedding
 
 class TransformerDecoder(Decoder_Base):
     """Transformer decoder."""
 
-    def __init__(self, vocab, pretrained_embed=True, decoder_layers=6, decoder_learned_pos=False, decoder_attention_heads=8, decoder_ffn_embed_dim=1024, decoder_normalize_before=False, share_embed=True, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=False):
+    def __init__(self, vocab, pretrained_embed=True, layers=6, learned_pos=False, attention_heads=8, ffn_embed_dim=1024, normalize_before=False, share_embed=True, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=False):
         super().__init__(vocab)
         self.dropout = dropout
 
@@ -30,16 +30,16 @@ class TransformerDecoder(Decoder_Base):
         self.embed_positions = PositionalEmbedding(
             1024, embed_dim, padding_idx,
             left_pad=left_pad,
-            learned=decoder_learned_pos,
+            learned=learned_pos,
         )
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
-            TransformerDecoderLayer(decoder_embed_dim, decoder_attention_heads, decoder_normalize_before, decoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout)
-            for i in range(decoder_layers)
+            TransformerDecoderLayer(embed_dim, attention_heads, normalize_before, ffn_embed_dim, dropout, attention_dropout, relu_dropout)
+            for i in range(layers)
         ])
         
-        self.fc3 = Linear(embed_dim, num_embeddings, dropout=dropout)
+        self.fc3 = Linear(embed_dim, num_embeddings)
         if share_embed:
             self.fc3.weight = self.embed_tokens.weight
 
@@ -88,22 +88,22 @@ class TransformerDecoder(Decoder_Base):
 class TransformerDecoderLayer(nn.Module):
     """Decoder layer block."""
 
-    def __init__(self, decoder_embed_dim, decoder_attention_heads, decoder_normalize_before, decoder_ffn_embed_dim, dropout, attention_dropout, relu_dropout):
+    def __init__(self, embed_dim, attention_heads, normalize_before, ffn_embed_dim, dropout, attention_dropout, relu_dropout):
         super().__init__()
-        self.embed_dim = decoder_embed_dim
+        self.embed_dim = embed_dim
         self.self_attn = MultiheadAttention(
-            self.embed_dim, decoder_attention_heads,
+            self.embed_dim, attention_heads,
             dropout=attention_dropout,
         )
         self.dropout = dropout
         self.relu_dropout = relu_dropout
-        self.normalize_before = decoder_normalize_before
+        self.normalize_before = normalize_before
         self.encoder_attn = MultiheadAttention(
-            self.embed_dim, decoder_attention_heads,
+            self.embed_dim, attention_heads,
             dropout=attention_dropout,
         )
-        self.fc1 = Linear(self.embed_dim, decoder_ffn_embed_dim)
-        self.fc2 = Linear(decoder_ffn_embed_dim, self.embed_dim)
+        self.fc1 = Linear(self.embed_dim, ffn_embed_dim)
+        self.fc2 = Linear(ffn_embed_dim, self.embed_dim)
         self.layer_norms = nn.ModuleList([LayerNorm(self.embed_dim) for i in range(3)])
 
     def forward(self, x, encoder_out, encoder_padding_mask):
