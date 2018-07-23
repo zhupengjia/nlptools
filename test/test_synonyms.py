@@ -3,14 +3,14 @@
 import time, sys
 from nlptools.text import Synonyms, Embedding
 
-cfg = {'synonyms_path': '/home/pzhu/data/word2vec/synonyms_zhwiki.pkl',\
-        'tokenizer': 'jieba',\
-        'vec_len': 100,\
-        'w2v_word2idx': '/home/pzhu/data/word2vec/zhwiki_word2idx.pkl',\
-        'w2v_idx2vec': '/home/pzhu/data/word2vec/zhwiki_vectors.pkl'}
-emb = Embedding(cfg)
+emb = Embedding(w2v_word2idx='/home/pzhu/data/word2vec/zhwiki_word2idx.pkl',
+        w2v_idx2vec='/home/pzhu/data/word2vec/zhwiki_vectors.pkl',\
+        dim=100)
 
-s = Synonyms(cfg, emb)
+s = Synonyms(emb, 
+        synonyms_path='/home/pzhu/data/word2vec/synonyms_zhwiki.pkl', 
+        w2v_word2idx='/home/pzhu/data/word2vec/zhwiki_word2idx.pkl')
+
 while True:
     text = input(":")
     synonyms = s(text, 100, 0.5)

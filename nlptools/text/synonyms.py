@@ -29,6 +29,8 @@ class Synonyms:
 
     def __init__(self, embedding, synonyms_path='', w2v_word2idx=''):
         self.embedding = embedding
+        self.synonyms_path = synonyms_path
+        self.w2v_word2idx = w2v_word2idx
         self._load_index()
 
 
@@ -37,7 +39,7 @@ class Synonyms:
             Build or load synonyms index
         '''
         from annoy import AnnoyIndex
-        self._search = AnnoyIndex(self.embedding.vec_len)
+        self._search = AnnoyIndex(self.embedding.dim)
         self._word2idx = zload(self.w2v_word2idx)
         if os.path.exists(self.synonyms_path):
             self._search.load(self.synonyms_path)

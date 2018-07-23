@@ -428,15 +428,15 @@ class NER(object):
         Example Usage:
             - ner = NER(**args); ner.get(sentence)
     '''
-    def __new__(cls, **args):
+    def __new__(cls, tokenizer='spacy', **args):
         tokenizers = {'corenlp':NER_CoreNLP, \
                       'spacy':NER_Spacy, \
                       'ltp':NER_LTP}
-        if 'tokenizer' in args:
-            if args['tokenizer'] in tokenizers:
-                return tokenizers[args['tokenizer']](**args)
-            elif 'http' in args['tokenizer']:
-                return NER_Rest(**args) 
+
+        if tokenizer in tokenizers:
+            return tokenizers[tokenizer](**args)
+        elif 'http' in tokenizer:
+            return NER_Rest(**args) 
         raise('Error! No available tokenizer founded!!!')
 
 

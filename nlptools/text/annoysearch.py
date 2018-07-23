@@ -32,7 +32,7 @@ class AnnoySearch:
                 - keywords: list of string
         '''
         from annoy import AnnoyIndex
-        self.search = AnnoyIndex(self.embedding.vec_len)
+        self.search = AnnoyIndex(self.embedding.dim)
         if os.path.exists(self.annoy_cache):
             self.search.load(self.annoy_cache)
         else:

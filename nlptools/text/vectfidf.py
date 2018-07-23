@@ -71,8 +71,8 @@ class VecTFIDF(object):
             return 0
         if isinstance(word_ids, int):
             word_ids = [word_ids]
-        sentence_vec = self.vocab.senid2vec(sentence_ids)
-        word_vec = self.vocab.senid2vec(word_ids)
+        sentence_vec = self.vocab.ids2vec(sentence_ids)
+        word_vec = self.vocab.ids2vec(word_ids)
         score = 1/(1.+pairwise_distances(word_vec, sentence_vec, metric = self.distance_metric))
         score[score < self.scorelimit] = 0
         return score.sum(axis = 1)

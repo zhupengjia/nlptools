@@ -26,8 +26,9 @@ class Tokenizer_Base(object):
                     self.stopwords[i.strip()] = ''
 
 
-    def __call__(self, sentence):
-        return self.seg(sentence)
+    def __call__(self, sentence, batch=False):
+        if batch: return numpy.asarray([self.seg(s)['tokens'] for s in sentence], dtype=numpy.object)
+        return self.seg(sentence)['tokens']
 
 
 class Tokenizer_CoreNLP(Tokenizer_Base):
@@ -185,7 +186,7 @@ class Tokenizer_Jieba(Tokenizer_Base):
             - seg_dict_path: if the key existed, will load the user definded dict. Default is None
             - stopwords_path: the path of stopwords, default is None
     '''
-    def __init__(self, seg_dict_path, **args):
+    def __init__(self, seg_dict_path=None, **args):
         import jieba
         Tokenizer_Base.__init__(self, **args)
         if seg_dict_path is not None:
@@ -506,7 +507,7 @@ class Tokenizer(object):
             - seg = Tokenizer(**args); seg.seg(sentence)
             - support __call__ method: seg(sentence)
     '''
-    def __new__(cls, **args):
+    def __new__(cls, tokenizer='simple', **args):
         tokenizers = {'corenlp':Tokenizer_CoreNLP, \
                       'spacy':Tokenizer_Spacy, \
                       'jieba':Tokenizer_Jieba, \
@@ -514,11 +515,10 @@ class Tokenizer(object):
                       'mecab': Tokenizer_Mecab, \
                       'simple':Tokenizer_Simple,\
                       'char': Tokenizer_Char}
-        if 'tokenizer' in args:
-            if args['tokenizer'] in tokenizers:
-                return tokenizers[args['tokenizer']](**args)
-            elif 'http' in args['tokenizer']:
-                return Tokenizer_Rest(**args) 
+        if tokenizer in tokenizers:
+            return tokenizers[tokenizer](**args)
+        elif 'http' in tokenizer:
+            return Tokenizer_Rest(**args) 
         return Tokenizer_Simple(**args)
 
 
