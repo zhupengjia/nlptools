@@ -1,5 +1,5 @@
 ## NLPTools Repo
-* This repo is a tool package for frequently used NLP tools. For more details please check [README](http://n2.c3.acnailab.com/code/ailab/index.html)
+* This repo is a tool package for frequently used NLP tools. For more details please check [README](http://127.0.0.1/index.html)
 
 * Build
     - python setup.py bdist_wheel

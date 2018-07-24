@@ -18,7 +18,7 @@ def read(fname):
 
 setup(
     name = "nlptools",
-    version = "0.2",
+    version = "0.3",
     author = "Pengjia Zhu",
     author_email = "zhupengjia@gmail.com",
     description = ("nlptools"),
@@ -41,7 +41,7 @@ setup(
         "requests"
         ],
     tests_require=['pytest'],
-    ext_modules = cythonize(["nlptools/*/*.pyx", "nlptools/*/*/*/*.pyx"]),
+    #ext_modules = cythonize(["nlptools/*/*.pyx", "nlptools/*/*/*/*.pyx"]),
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
