@@ -190,7 +190,7 @@ class FConvDecoder(Decoder_Base):
 
 
 class AttentionLayer(nn.Module):
-    def __init__(self, conv_channels, embed_dim, normalization_constant=0.5, bmm=None):
+    def __init__(self, conv_channels, embed_dim, normalization_constant=0.5):
         super().__init__()
         self.normalization_constant = normalization_constant
         # projects from output of convolution to embedding dimension
@@ -198,14 +198,13 @@ class AttentionLayer(nn.Module):
         # projects from embedding dimension to convolution size
         self.out_projection = Linear(embed_dim, conv_channels)
 
-        self.bmm = bmm if bmm is not None else torch.bmm
 
     def forward(self, x, target_embedding, encoder_out, encoder_padding_mask):
         residual = x
 
         # attention
         x = (self.in_projection(x) + target_embedding) * math.sqrt(self.normalization_constant)
-        x = self.bmm(x, encoder_out[0])
+        x = torch.bmm(x, encoder_out[0])
 
         # don't attend over padding
         if encoder_padding_mask is not None:
@@ -220,7 +219,7 @@ class AttentionLayer(nn.Module):
         x = x.view(sz)
         attn_scores = x
 
-        x = self.bmm(x, encoder_out[1])
+        x = torch.bmm(x, encoder_out[1])
 
         # scale attention output (respecting potentially different lengths)
         s = encoder_out[1].size(1)
