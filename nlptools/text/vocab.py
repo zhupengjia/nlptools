@@ -127,10 +127,10 @@ class Vocab(object):
             load from dictionary
 
             Input:
-                - word2idx, dictionary with format {word:idx, ...}
+                - word2idx: dictionary with format {word:idx, ...}
         '''
         vocab_size = len(word2idx)
-        vocab = cls(vocab_size, special_char=False)
+        vocab = cls(vocab_size=vocab_size, special_char=False)
         vocab._word2id = bidict(word2idx)
         vocab._id2tf = numpy.zeros(vocab_size, 'int')
         return vocab
