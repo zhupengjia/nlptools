@@ -1,5 +1,5 @@
 ## NLPTools Repo
-* This repo is a tool package for frequently used NLP tools. For more details please check [README](http://127.0.0.1/index.html)
+* This repo is a tool package for frequently used NLP tools. For more details please check [README](http://www.higgslab.com/wiki/nlptools/index.html)
 
 * Build
     - python setup.py bdist_wheel
