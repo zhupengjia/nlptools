@@ -424,9 +424,6 @@ class NER(object):
                 2. *spacy*: will use NER_Spacy
                 3. *ltp*: will use NER_LTP
                 4. *http://**: will use NER_Rest
-
-        Example Usage:
-            - ner = NER(**args); ner.get(sentence)
     '''
     def __new__(cls, tokenizer='spacy', **args):
         tokenizers = {'corenlp':NER_CoreNLP, \

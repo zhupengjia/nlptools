@@ -502,10 +502,6 @@ class Tokenizer(object):
                 6. *simple*: regex
                 7. *char*: will split to char level
                 8. *http://**: will use restapi
-
-        Example Usage:
-            - seg = Tokenizer(**args); seg.seg(sentence)
-            - support __call__ method: seg(sentence)
     '''
     def __new__(cls, tokenizer='simple', **args):
         tokenizers = {'corenlp':Tokenizer_CoreNLP, \

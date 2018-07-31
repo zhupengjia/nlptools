@@ -36,7 +36,7 @@ class Vocab(object):
     def __init__(self, cached_vocab='', vocab_size=1000000, outofvocab='unk', embedding=None, special_char=True):
         self.cached_vocab = cached_vocab
         self.outofvocab = outofvocab
-        self._id_spec = []
+        self._word_spec, self._id_spec = []
         self.embedding = embedding if embedding is not None else Embedding_Random()
         self.vocab_size = int(vocab_size)
         if self.vocab_size < 30:

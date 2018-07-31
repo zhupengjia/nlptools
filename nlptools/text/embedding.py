@@ -268,9 +268,6 @@ class Embedding(object):
                 3. *redis_host* read from redis
                 4. *embedding_restapi* read from restapi
                 5. default: random generated
-
-        Example usage:
-            - emb = Embedding(**args); embedding[word]
     '''
     def __new__(cls, **args):
         if 'w2v_word2idx' in args and 'w2v_idx2vec' in args:

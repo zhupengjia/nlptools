@@ -14,60 +14,62 @@ from . import layers
 class RnnDocReader(nn.Module):
     RNN_TYPES = {'lstm': nn.LSTM, 'gru': nn.GRU, 'rnn': nn.RNN}
 
-    def __init__(self, args, normalize=True):
+    def __init__(self, vocab, num_features, hidden_size, doc_layers, question_layers, question_merge, dropout_rnn, dropout_rnn_output, concat_rnn_layers, rnn_type, rnn_padding, normalize=True):
         super(RnnDocReader, self).__init__()
         # Store config
         self.args = args
+        self.vocab = vocab
 
         # Word embeddings (+1 for padding)
-        self.embedding = nn.Embedding(args['vocab_size'],
-                                      args['embedding_dim'],
+        self.embedding = nn.Embedding(vocab.vocab_size,
+                                      vocab.embedding_dim,
                                       padding_idx=0)
 
         # Projection for attention weighted question
-        if args['use_qemb']:
-            self.qemb_match = layers.SeqAttnMatch(args['embedding_dim'])
+        if use_qemb:
+            self.qemb_match = layers.SeqAttnMatch(vocab.embedding_dim)
 
         # Input size to RNN: word emb + question emb + manual features
-        doc_input_size = args['embedding_dim'] + args['num_features']
-        if args['use_qemb']:
-            doc_input_size += args['embedding_dim']
+        doc_input_size = vocab.embedding_dim + num_features
+        if use_qemb:
+            doc_input_size += vocab.embedding_dim
 
         # RNN document encoder
         self.doc_rnn = layers.StackedBRNN(
             input_size=doc_input_size,
-            hidden_size=args['hidden_size'],
-            num_layers=args['doc_layers'],
-            dropout_rate=args['dropout_rnn'],
-            dropout_output=args['dropout_rnn_output'],
-            concat_layers=args['concat_rnn_layers'],
-            rnn_type=self.RNN_TYPES[args['rnn_type']],
-            padding=args['rnn_padding'],
+            hidden_size=hidden_size,
+            num_layers=doc_layers,
+            dropout_rate=dropout_rnn,
+            dropout_output=dropout_rnn_output,
+            concat_layers=concat_rnn_layers,
+            rnn_type=self.RNN_TYPES[rnn_type],
+            padding=rnn_padding,
         )
 
         # RNN question encoder
         self.question_rnn = layers.StackedBRNN(
-            input_size=args['embedding_dim'],
-            hidden_size=args['hidden_size'],
-            num_layers=args['question_layers'],
-            dropout_rate=args['dropout_rnn'],
-            dropout_output=args['dropout_rnn_output'],
-            concat_layers=args['concat_rnn_layers'],
-            rnn_type=self.RNN_TYPES[args['rnn_type']],
-            padding=args['rnn_padding'],
+            input_size=vocab.embedding_dim,
+            hidden_size=hidden_size,
+            num_layers=question_layers,
+            dropout_rate=dropout_rnn,
+            dropout_output=dropout_rnn_output,
+            concat_layers=concat_rnn_layers,
+            rnn_type=self.RNN_TYPES[rnn_type],
+            padding=rnn_padding,
         )
 
         # Output sizes of rnn encoders
-        doc_hidden_size = 2 * args['hidden_size']
-        question_hidden_size = 2 * args['hidden_size']
-        if args['concat_rnn_layers']:
-            doc_hidden_size *= args['doc_layers']
-            question_hidden_size *= args['question_layers']
+        doc_hidden_size = 2 * hidden_size
+        question_hidden_size = 2 * hidden_size
+        if concat_rnn_layers:
+            doc_hidden_size *= doc_layers
+            question_hidden_size *= question_layers
 
         # Question merging
-        if args['question_merge'] not in ['avg', 'self_attn']:
+        self.question_merge = question_merge
+        if question_merge not in ['avg', 'self_attn']:
             raise NotImplementedError('merge_mode = %s' % args['merge_mode'])
-        if args['question_merge'] == 'self_attn':
+        if question_merge == 'self_attn':
             self.self_attn = layers.LinearSeqAttn(question_hidden_size)
 
         # Bilinear attention for span start/end
@@ -118,9 +120,9 @@ class RnnDocReader(nn.Module):
 
         # Encode question with RNN + merge hiddens
         question_hiddens = self.question_rnn(x2_emb, x2_mask)
-        if self.args['question_merge'] == 'avg':
+        if self.question_merge == 'avg':
             q_merge_weights = layers.uniform_weights(question_hiddens, x2_mask)
-        elif self.args['question_merge'] == 'self_attn':
+        elif self.question_merge == 'self_attn':
             q_merge_weights = self.self_attn(question_hiddens, x2_mask)
         question_hidden = layers.weighted_avg(question_hiddens, q_merge_weights)
 

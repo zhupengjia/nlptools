@@ -1,7 +1,7 @@
-ailab
-=====
+nlptools
+========
 
 .. toctree::
    :maxdepth: 4
 
-   ailab
+   nlptools

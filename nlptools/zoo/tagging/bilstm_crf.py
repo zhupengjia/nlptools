@@ -2,7 +2,6 @@
 import torch
 import torch.nn as nn
 from torch import autograd
-from core.globals import globalvars as gvars
 
 
 def prepare_sequence(seq, to_ix):
@@ -29,13 +28,13 @@ def log_sum_exp(vec):
 
 class BiLSTM_CRF(nn.Module):
     
-    def __init__(self):
+    def __init__(self, vocab, n_entities, hidden_dim, start_tag, stop_tag):
         super(BiLSTM_CRF, self).__init__()
-        self.cfg = gvars.cfg['ner']
-        self.embedding_dim = self.cfg['embedding_dim']
-        self.hidden_dim = self.cfg['hidden_dim']
-        self.vocab_size = self.cfg['vocab_size']
-        self.tagset_size = self.cfg['n_entities']
+        self.vocab = vocab
+        self.embedding_dim = vocab.embedding_dim
+        self.hidden_dim = hidden_dim
+        self.vocab_size = vocab.vocab_size
+        self.tagset_size = n_entities
         
         self.word_embeds = nn.Embedding(self.vocab_size, self.embedding_dim)
         self.lstm = nn.LSTM(self.embedding_dim, int(self.hidden_dim/2), num_layers=1, bidirectional=True)
@@ -49,8 +48,8 @@ class BiLSTM_CRF(nn.Module):
         # These two statements enforce the constraint that we never transfer *to* the start tag,
         # and we never transfer *from* the stop tag (the model would probably learn this anyway,
         # so this enforcement is likely unimportant)
-        self.start_tag = self.cfg['vocab']['START_TAG']
-        self.stop_tag = self.cfg['vocab']['STOP_TAG']
+        self.start_tag = start_tag
+        self.stop_tag = stop_tag
         self.transitions.data[self.start_tag, :] = -10000
         self.transitions.data[:, self.stop_tag] = -10000
 

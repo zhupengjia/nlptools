@@ -1,19 +1,19 @@
-ailab package
-=============
+nlptools package
+================
 
 Subpackages
 -----------
 
 .. toctree::
 
-    ailab.text
-    ailab.utils
-    ailab.zoo
+    nlptools.text
+    nlptools.utils
+    nlptools.zoo
 
 Module contents
 ---------------
 
-.. automodule:: ailab
+.. automodule:: nlptools
     :members:
     :undoc-members:
     :show-inheritance:

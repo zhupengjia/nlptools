@@ -22,25 +22,32 @@ class DocReader(object):
     # Initialization
     # --------------------------------------------------------------------------
 
-    def __init__(self, cfg, vocab, feature_dict,
-                 state_dict=None, normalize=True):
+    def __init__(self, vocab, model_type='rnn', feature_dict=None, max_len = 1000,
+                 state_dict=None, normalize=True, fix_embedding=True, optimizer='sgd', learning_rate=0.001, momentum=0, weight_decay=1e-5, grad_clipping=0, tune_partial=0, **args):
         # Book-keeping.
-        self.cfg = cfg
-        self.logger = setLogger(cfg)
+        self.logger = setLogger()
         self.vocab = vocab
         
         self.feature_dict = feature_dict
-        self.cfg['num_features'] = len(feature_dict)
+        self.num_features = len(feature_dict)
         self.updates = 0
         self.use_cuda = False
         self.parallel = False
+        self.fix_embedding = fix_embedding
+        self.optimizer = optimizer
+        self.learning_rate = learning_rate
+        self.momentum = momentum
+        self.weight_decay = weight_decay
+        self.grad_clipping = 0
+        self.tune_partial = 0
+        self.max_len = max_len
 
         # Building network. If normalize if false, scores are not normalized
         # 0-1 per paragraph (no softmax).
-        if self.cfg['model_type'] == 'rnn':
-            self.network = RnnDocReader(self.cfg, normalize)
+        if model_type == 'rnn':
+            self.network = RnnDocReader(vocab=vocab, num_features=self.num_features, normalize=normalize, **args)
         else:
-            raise RuntimeError('Unsupported model: %s' % self.cfg['model_type'])
+            raise RuntimeError('Unsupported model: %s' % self.model_type)
 
         # Load saved state
         if state_dict:
@@ -79,12 +86,12 @@ class DocReader(object):
         return to_add
 
     def load_embeddings(self, words, embedding_file):
-        """Load pretrained embeddings for a given list of words, if they exist.
+        """
+            Load pretrained embeddings for a given list of words, if they exist.
 
-        Args:
-            words: iterable of tokens. Only those that are indexed in the
-              dictionary are kept.
-            embedding_file: path to text file of embeddings, space separated.
+            Args:
+                - words: iterable of tokens. Only those that are indexed in the dictionary are kept.
+                - embedding_file: path to text file of embeddings, space separated.
         """
         words = {w for w in words if w in self.word_dict}
         self.logger.info('Loading pre-trained embeddings for %d words from %s' %
@@ -163,20 +170,20 @@ class DocReader(object):
         Args:
             state_dict: network parameters
         """
-        if self.cfg['fix_embeddings']:
+        if self.fix_embeddings:
             for p in self.network.embedding.parameters():
                 p.requires_grad = False
         parameters = [p for p in self.network.parameters() if p.requires_grad]
-        if self.cfg['optimizer'] == 'sgd':
-            self.optimizer = optim.SGD(parameters, self.cfg['learning_rate'],
-                                       momentum=self.cfg['momentum'],
-                                       weight_decay=self.cfg['weight_decay'])
-        elif self.cfg['optimizer'] == 'adamax':
+        if self.optimizer == 'sgd':
+            self.optimizer = optim.SGD(parameters, self.learning_rate,
+                                       momentum=self.momentum,
+                                       weight_decay=self.weight_decay)
+        elif self.optimizer == 'adamax':
             self.optimizer = optim.Adamax(parameters,
-                                          weight_decay=self.cfg['weight_decay'])
+                                          weight_decay=self.weight_decay)
         else:
             raise RuntimeError('Unsupported optimizer: %s' %
-                               self.cfg['optimizer'])
+                               self.optimizer)
 
     # --------------------------------------------------------------------------
     # Learning
@@ -213,7 +220,7 @@ class DocReader(object):
 
         # Clip gradients
         torch.nn.utils.clip_grad_norm(self.network.parameters(),
-                                      self.cfg['grad_clipping'])
+                                      self.grad_clipping)
 
         # Update parameters
         self.optimizer.step()
@@ -228,9 +235,9 @@ class DocReader(object):
         """Reset any partially fixed parameters to original states."""
 
         # Reset fixed embeddings to original value
-        if self.cfg['tune_partial'] > 0:
+        if self.tune_partial > 0:
             # Embeddings to fix are indexed after the special + N tuned words
-            offset = self.cfg['tune_partial'] + self.word_dict.START
+            offset = self.tune_partial + self.word_dict.START
             if self.parallel:
                 embedding = self.network.module.embedding.weight.data
                 fixed_embedding = self.network.module.fixed_embedding
@@ -245,21 +252,23 @@ class DocReader(object):
     # --------------------------------------------------------------------------
 
     def predict(self, ex, candidates=None, top_n=1, async_pool=None):
-        """Forward a batch of examples only to get predictions.
+        """
+            Forward a batch of examples only to get predictions.
 
-        Args:
-            ex: the batch
-            candidates: batch * variable length list of string answer options.
-              The model will only consider exact spans contained in this list.
-            top_n: Number of predictions to return per batch element.
-            async_pool: If provided, non-gpu post-processing will be offloaded
-              to this CPU process pool.
-        Output:
-            pred_s: batch * top_n predicted start indices
-            pred_e: batch * top_n predicted end indices
-            pred_score: batch * top_n prediction scores
+            Args:
+                - ex: the batch
+                - candidates: batch * variable length list of string answer options.
+                  The model will only consider exact spans contained in this list.
+                - top_n: Number of predictions to return per batch element.
+                - async_pool: If provided, non-gpu post-processing will be offloaded
+                  to this CPU process pool.
 
-        If async_pool is given, these will be AsyncResult handles.
+            Output:
+                - pred_s: batch * top_n predicted start indices
+                - pred_e: batch * top_n predicted end indices
+                - pred_score: batch * top_n prediction scores
+
+            If async_pool is given, these will be AsyncResult handles.
         """
         # Eval mode
         self.network.eval()
@@ -280,13 +289,13 @@ class DocReader(object):
         score_s = score_s.data.cpu()
         score_e = score_e.data.cpu()
         if candidates:
-            args = (score_s, score_e, candidates, top_n, self.cfg['max_len'])
+            args = (score_s, score_e, candidates, top_n, self.max_len)
             if async_pool:
                 return async_pool.apply_async(self.decode_candidates, args)
             else:
                 return self.decode_candidates(*args)
         else:
-            args = (score_s, score_e, top_n, self.cfg['max_len'])
+            args = (score_s, score_e, top_n, self.max_len)
             if async_pool:
                 return async_pool.apply_async(self.decode, args)
             else:
@@ -389,7 +398,6 @@ class DocReader(object):
         params = {
             'state_dict': state_dict,
             'feature_dict': self.feature_dict,
-            'args': self.cfg,
         }
         try:
             torch.save(params, filename)
@@ -400,7 +408,6 @@ class DocReader(object):
         params = {
             'state_dict': self.network.state_dict(),
             'feature_dict': self.feature_dict,
-            'args': self.cfg,
             'epoch': epoch,
             'optimizer': self.optimizer.state_dict(),
         }
