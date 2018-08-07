@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import numpy, os, random, copy
+import numpy, os, random, re, copy
 from bidict import bidict
 import unicodedata
 from .embedding import Embedding_Random
@@ -122,7 +122,7 @@ class Vocab(object):
 
     
     @classmethod
-    def load_from_dict(cls, word2idx):
+    def load_from_dict(cls, word2idx, **args):
         '''
             load from dictionary
 
@@ -130,9 +130,34 @@ class Vocab(object):
                 - word2idx: dictionary with format {word:idx, ...}
         '''
         vocab_size = len(word2idx)
-        vocab = cls(vocab_size=vocab_size, special_char=False)
+        vocab = cls(vocab_size=vocab_size, special_char=False, **args)
         vocab._word2id = bidict(word2idx)
         vocab._id2tf = numpy.zeros(vocab_size, 'int')
+        return vocab
+
+
+    @classmethod
+    def load_from_text(cls, filename, **args):
+        '''
+            load from vocab text file
+
+            Input:
+                - filename: string
+        '''
+        vocab = cls(**args)
+        with open(filename) as f:
+            for l in f:
+                try:
+                    word, tf = tuple(re.split('\s', l.strip()))
+                    word = word.strip()
+                    if len(word) < 1:
+                        continue
+                    tf = int(tf)
+                    word_id = vocab.word2id(word)
+                    vocab._id2tf[word_id] = tf
+                except:
+                    continue
+        vocab.reduce()
         return vocab
 
 

@@ -8,12 +8,12 @@ with open('corpus.en') as f:
     corpus = f.read()
 
 t = Tokenizer_Simple()
-v = BytePair(vocab_size = 100000,bpe_size = 1000, code_file='bpe.ref')
+v = BytePair(vocab_size = 100000, code_file='bpe.ref')
 tokens = t(corpus)
 
 v(tokens)
 
-v.learn()
+v.learn(bpe_size = 1000)
 
 wordids = v.words2id(tokens)
 recovered = v.id2words(wordids)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import copy, re, numpy, os, sys
 from .vocab import Vocab
+from ..utils import zdump, zload
 from collections import defaultdict
 
 
@@ -11,19 +12,15 @@ class BytePair(Vocab):
     EOW = '</w>'
     EOW_ID = 4
 
-    def __init__(self, bpe_size=1000, min_freq=2, separator='@@', code_file='', **args):
+    def __init__(self, separator='@@', code_file='', **args):
         '''
             Byte Pair Encoding (BPE) vocabulary for rare word, see https://arxiv.org/abs/1508.07909. Note the bpe vocab is included in total vocab
 
             Input:
-                - min_freq: int, Stop if no symbol pair has frequency >= min_freq, default is 2
-                - bpe_size: number of learned bpe symbols, default is 1000
                 - separator: separator symbol for bpe split, default is '@@'
                 - code_file: trained bpe code file, default is ''
                 - any available parameters in nlptools.text.vocab
         '''
-        self.bpe_size = bpe_size
-        self.min_freq = min_freq
         self.separator = separator
         self.code_file = code_file
         super().__init__(**args)
@@ -76,11 +73,13 @@ class BytePair(Vocab):
             zdump({'word2id':self._word2id, 'id2tf':self._id2tf, 'bpe_cache':self.bpe_cache}, self.cached_vocab)
 
 
-    def learn(self, refresh=True):
+    def learn(self, bpe_size=1000, min_freq=2, refresh=True):
         '''
             learn bpe
 
             Input:
+                - min_freq: int, Stop if no symbol pair has frequency >= min_freq, default is 2
+                - bpe_size: number of learned bpe symbols, default is 1000
                 - refresh: bool, check if add to existed bpe codes, if True will create a new one, default is True
         '''
         if refresh:
@@ -108,7 +107,7 @@ class BytePair(Vocab):
             outfile = None
 
         
-        for i in range(self.bpe_size):
+        for i in range(bpe_size):
             if stats:
                 most_frequent = max(stats, key=lambda x: (stats[x], x))
 
@@ -121,7 +120,7 @@ class BytePair(Vocab):
                 threshold = stats[most_frequent] * i/(i+10000.0)
                 self.__prune_stats(stats, big_stats, threshold)
 
-            if stats[most_frequent] < self.min_freq:
+            if stats[most_frequent] < min_freq:
                 break
 
             if outfile:
