@@ -16,6 +16,7 @@ class Tokenizer_Base(object):
     '''
     def __init__(self, stopwords_path = None, ner_name_replace = None):
         self.stopwords = {}
+        self.ner_name_replace = ner_name_replace
         self.__loadStopwords(stopwords_path)
 
 
@@ -127,7 +128,7 @@ class Tokenizer_Spacy(Tokenizer_Base):
     '''
     def __init__(self, spacy_model='en', **args):
         import spacy
-        Tokenizer_Base.__init__(self, **args)
+        super().__init__(**args)
         self.nlp = spacy.load(spacy_model)
 
     def seg(self, sentence, remove_stopwords = True, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):

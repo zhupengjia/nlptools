@@ -36,12 +36,12 @@ class Vocab(object):
     def __init__(self, cached_vocab='', vocab_size=1000000, outofvocab='unk', embedding=None, special_char=True):
         self.cached_vocab = cached_vocab
         self.outofvocab = outofvocab
-        self._word_spec, self._id_spec = []
+        self._word_spec, self._id_spec = [], []
         self.embedding = embedding if embedding is not None else Embedding_Random()
         self.vocab_size = int(vocab_size)
         if self.vocab_size < 30:
             self.vocab_size = 2**int(self.vocab_size)
-        self.__get_cached_vocab()
+        self._get_cached_vocab()
         self.update=True
         if special_char:
             self.addBE()
@@ -104,7 +104,7 @@ class Vocab(object):
         return list(zip(ids, tfs))
 
 
-    def __get_cached_vocab(self):
+    def _get_cached_vocab(self):
         ifinit = True
         if os.path.exists(self.cached_vocab):
             try:
@@ -305,13 +305,16 @@ class Vocab(object):
         return ids
 
 
-    def ids2word(self, ids):
+    def id2words(self, ids, batch=False):
         '''
             convert ids to word
 
             Input: 
                 - ids: list of ids
+                - batch: if the input sequence is a batches, default is False
         '''
+        if batch:
+            return numpy.asarray([self.id2words(i) for i in ids], dtype=numpy.object) 
         return [self._word2id.inv[i] for i in ids if i in self._word2id.inv]
 
     
