@@ -417,6 +417,9 @@ class BytePair(Vocab):
             Input:
                 - tokens: list of token
                 - batch: if the input sequence is a batches, default is False
+            
+            Output:
+                - list of ids
         '''
         if batch:
             return numpy.asarray([self.apply(t) for t in tokens], dtype=numpy.object) 
@@ -429,9 +432,5 @@ class BytePair(Vocab):
         ids = numpy.array(ids, 'int')
         
         return ids
-
-
-        
-
 
 
