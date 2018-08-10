@@ -10,7 +10,6 @@ class BytePair(Vocab):
         Learn Byte Pair Encoding, see https://arxiv.org/abs/1508.07909 
     '''
     EOW = '</w>'
-    EOW_ID = 4
 
     def __init__(self, separator='@@', code_file='', **args):
         '''
@@ -24,8 +23,6 @@ class BytePair(Vocab):
         self.separator = separator
         self.code_file = code_file
         super().__init__(**args)
-        self._word_spec.append(self.EOW)
-        self._id_spec.append(self.EOW_ID)
         self.load(code_file)
 
 

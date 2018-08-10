@@ -133,18 +133,23 @@ class Vocab(object):
         vocab = cls(vocab_size=vocab_size, special_char=False, **args)
         vocab._word2id = bidict(word2idx)
         vocab._id2tf = numpy.zeros(vocab_size, 'int')
+        vocab.freeze()
         return vocab
 
 
     @classmethod
-    def load_from_text(cls, filename, **args):
+    def load_from_text(cls, filename, special_words=None, **args):
         '''
             load from vocab text file
 
             Input:
                 - filename: string
+                - special_words: word list like pad, bos ,eos ,unk, default is None
         '''
-        vocab = cls(**args)
+        word2id, id2tf = {}, []
+        for w in special_words:
+            word2id[w] = len(word2id)
+            id2tf.append(0)
         with open(filename) as f:
             for l in f:
                 try:
@@ -153,11 +158,18 @@ class Vocab(object):
                     if len(word) < 1:
                         continue
                     tf = int(tf)
-                    word_id = vocab.word2id(word)
-                    vocab._id2tf[word_id] = tf
-                except:
+                    word2id[word] = len(word2id)
+                    id2tf.append(int(tf))
+                except Exception as err:
+                    print(err)
                     continue
-        vocab.reduce()
+        vocab_size = len(word2id)
+        vocab = cls(vocab_size=vocab_size, special_char=False, **args)
+        vocab._word2id = bidict(word2id)
+        vocab._id2tf = numpy.array(id2tf, 'int')
+        vocab._word_spec = special_words
+        vocab._id_spec = list(range(len(special_words)))
+        vocab.freeze()
         return vocab
 
 
@@ -421,7 +433,6 @@ class Vocab(object):
         if tottf == 0:
             return numpy.zeros(self.embedding.vec_len)
         return vec/tottf
-
 
 
 
