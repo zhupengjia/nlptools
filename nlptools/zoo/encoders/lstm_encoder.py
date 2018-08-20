@@ -95,21 +95,7 @@ class LSTMEncoder(Encoder_Base):
             'encoder_padding_mask': encoder_padding_mask if encoder_padding_mask.any() else None
         }
 
-    def reorder_encoder_out(self, encoder_out_dict, new_order):
-        encoder_out_dict['encoder_out'] = tuple(
-            eo.index_select(1, new_order)
-            for eo in encoder_out_dict['encoder_out']
-        )
-        if encoder_out_dict['encoder_padding_mask'] is not None:
-            encoder_out_dict['encoder_padding_mask'] = \
-                encoder_out_dict['encoder_padding_mask'].index_select(1, new_order)
-        return encoder_out_dict
-
-    def max_positions(self):
-        """Maximum input length supported by the encoder."""
-        return int(1e5)  # an arbitrary large number
-
-
+    
 def Embedding(num_embeddings, embedding_dim, padding_idx):
     m = nn.Embedding(num_embeddings, embedding_dim, padding_idx=padding_idx)
     nn.init.uniform_(m.weight, -0.1, 0.1)

@@ -58,6 +58,8 @@ class SinusoidalPositionalEmbedding(nn.Module):
         self.weights = self.weights.type_as(self._float_tensor)
 
         positions = make_positions(input.data, self.padding_idx, self.left_pad)
+        print(self.weights, positions)
+
         return self.weights.index_select(0, positions.view(-1)).view(bsz, seq_len, -1).detach()
 
     def max_positions(self):

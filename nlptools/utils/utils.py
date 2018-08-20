@@ -224,15 +224,24 @@ def eval_str_list(x, type=float):
         return [type(x)]
 
 
-def pad_sequence(M, padding_value=0):
+def pad_sequence(M, padding_value=0, return_length=False):
     '''
         pad array of numpy array to matrix
+
+        Input:
+            - M: list of sequence
+            - padding_value: default is 0
+            - return_length: if True then return padded matrix and raw lengths, otherwise return padded matrix only. default is False
     '''
+    length = [len(x) for x in M]
     maxlen = max(len(x) for x in M)
     seq = numpy.zeros((len(M), maxlen), dtype=M[0].dtype) + padding_value
     for i, m in enumerate(M):
         seq[i][:len(m)] = m
-    return seq
+    if return_length:
+        return seq, length
+    else:
+        return seq
 
 
 

@@ -123,7 +123,8 @@ class FConvEncoder(Encoder_Base):
             x = x.masked_fill(encoder_padding_mask.unsqueeze(-1), 0)
 
         # scale gradients (this only affects backward, not forward)
-        x = GradMultiply.apply(x, 1.0 / (2.0 * self.num_attention_layers))
+        if self.num_attention_layers is not None:
+            x = GradMultiply.apply(x, 1.0 / (2.0 * self.num_attention_layers))
 
         # add output to input embedding for attention
         y = (x + input_embedding) * math.sqrt(self.normalization_constant)
@@ -132,11 +133,6 @@ class FConvEncoder(Encoder_Base):
             'encoder_out': (x, y),
             'encoder_padding_mask': encoder_padding_mask,  # B x T
         }
-
-    def max_positions(self):
-        """Maximum input length supported by the encoder."""
-        return self.embed_positions.max_positions()
-
 
 
 def extend_conv_spec(convolutions):

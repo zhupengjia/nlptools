@@ -14,7 +14,7 @@ from .encoder_base import Encoder_Base
 class TransformerEncoder(Encoder_Base):
     """Transformer encoder."""
 
-    def __init__(self, vocab, pretrained_embed=True, layers=3, learned_pos=False, attention_heads=4, ffn_embed_dim=512, normalize_before=False, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=True):
+    def __init__(self, vocab, pretrained_embed=True, layers=3, learned_pos=False, attention_heads=4, ffn_embed_dim=512, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=True):
         super().__init__(vocab)
         self.dropout = dropout
 
@@ -35,7 +35,7 @@ class TransformerEncoder(Encoder_Base):
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
-            TransformerEncoderLayer(embed_dim, attention_heads, normalize_before, ffn_embed_dim, dropout, attention_dropout, relu_dropout)
+            TransformerEncoderLayer(embed_dim, attention_heads, ffn_embed_dim, dropout, attention_dropout, relu_dropout)
             for i in range(layers)
         ])
 
@@ -62,33 +62,13 @@ class TransformerEncoder(Encoder_Base):
             'encoder_padding_mask': encoder_padding_mask,  # B x T
         }
 
-    def reorder_encoder_out(self, encoder_out_dict, new_order):
-        if encoder_out_dict['encoder_out'] is not None:
-            encoder_out_dict['encoder_out'] = \
-                encoder_out_dict['encoder_out'].index_select(1, new_order)
-        if encoder_out_dict['encoder_padding_mask'] is not None:
-            encoder_out_dict['encoder_padding_mask'] = \
-                encoder_out_dict['encoder_padding_mask'].index_select(0, new_order)
-        return encoder_out_dict
-
-    def max_positions(self):
-        """Maximum input length supported by the encoder."""
-        return self.embed_positions.max_positions()
-
 
 class TransformerEncoderLayer(nn.Module):
-    """Encoder layer block.
-
-    In the original paper each operation (multi-head attention or FFN) is
-    postprocessed with: dropout -> add residual -> layernorm.
-    In the tensor2tensor code they suggest that learning is more robust when
-    preprocessing each layer with layernorm and postprocessing with:
-    dropout -> add residual.
-    We default to the approach in the paper, but the tensor2tensor approach can
-    be enabled by setting `normalize_before=True`.
+    """
+        Encoder layer block.
     """
 
-    def __init__(self, embed_dim, attention_heads, normalize_before, ffn_embed_dim, dropout, attention_dropout, relu_dropout):
+    def __init__(self, embed_dim, attention_heads, ffn_embed_dim, dropout, attention_dropout, relu_dropout):
         super().__init__()
         self.embed_dim = embed_dim
         self.self_attn = MultiheadAttention(
@@ -97,35 +77,26 @@ class TransformerEncoderLayer(nn.Module):
         )
         self.dropout = dropout
         self.relu_dropout = relu_dropout
-        self.normalize_before = normalize_before
         self.fc1 = Linear(self.embed_dim, ffn_embed_dim)
         self.fc2 = Linear(ffn_embed_dim, self.embed_dim)
         self.layer_norms = nn.ModuleList([LayerNorm(self.embed_dim) for i in range(2)])
 
     def forward(self, x, encoder_padding_mask):
         residual = x
-        x = self.maybe_layer_norm(0, x, before=True)
+        x = self.layer_norms[0](x)        
+
         x, _ = self.self_attn(query=x, key=x, value=x, key_padding_mask=encoder_padding_mask)
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = residual + x
-        x = self.maybe_layer_norm(0, x, after=True)
 
         residual = x
-        x = self.maybe_layer_norm(1, x, before=True)
+        x = self.layer_norms[1](x)
         x = F.relu(self.fc1(x))
         x = F.dropout(x, p=self.relu_dropout, training=self.training)
         x = self.fc2(x)
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = residual + x
-        x = self.maybe_layer_norm(1, x, after=True)
         return x
-
-    def maybe_layer_norm(self, i, x, before=False, after=False):
-        assert before ^ after
-        if after ^ self.normalize_before:
-            return self.layer_norms[i](x)
-        else:
-            return x
 
 
 def Embedding(num_embeddings, embedding_dim, padding_idx):

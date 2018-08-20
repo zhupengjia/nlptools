@@ -418,7 +418,7 @@ class BytePair(Vocab):
                 - list of ids
         '''
         if batch:
-            return numpy.asarray([self.apply(t) for t in tokens], dtype=numpy.object) 
+            return numpy.asarray([self.words2id(t) for t in tokens], dtype=numpy.object) 
         
         ids = []
         for token in tokens:
