@@ -40,7 +40,7 @@ class TopicModel(object):
 
     def __getitem__(self, corpus):
         return np.transpose(gensim.matutils.corpus2dense(self.model[corpus], \
-                num_terms=N_topic))
+                num_terms=self.N_topic))
 
 
 class LSI(TopicModel):

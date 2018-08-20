@@ -276,13 +276,13 @@ class BytePair(Vocab):
             yield segment
             return
     
-        if left + self.separator in vocab:
+        if left + self.separator in self._word2id:
             yield left
         else:
             for item in self.__recursive_split(left, False):
                 yield item
     
-        if (final and right in vocab) or (not final and right + self.separator in vocab):
+        if (final and right in self._word2id) or (not final and right + self.separator in self._word2id):
             yield right
         else:
             for item in self.__recursive_split(right, final):

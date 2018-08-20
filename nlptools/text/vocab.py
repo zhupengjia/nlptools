@@ -311,7 +311,7 @@ class Vocab(object):
             Input:
                 - word: string
         '''
-        return key in self._word2id
+        return word in self._word2id
 
 
     def __call__(self, tokens, batch=False):
