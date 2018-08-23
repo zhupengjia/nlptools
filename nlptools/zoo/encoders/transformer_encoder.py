@@ -4,7 +4,6 @@ import torch, math
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..modules.learned_positional_embedding import LearnedPositionalEmbedding
 from ..modules.multihead_attention import MultiheadAttention
 from ..modules.sinusoidal_positional_embedding import SinusoidalPositionalEmbedding
 
@@ -14,7 +13,7 @@ from .encoder_base import Encoder_Base
 class TransformerEncoder(Encoder_Base):
     """Transformer encoder."""
 
-    def __init__(self, vocab, pretrained_embed=True, layers=3, learned_pos=False, attention_heads=4, ffn_embed_dim=512, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=True):
+    def __init__(self, vocab, pretrained_embed=True, layers=3, attention_heads=4, ffn_embed_dim=512, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=True):
         super().__init__(vocab)
         self.dropout = dropout
 
@@ -27,11 +26,12 @@ class TransformerEncoder(Encoder_Base):
             self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
 
         self.embed_scale = math.sqrt(embed_dim)
-        self.embed_positions = PositionalEmbedding(
-            1024, embed_dim, self.padding_idx,
-            left_pad=left_pad,
-            learned=learned_pos,
-        )
+        self.embed_positions = SinusoidalPositionalEmbedding(
+                    embed_dim,
+                    self.padding_idx,
+                    left_pad,
+                    1024
+                )
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
@@ -114,16 +114,6 @@ def Linear(in_features, out_features, bias=True):
     m = nn.Linear(in_features, out_features, bias)
     nn.init.xavier_uniform_(m.weight)
     nn.init.constant_(m.bias, 0.)
-    return m
-
-
-def PositionalEmbedding(num_embeddings, embedding_dim, padding_idx, left_pad, learned=False):
-    if learned:
-        m = LearnedPositionalEmbedding(num_embeddings, embedding_dim, padding_idx, left_pad)
-        nn.init.normal_(m.weight, mean=0, std=embedding_dim ** -0.5)
-        nn.init.constant_(m.weight[padding_idx], 0)
-    else:
-        m = SinusoidalPositionalEmbedding(embedding_dim, padding_idx, left_pad, num_embeddings)
     return m
 
 
