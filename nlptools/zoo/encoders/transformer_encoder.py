@@ -13,7 +13,7 @@ from .encoder_base import Encoder_Base
 class TransformerEncoder(Encoder_Base):
     """Transformer encoder."""
 
-    def __init__(self, vocab, pretrained_embed=True, layers=3, attention_heads=4, ffn_embed_dim=512, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=True):
+    def __init__(self, vocab, pretrained_embed=True, layers=3, attention_heads=4, ffn_embed_dim=512, dropout=0.1, left_pad=True):
         super().__init__(vocab)
         self.dropout = dropout
 
@@ -35,7 +35,7 @@ class TransformerEncoder(Encoder_Base):
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
-            TransformerEncoderLayer(embed_dim, attention_heads, ffn_embed_dim, dropout, attention_dropout, relu_dropout)
+            TransformerEncoderLayer(embed_dim, attention_heads, ffn_embed_dim, dropout)
             for i in range(layers)
         ])
 
@@ -68,15 +68,14 @@ class TransformerEncoderLayer(nn.Module):
         Encoder layer block.
     """
 
-    def __init__(self, embed_dim, attention_heads, ffn_embed_dim, dropout, attention_dropout, relu_dropout):
+    def __init__(self, embed_dim, attention_heads, ffn_embed_dim, dropout):
         super().__init__()
         self.embed_dim = embed_dim
+        self.dropout = dropout
         self.self_attn = MultiheadAttention(
             self.embed_dim, attention_heads,
-            dropout=attention_dropout,
+            dropout=self.dropout,
         )
-        self.dropout = dropout
-        self.relu_dropout = relu_dropout
         self.fc1 = Linear(self.embed_dim, ffn_embed_dim)
         self.fc2 = Linear(ffn_embed_dim, self.embed_dim)
         self.layer_norms = nn.ModuleList([LayerNorm(self.embed_dim) for i in range(2)])
@@ -92,7 +91,7 @@ class TransformerEncoderLayer(nn.Module):
         residual = x
         x = self.layer_norms[1](x)
         x = F.relu(self.fc1(x))
-        x = F.dropout(x, p=self.relu_dropout, training=self.training)
+        x = F.dropout(x, p=self.dropout, training=self.training)
         x = self.fc2(x)
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = residual + x

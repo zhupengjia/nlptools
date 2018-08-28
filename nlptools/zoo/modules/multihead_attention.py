@@ -11,7 +11,7 @@ class MultiheadAttention(nn.Module):
 
     See "Attention Is All You Need" for more details.
     """
-    def __init__(self, embed_dim, num_heads, dropout=0., bias=True):
+    def __init__(self, embed_dim, num_heads, dropout=0.1, bias=True):
         super().__init__()
         self.embed_dim = embed_dim
         self.num_heads = num_heads

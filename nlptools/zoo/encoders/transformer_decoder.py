@@ -7,14 +7,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..modules.multihead_attention import MultiheadAttention
+from ..modules.sinusoidal_positional_embedding import SinusoidalPositionalEmbedding
 
 from .decoder_base import Decoder_Base
-from .transformer_encoder import LayerNorm, Embedding, Linear, PositionalEmbedding
+from .transformer_encoder import LayerNorm, Embedding, Linear
 
 class TransformerDecoder(Decoder_Base):
     """Transformer decoder."""
 
-    def __init__(self, vocab, pretrained_embed=True, layers=6, learned_pos=False, attention_heads=8, ffn_embed_dim=1024, normalize_before=False, share_embed=True, dropout=0.1, attention_dropout=0.1, relu_dropout=0.1, left_pad=False):
+    def __init__(self, vocab, pretrained_embed=True, layers=6, attention_heads=8, ffn_embed_dim=1024, share_embed=True, dropout=0.1, left_pad=False):
         super().__init__(vocab)
         self.dropout = dropout
 
@@ -27,15 +28,16 @@ class TransformerDecoder(Decoder_Base):
             self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
 
         self.embed_scale = math.sqrt(embed_dim)
-        self.embed_positions = PositionalEmbedding(
-            1024, embed_dim, padding_idx,
+        self.embed_positions = SinusoidalPositionalEmbedding(
+            embed_dim, 
+            padding_idx,
             left_pad=left_pad,
-            learned=learned_pos,
+            1024
         )
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
-            TransformerDecoderLayer(embed_dim, attention_heads, normalize_before, ffn_embed_dim, dropout, attention_dropout, relu_dropout)
+            TransformerDecoderLayer(embed_dim, attention_heads, ffn_embed_dim, dropout)
             for i in range(layers)
         ])
         
@@ -88,19 +90,17 @@ class TransformerDecoder(Decoder_Base):
 class TransformerDecoderLayer(nn.Module):
     """Decoder layer block."""
 
-    def __init__(self, embed_dim, attention_heads, normalize_before, ffn_embed_dim, dropout, attention_dropout, relu_dropout):
+    def __init__(self, embed_dim, attention_heads, ffn_embed_dim, dropout):
         super().__init__()
         self.embed_dim = embed_dim
+        self.dropout = dropout
         self.self_attn = MultiheadAttention(
             self.embed_dim, attention_heads,
-            dropout=attention_dropout,
+            dropout=self.dropout,
         )
-        self.dropout = dropout
-        self.relu_dropout = relu_dropout
-        self.normalize_before = normalize_before
         self.encoder_attn = MultiheadAttention(
             self.embed_dim, attention_heads,
-            dropout=attention_dropout,
+            dropout=self.dropout,
         )
         self.fc1 = Linear(self.embed_dim, ffn_embed_dim)
         self.fc2 = Linear(ffn_embed_dim, self.embed_dim)
@@ -108,7 +108,8 @@ class TransformerDecoderLayer(nn.Module):
 
     def forward(self, x, encoder_out, encoder_padding_mask):
         residual = x
-        x = self.maybe_layer_norm(0, x, before=True)
+        x = self.layer_norms[0](x)
+
         x, _ = self.self_attn(
             query=x,
             key=x,
@@ -118,10 +119,9 @@ class TransformerDecoderLayer(nn.Module):
         )
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = residual + x
-        x = self.maybe_layer_norm(0, x, after=True)
 
         residual = x
-        x = self.maybe_layer_norm(1, x, before=True)
+        x = self.layer_norms[1](x)
         x, attn = self.encoder_attn(
             query=x,
             key=encoder_out,
@@ -131,23 +131,14 @@ class TransformerDecoderLayer(nn.Module):
         )
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = residual + x
-        x = self.maybe_layer_norm(1, x, after=True)
 
         residual = x
-        x = self.maybe_layer_norm(2, x, before=True)
+        x = self.layer_norms[2](x)
         x = F.relu(self.fc1(x))
-        x = F.dropout(x, p=self.relu_dropout, training=self.training)
+        x = F.dropout(x, p=self.dropout, training=self.training)
         x = self.fc2(x)
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = residual + x
-        x = self.maybe_layer_norm(2, x, after=True)
         return x, attn
-
-    def maybe_layer_norm(self, i, x, before=False, after=False):
-        assert before ^ after
-        if after ^ self.normalize_before:
-            return self.layer_norms[i](x)
-        else:
-            return x
 
 

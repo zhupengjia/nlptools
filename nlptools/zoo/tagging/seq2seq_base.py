@@ -36,7 +36,6 @@ class Seq2SeqBase(ModelBase):
     
     
     def max_positions(self):
-        """Maximum length supported by the model."""
         return (self.encoder.max_positions(), self.decoder.max_positions())
 
       

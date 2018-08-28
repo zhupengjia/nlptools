@@ -40,7 +40,6 @@ class FConvLanguageModel(ModelBase):
         return self.decoder(src_tokens)
 
     def max_positions(self):
-        """Maximum length supported by the model."""
         return self.decoder.max_positions()
 
     
