@@ -25,6 +25,9 @@ class BucketData:
             - max_seq_len: maximum sequence length, if None then will not filter anything
         '''
 
+        # to numpy array
+        inputs = [np.asarray(ipt) for ipt in inputs]
+
         # build a list of lengths for the input data
         self.len_list = np.asarray(list(map(len, inputs[0])), dtype=np.integer)
         # save the sort_idx such that the original input order can be preserved. 

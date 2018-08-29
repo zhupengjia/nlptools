@@ -15,7 +15,7 @@ from .transformer_encoder import LayerNorm, Embedding, Linear
 class TransformerDecoder(Decoder_Base):
     """Transformer decoder."""
 
-    def __init__(self, vocab, pretrained_embed=True, layers=6, attention_heads=8, ffn_embed_dim=1024, share_embed=True, dropout=0.1, left_pad=False):
+    def __init__(self, vocab, pretrained_embed=True, layers=6, attention_heads=8, ffn_embed_dim=1024, max_target_positions=1024, share_embed=True, dropout=0.1, left_pad=False):
         super().__init__(vocab)
         self.dropout = dropout
 
@@ -28,12 +28,15 @@ class TransformerDecoder(Decoder_Base):
             self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
 
         self.embed_scale = math.sqrt(embed_dim)
-        self.embed_positions = SinusoidalPositionalEmbedding(
-            embed_dim, 
-            padding_idx,
-            left_pad=left_pad,
-            1024
-        )
+        if max_target_positions < 1:
+            self.embed_positions = SinusoidalPositionalEmbedding(
+                embed_dim, 
+                padding_idx,
+                left_pad,
+                max_target_positions
+            )
+        else:
+            self.embed_positions = None
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
@@ -45,14 +48,13 @@ class TransformerDecoder(Decoder_Base):
         if share_embed:
             self.fc3.weight = self.embed_tokens.weight
 
+        self.layer_norm = LayerNorm(embed_dim)
 
     def forward(self, prev_output_tokens, encoder_out):
-        # embed positions
-        positions = self.embed_positions(prev_output_tokens)
-
         # embed tokens and positions
         x = self.embed_scale * self.embed_tokens(prev_output_tokens)
-        x += positions
+        if self.embed_positions is not None:
+            x += self.embed_positions(prev_output_tokens)
         x = F.dropout(x, p=self.dropout, training=self.training)
 
         # B x T x C -> T x B x C
@@ -77,14 +79,6 @@ class TransformerDecoder(Decoder_Base):
     def max_positions(self):
         """Maximum output length supported by the decoder."""
         return self.embed_positions.max_positions()
-
-    def upgrade_state_dict(self, state_dict):
-        if isinstance(self.embed_positions, SinusoidalPositionalEmbedding):
-            if 'decoder.embed_positions.weights' in state_dict:
-                del state_dict['decoder.embed_positions.weights']
-            if 'decoder.embed_positions._float_tensor' not in state_dict:
-                state_dict['decoder.embed_positions._float_tensor'] = torch.FloatTensor()
-        return state_dict
 
 
 class TransformerDecoderLayer(nn.Module):

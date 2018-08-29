@@ -49,7 +49,7 @@ def lstm():
     model.train(inputs, prev_outputs, outputs, num_epoch=200, max_words=20)
 
 if __name__ == '__main__':
-    fconv()
-    #transformer()
+    #fconv()
+    transformer()
     #lstm()
 

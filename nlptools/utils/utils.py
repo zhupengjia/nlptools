@@ -233,6 +233,8 @@ def pad_sequence(M, padding_value=0, return_length=False):
             - padding_value: default is 0
             - return_length: if True then return padded matrix and raw lengths, otherwise return padded matrix only. default is False
     '''
+    if not isinstance(M[0], numpy.ndarray):
+        return M
     length = [len(x) for x in M]
     maxlen = max(len(x) for x in M)
     seq = numpy.zeros((len(M), maxlen), dtype=M[0].dtype) + padding_value

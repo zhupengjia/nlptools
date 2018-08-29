@@ -2,6 +2,8 @@
 
 import torch
 import torch.nn as nn
+import torch.optim as optim
+from ..modules.bucket import BucketData
 
 class ClassifierBase(nn.Module):
     def __init__(self, vocab, pretrained_embed=True, device='cpu'):
@@ -13,7 +15,7 @@ class ClassifierBase(nn.Module):
     def train(self, inputs, outputs, num_epoch=20, max_words=100, learning_rate=0.001, weight_decay=0, save_path='autosave.torch'):
         loss_fn = nn.CrossEntropyLoss()
 
-        optimizer = optim.Adam(self.model.parameters(), \
+        optimizer = optim.Adam(self.parameters(), \
                 lr=learning_rate, \
                 weight_decay=weight_decay)
         

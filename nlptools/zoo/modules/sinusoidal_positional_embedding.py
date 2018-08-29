@@ -13,7 +13,7 @@ class SinusoidalPositionalEmbedding(nn.Module):
     is added on the left side (left_pad=True) or right side (left_pad=False).
     """
 
-    def __init__(self, embedding_dim, padding_idx, left_pad, init_size=1024):
+    def __init__(self, embedding_dim, padding_idx, left_pad=False, init_size=1024):
         super().__init__()
         self.embedding_dim = embedding_dim
         self.padding_idx = padding_idx
@@ -23,7 +23,6 @@ class SinusoidalPositionalEmbedding(nn.Module):
             embedding_dim,
             padding_idx,
         )
-        self.register_buffer('_float_tensor', torch.FloatTensor())
 
     @staticmethod
     def get_embedding(num_embeddings, embedding_dim, padding_idx=None):
@@ -55,13 +54,10 @@ class SinusoidalPositionalEmbedding(nn.Module):
                 self.embedding_dim,
                 self.padding_idx,
             )
-        self.weights = self.weights.type_as(self._float_tensor)
-
+        self.weights = self.weights.type(torch.FloatTensor)
+            
         positions = make_positions(input.data, self.padding_idx, self.left_pad)
-        print(self.weights, positions)
-
+        #print(self.weights, positions)
+        
         return self.weights.index_select(0, positions.view(-1)).view(bsz, seq_len, -1).detach()
 
-    def max_positions(self):
-        """Maximum number of supported positions."""
-        return int(1e5)  # an arbitrary large number

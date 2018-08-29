@@ -13,7 +13,7 @@ from .encoder_base import Encoder_Base
 class TransformerEncoder(Encoder_Base):
     """Transformer encoder."""
 
-    def __init__(self, vocab, pretrained_embed=True, layers=3, attention_heads=4, ffn_embed_dim=512, dropout=0.1, left_pad=True):
+    def __init__(self, vocab, pretrained_embed=True, layers=3, attention_heads=4, ffn_embed_dim=512, max_source_positions=1024, dropout=0.1, left_pad=False):
         super().__init__(vocab)
         self.dropout = dropout
 
@@ -26,23 +26,29 @@ class TransformerEncoder(Encoder_Base):
             self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
 
         self.embed_scale = math.sqrt(embed_dim)
-        self.embed_positions = SinusoidalPositionalEmbedding(
-                    embed_dim,
-                    self.padding_idx,
-                    left_pad,
-                    1024
-                )
+
+        if max_source_positions < 1:
+            self.embed_positions = None
+        else:
+            self.embed_positions = SinusoidalPositionalEmbedding(
+                        embed_dim,
+                        self.padding_idx,
+                        left_pad,
+                        max_source_positions
+                    )
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
             TransformerEncoderLayer(embed_dim, attention_heads, ffn_embed_dim, dropout)
             for i in range(layers)
         ])
+        self.layer_norm = LayerNorm(embed_dim)
 
-    def forward(self, src_tokens, src_lengths):
+    def forward(self, src_tokens):
         # embed tokens and positions
         x = self.embed_scale * self.embed_tokens(src_tokens)
-        x += self.embed_positions(src_tokens)
+        if self.embed_positions is not None:
+            x += self.embed_positions(src_tokens)
         x = F.dropout(x, p=self.dropout, training=self.training)
 
         # B x T x C -> T x B x C
@@ -56,6 +62,8 @@ class TransformerEncoder(Encoder_Base):
         # encoder layers
         for layer in self.layers:
             x = layer(x, encoder_padding_mask)
+
+        x = self.layer_norm(x)
 
         return {
             'encoder_out': x,  # T x B x C
