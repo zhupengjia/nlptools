@@ -13,11 +13,12 @@ class SinusoidalPositionalEmbedding(nn.Module):
     is added on the left side (left_pad=True) or right side (left_pad=False).
     """
 
-    def __init__(self, embedding_dim, padding_idx, left_pad=False, init_size=1024):
+    def __init__(self, embedding_dim, padding_idx, left_pad=False, init_size=1024, device='cpu'):
         super().__init__()
         self.embedding_dim = embedding_dim
         self.padding_idx = padding_idx
         self.left_pad = left_pad
+        self.device = torch.device(device)
         self.weights = SinusoidalPositionalEmbedding.get_embedding(
             init_size,
             embedding_dim,
@@ -54,7 +55,7 @@ class SinusoidalPositionalEmbedding(nn.Module):
                 self.embedding_dim,
                 self.padding_idx,
             )
-        self.weights = self.weights.type(torch.FloatTensor)
+        self.weights = self.weights.type(torch.FloatTensor).to(self.device)
             
         positions = make_positions(input.data, self.padding_idx, self.left_pad)
         #print(self.weights, positions)

@@ -13,8 +13,8 @@ from .encoder_base import Encoder_Base
 class TransformerEncoder(Encoder_Base):
     """Transformer encoder."""
 
-    def __init__(self, vocab, pretrained_embed=True, layers=3, attention_heads=4, ffn_embed_dim=512, max_source_positions=1024, dropout=0.1, left_pad=False):
-        super().__init__(vocab)
+    def __init__(self, vocab, pretrained_embed=True, layers=3, attention_heads=4, ffn_embed_dim=512, max_source_positions=1024, dropout=0.1, left_pad=False, device='cpu'):
+        super().__init__(vocab, device)
         self.dropout = dropout
 
         num_embeddings = vocab.vocab_size
@@ -23,7 +23,7 @@ class TransformerEncoder(Encoder_Base):
 
         self.embed_tokens = Embedding(num_embeddings, embed_dim, self.padding_idx)
         if pretrained_embed:
-            self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors())
+            self.embed_tokens.weight.data = torch.FloatTensor(vocab.dense_vectors()).to(self.device)
 
         self.embed_scale = math.sqrt(embed_dim)
 
@@ -34,7 +34,8 @@ class TransformerEncoder(Encoder_Base):
                         embed_dim,
                         self.padding_idx,
                         left_pad,
-                        max_source_positions
+                        max_source_positions,
+                        device = device
                     )
 
         self.layers = nn.ModuleList([])
