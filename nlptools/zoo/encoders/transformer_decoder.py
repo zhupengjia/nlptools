@@ -120,8 +120,7 @@ class TransformerDecoderLayer(nn.Module):
             query=x,
             key=encoder_out,
             value=encoder_out,
-            key_padding_mask=encoder_padding_mask,
-            static_kv=True,
+            key_padding_mask=encoder_padding_mask
         )
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = residual + x

@@ -38,7 +38,7 @@ class MultiheadAttention(nn.Module):
             nn.init.constant_(self.out_proj.bias, 0.)
 
     def forward(self, query, key, value, mask_future_timesteps=False,
-                key_padding_mask=None, need_weights=True, static_kv=False):
+                key_padding_mask=None, need_weights=True):
         """Input shape: Time x Batch x Channel
 
         Self-attention can be implemented by passing in the same arguments for
