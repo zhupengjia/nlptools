@@ -56,7 +56,9 @@
          -  nlptools/zoo/encoders
             * universal encoder and decoder layers, can be integrated to different nlp tasks, now have traditional lstm, facebook's cnn, google's transformer 
          -  nlptools/zoo/tagging
-            * tagging, language model, seq2seq codes
+            * tagging, language model
+         -  nlptools/zoo/seq2seq
+            * seq2seq models
 
 ## Version
 
