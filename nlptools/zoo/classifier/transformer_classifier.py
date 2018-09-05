@@ -18,10 +18,13 @@ class TransformerClassifier(ClassifierBase):
                     dropout = dropout
                 ) 
 
-        self.fc = nn.Linear(in_features=ffn_embed_dim, out_features=target_size)
+        self.fc = nn.Linear(in_features=vocab.embedding_dim, out_features=target_size)
 
     def forward(self, sentence):
-        sentence_emb = self.encoder(sentence)
-        out = self.fc(sentence_emb)
+        x = self.encoder(sentence)['encoder_out']
+
+        x = x.sum(dim=1)
+
+        out = self.fc(x)
         return out
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import torch
-from .model_base import ModelBase
+from ..tagging.model_base import ModelBase
 import torch.nn as nn
 import torch.optim as optim
 from ..modules.bucket import BucketData
@@ -31,7 +31,6 @@ class Seq2SeqBase(ModelBase):
     def forward(self, src_tokens, src_lengths, prev_output_tokens):
         encoder_out = self.encoder(src_tokens, src_lengths)
         decoder_out = self.decoder(prev_output_tokens, encoder_out)
-        
         return decoder_out
     
     
@@ -56,16 +55,18 @@ class Seq2SeqBase(ModelBase):
                 batch_prev = torch.LongTensor(batch_prev, device=self.device)
                 batch_out = torch.LongTensor(batch_out, device=self.device)
 
-                #print('batch_in', batch_in)
-                #print('batch_prev', batch_prev)
-                #print('batch_out', batch_out)
+                #print('batch_in', batch_in.size())
+                #print('batch_prev', batch_prev.size())
+                print('batch_out', targets_flatten.size())
                 #sys.exit()
 
                 tag_scores = self.get_normalized_probs(self(batch_in, batch_len, batch_prev), log_probs=True)
                 
                 tag_scores_flatten = tag_scores.view(-1, self.decoder_vocab.vocab_size)
                 targets_flatten = batch_out.view(-1)
-                
+               
+                #print('pred_out', tag_scores_flatten.size())
+
                 loss = loss_function(tag_scores_flatten, targets_flatten)
                 loss.backward()
                 optimizer.step()

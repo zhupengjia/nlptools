@@ -59,7 +59,7 @@ class DrQA(object):
 
     def search(self, query, prefilter = 5, topN=1):
         query_seg = self.tokenize(query)
-        query_id = self.vocab_tfidf.sentence2id(query_seg['tokens'])
+        query_id = self.vocab_tfidf.words2id(query_seg['tokens'])
 
         ranked_doc = self.tfidf.search_index(query_id, prefilter)
 
@@ -68,7 +68,7 @@ class DrQA(object):
         ranked_doc_seg = [self.corpus_segs[i] for i in ranked_doc_indexes]
         
         for i in range(len(ranked_doc_seg)):
-            ranked_doc_seg[i]['id'] = torch.LongTensor(self.vocab_reader.sentence2id(ranked_doc_seg[i]['texts'], 1, addforce=False))
+            ranked_doc_seg[i]['id'] = torch.LongTensor(self.vocab_reader.words2id(ranked_doc_seg[i]['texts'], 1, addforce=False))
       
         return self.search_reader(query_seg, ranked_doc_seg)
         

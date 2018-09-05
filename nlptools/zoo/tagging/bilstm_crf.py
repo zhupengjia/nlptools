@@ -44,6 +44,8 @@ def log_sum_exp(batch_vec):
 
 
 class BiLSTM_CRF(nn.Module):
+    START_TAG = "<START>"
+    STOP_TAG = "<STOP>"
 
     def __init__(self, vocab_size, tag_to_ix, embedding_dim, hidden_dim):
         """
@@ -74,8 +76,8 @@ class BiLSTM_CRF(nn.Module):
 
         # These two statements enforce the constraint that we never transfer
         # to the start tag and we never transfer from the stop tag
-        self.transitions.data[tag_to_ix[START_TAG], :] = -10000
-        self.transitions.data[:, tag_to_ix[STOP_TAG]] = -10000
+        self.transitions.data[tag_to_ix[self.START_TAG], :] = -10000
+        self.transitions.data[:, tag_to_ix[self.STOP_TAG]] = -10000
 
         
     def init_hidden(self, batch_size):
@@ -109,7 +111,7 @@ class BiLSTM_CRF(nn.Module):
                                  -10000.)
         log_model.debug('shape of alphas: %s', init_alphas.shape)
         # START_TAG has all of the score.
-        init_alphas[:, self.tag_to_ix[START_TAG]] = 0.
+        init_alphas[:, self.tag_to_ix[self.START_TAG]] = 0.
         # Wrap in a variable so that we will get automatic backprop
         forward_var = init_alphas
 #        log_model.debug('forward_var: %s\n%s', forward_var.shape, forward_var)
@@ -154,9 +156,9 @@ class BiLSTM_CRF(nn.Module):
             log_model.debug('catted alphas_t: \t%s', alphas_t)
             forward_var[:step_size] = alphas_t
         
-        log_model.debug('final transition score: %s', self.transitions[self.tag_to_ix[STOP_TAG]])
+        log_model.debug('final transition score: %s', self.transitions[self.tag_to_ix[self.STOP_TAG]])
         log_model.debug('forward_var: %s', forward_var)
-        terminal_var = forward_var + self.transitions[self.tag_to_ix[STOP_TAG]]
+        terminal_var = forward_var + self.transitions[self.tag_to_ix[self.STOP_TAG]]
         alpha = log_sum_exp(terminal_var)
         return alpha
 
@@ -217,7 +219,7 @@ class BiLSTM_CRF(nn.Module):
         score = torch.zeros(batch_size)
         #log_model.debug('Init score shape: %s', score.shape)
          
-        previous_tag = torch.tensor([self.tag_to_ix[START_TAG]], 
+        previous_tag = torch.tensor([self.tag_to_ix[self.START_TAG]], 
                                        dtype=torch.long).expand(batch_size)
         ending_tag = torch.zeros_like(previous_tag)
         batch_start_ix = 0
@@ -246,7 +248,7 @@ class BiLSTM_CRF(nn.Module):
             #log_model.debug('ending tag: %s\n---', ending_tag)
         
         # add the final stop-tag score to the overall score
-        score = score + self.transitions[self.tag_to_ix[STOP_TAG], ending_tag]
+        score = score + self.transitions[self.tag_to_ix[self.STOP_TAG], ending_tag]
         #log_model.debug('final score: %s', score)
         
         return score
@@ -306,7 +308,7 @@ class BiLSTM_CRF(nn.Module):
             backpointers.append(bptrs_t)
 
         # Transition to STOP_TAG
-        terminal_var = forward_var + self.transitions[self.tag_to_ix[STOP_TAG]]
+        terminal_var = forward_var + self.transitions[self.tag_to_ix[self.STOP_TAG]]
         log_model_decoder.debug('termainal_var: %s', terminal_var)
         best_tag_id = argmax(terminal_var)
         log_model_decoder.debug('best tag of termainal_var: %s', best_tag_id)

@@ -13,6 +13,9 @@ s = Synonyms(emb,
 
 while True:
     text = input(":")
+    text = text.strip()
+    if len(text) < 1:
+        continue
     synonyms = s(text, 100, 0.5)
     for i in range(len(synonyms[0])):
         print(synonyms[0][i],'\t\t', synonyms[1][i])

@@ -4,9 +4,9 @@ import sys, torch, numpy
 from nlptools.text import Vocab
 from nlptools.text.embedding import Embedding_Random
 from nlptools.zoo.demodata.demo_seq import demo_seq
-from nlptools.zoo.tagging.fconv_seq2seq import FConvSeq2Seq
-from nlptools.zoo.tagging.transformer import Transformer
-from nlptools.zoo.tagging.lstm_seq2seq import LSTMSeq2Seq
+from nlptools.zoo.seq2seq.fconv_seq2seq import FConvSeq2Seq
+from nlptools.zoo.seq2seq.transformer import Transformer
+from nlptools.zoo.seq2seq.lstm_seq2seq import LSTMSeq2Seq
 
 def fconv():
     inputs, prev_outputs, outputs, vocab = demo_seq() 
@@ -50,6 +50,6 @@ def lstm():
 
 if __name__ == '__main__':
     #fconv()
-    transformer()
-    #lstm()
+    #transformer()
+    lstm()
 
