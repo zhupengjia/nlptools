@@ -12,6 +12,7 @@ Subpackages
     nlptools.zoo.encoders
     nlptools.zoo.modules
     nlptools.zoo.tagging
+    nlptools.zoo.seq2seq
 
 Module contents
 ---------------

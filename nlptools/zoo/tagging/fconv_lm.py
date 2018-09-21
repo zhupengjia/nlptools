@@ -15,7 +15,7 @@ class FConvLanguageModel(LanguageModelBase):
         
         self.decoder = FConvDecoder(
             vocab=vocab,
-            pretrained_embed = self.pretrained_embed
+            pretrained_embed = self.pretrained_embed,
             out_embed_dim=vocab.embedding_dim,
             max_positions=tokens_per_sample,
             convolutions=decoder_layers,

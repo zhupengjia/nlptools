@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-'''
-    Author: Zhiqiang Yao
-'''
-
 from itertools import groupby
 from operator import itemgetter
 
