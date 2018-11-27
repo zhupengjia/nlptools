@@ -27,8 +27,8 @@ class DocSim(object):
                 - sentence_id1: word_id list for sentence1
                 - sentence_id2: word_id list for sentence2 
         '''
-        vec1 = self.vocab.senid2vec(sentence_id1)
-        vec2 = self.vocab.senid2vec(sentence_id2)
+        vec1 = self.vocab.ids2vec(sentence_id1)
+        vec2 = self.vocab.ids2vec(sentence_id2)
         return cosine_distances(vec1, vec2).min()
     
    
@@ -42,8 +42,8 @@ class DocSim(object):
         '''
         if len(sentence_id1) < 1 or len(sentence_id2) < 1:
             return float('inf')
-        words = np.unique(sentence_id1 + sentence_id2)
-        vectors = self.vocab.senid2vec(words)
+        words = np.unique(np.concatenate((sentence_id1, sentence_id2)))
+        vectors = self.vocab.ids2vec(words)
         len_words = len(words)
 
         word2id = dict(zip(words, range(len_words)))
@@ -71,8 +71,8 @@ class DocSim(object):
         from pyemd import emd
         if len(sentence_id1) < 1 or len(sentence_id2) < 1:
             return float('inf')
-        words = np.unique(sentence_id1 + sentence_id2)
-        vectors = self.vocab.senid2vec(words)
+        words = np.unique(np.concatenate((sentence_id1, sentence_id2)))
+        vectors = self.vocab.ids2vec(words)
         distance_matrix = cosine_distances(vectors)
         if np.sum(distance_matrix) == 0.0:
             return float('inf')
@@ -100,8 +100,8 @@ class DocSim(object):
         '''
         if len(sentence_id1) < 1 or len(sentence_id2) < 1:
             return float('inf')
-        words = np.unique(sentence_id1 + sentence_id2)
-        vectors = self.vocab.senid2vec(words)
+        words = np.unique(np.concatenate((sentence_id1, sentence_id2)))
+        vectors = self.vocab.ids2vec(words)
         distance_matrix = cosine_distances(vectors)
         if np.sum(distance_matrix) == 0.0:
             return 0
