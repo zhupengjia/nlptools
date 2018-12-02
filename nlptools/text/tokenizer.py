@@ -352,7 +352,7 @@ class Tokenizer_Mecab(Tokenizer_Base):
         Tokenizer_Base.__init__(self, **args)
 
     
-    def seg(self, sentence, remove_stopwords=False, tags_filter=None):
+    def seg(self, sentence, remove_stopwords=True, tags_filter=None):
         ''' segment sentence to words
             
             Input:
@@ -458,6 +458,48 @@ class Tokenizer_Simple(Tokenizer_Base):
         return {'tokens': tokens}
 
 
+class Tokenizer_BERT(Tokenizer_Base):
+    '''
+        use BERT tokenizer, with wordpiece
+
+        Input:
+            - pretrained_model_name: vocab file location or one of the supported model name:
+                - bert-base-uncased-vocab
+                - bert-large-uncased-vocab
+                - bert-base-cased-vocab
+                - bert-base-multilingual-vocab
+                - bert-base-chinese-vocab
+            - do_lower_case: default True
+    '''
+    def __init__(self, pretrained_model_name, do_lower_case=True, **args):
+        from pytorch_pretrained_bert import BertTokenizer 
+        Tokenizer_Base.__init__(self, **args)
+        self.tokenizer = BertTokenizer.from_pretrained(pretrained_model_name, do_lower_case)
+
+    def seg(self, sentence, remove_stopwords = True):
+        ''' segment sentence to words
+            
+            Input:
+                - sentence: string
+                - remove_stopwords: bool, default is True
+
+            Output: dictionary with keys:
+                - tokens: list of tokens
+        '''
+        tokens =  self.tokenizer.tokenize(sentence)
+        if remove_stopwords:
+            tokens = [t for t in tokens if not t in self.stopwords]
+        return {'tokens':tokens}
+   
+    @property
+    def vocab(self):
+        '''
+            return a nlptools.text.vocab instance, converted from BERT pretrained model
+        '''
+        from .vocab import Vocab
+        return Vocab.load_from_dict(self.tokenizer.vocab)
+
+
 # character level segment
 class Tokenizer_Char(Tokenizer_Base):
     '''
@@ -511,6 +553,7 @@ class Tokenizer(object):
                       'ltp':Tokenizer_LTP, \
                       'mecab': Tokenizer_Mecab, \
                       'simple':Tokenizer_Simple,\
+                      'bert': Tokenizer_BERT, \
                       'char': Tokenizer_Char}
         if tokenizer in tokenizers:
             return tokenizers[tokenizer](**args)
