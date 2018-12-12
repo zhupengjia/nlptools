@@ -463,7 +463,7 @@ class Tokenizer_BERT(Tokenizer_Base):
         use BERT tokenizer, with wordpiece
 
         Input:
-            - pretrained_model_name: vocab file location or one of the supported model name:
+            - bert_model_name: vocab file location or one of the supported model name:
                 - bert-base-uncased-vocab
                 - bert-large-uncased-vocab
                 - bert-base-cased-vocab
@@ -471,10 +471,10 @@ class Tokenizer_BERT(Tokenizer_Base):
                 - bert-base-chinese-vocab
             - do_lower_case: default True
     '''
-    def __init__(self, pretrained_model_name, do_lower_case=True, **args):
+    def __init__(self, bert_model_name, do_lower_case=True, **args):
         from pytorch_pretrained_bert import BertTokenizer 
         Tokenizer_Base.__init__(self, **args)
-        self.tokenizer = BertTokenizer.from_pretrained(pretrained_model_name, do_lower_case)
+        self.tokenizer = BertTokenizer.from_pretrained(bert_model_name, do_lower_case)
 
     def seg(self, sentence, remove_stopwords = True):
         ''' segment sentence to words

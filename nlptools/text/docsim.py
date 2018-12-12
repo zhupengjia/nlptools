@@ -51,7 +51,7 @@ class DocSim(object):
         def doc2sparse(doc):
             v = np.zeros(len_words, 'float32')
             for d in doc:
-                v[word2id[d]] += 1./self.vocab._id2tf[d]
+                v[word2id[d]] += 1./max(self.vocab._id2tf[d], 1)
                 #v[word2id[d]] += 1.
             return v/v.sum()
         d1, d2 = doc2sparse(sentence_id1), doc2sparse(sentence_id2)
@@ -83,7 +83,7 @@ class DocSim(object):
         def doc2sparse(doc):
             v = np.zeros(len_words, 'float32')
             for d in doc:
-                v[word2id[d]] += 1./self.vocab._id2tf[d]
+                v[word2id[d]] += 1./max(self.vocab._id2tf[d], 1)
                 #v[word2id[d]] += 1.
             return v/v.sum()
         d1, d2 = doc2sparse(sentence_id1), doc2sparse(sentence_id2)
@@ -110,13 +110,12 @@ class DocSim(object):
         word2id = dict(zip(words, range(len_words)))
         #print word2id
         def doc2sparse(doc):
-            v = np.zeros(len_words, 'float32')
+            v = np.zeros(len_words, 'float')
             for d in doc:
-                v[word2id[d]] += 1./self.vocab._id2tf[d]
+                v[word2id[d]] += 1./max(self.vocab._id2tf[d], 1)
                 #v[word2id[d]] += 1.
             return v/v.sum()
         d1, d2 = doc2sparse(sentence_id1), doc2sparse(sentence_id2)
-
         new_weights_dj = distance_matrix[:len(d1), d2>0].min(axis=1)
         new_weights_di = distance_matrix[:len(d2), d1>0].min(axis=1)
 
