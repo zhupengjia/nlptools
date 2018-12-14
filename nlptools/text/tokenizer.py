@@ -464,17 +464,17 @@ class Tokenizer_BERT(Tokenizer_Base):
 
         Input:
             - bert_model_name: vocab file location or one of the supported model name:
-                - bert-base-uncased-vocab
-                - bert-large-uncased-vocab
-                - bert-base-cased-vocab
-                - bert-base-multilingual-vocab
-                - bert-base-chinese-vocab
+                - bert-base-uncased
+                - bert-large-uncased
+                - bert-base-cased
+                - bert-base-multilingual
+                - bert-base-chinese
             - do_lower_case: default True
     '''
     def __init__(self, bert_model_name, do_lower_case=True, **args):
         from pytorch_pretrained_bert import BertTokenizer 
         Tokenizer_Base.__init__(self, **args)
-        self.tokenizer = BertTokenizer.from_pretrained(bert_model_name, do_lower_case)
+        self.tokenizer = BertTokenizer.from_pretrained(pretrained_model_name=bert_model_name, do_lower_case=do_lower_case)
 
     def seg(self, sentence, remove_stopwords = True):
         ''' segment sentence to words
@@ -497,7 +497,10 @@ class Tokenizer_BERT(Tokenizer_Base):
             return a nlptools.text.vocab instance, converted from BERT pretrained model
         '''
         from .vocab import Vocab
-        return Vocab.load_from_dict(self.tokenizer.vocab)
+        vocab = Vocab.load_from_dict(self.tokenizer.vocab)
+        vocab._word_spec = [vocab.PAD]
+        vocab._id_spec = [vocab.PAD_ID]
+        return vocab
 
 
 # character level segment

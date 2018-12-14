@@ -30,7 +30,7 @@ class Vocab(object):
             - __len__: get vocab size
             - __contains__: checkout if word or id in vocab
     '''
-    PAD, BOS, EOS, UNK = '<pad>', '<bos>', '<eos>', '<unk>'
+    PAD, BOS, EOS, UNK = '[PAD]', '[BOS]', '[EOS]', '[UNK]'
     PAD_ID, BOS_ID, EOS_ID, UNK_ID = 0, 1, 2, 3
 
     def __init__(self, cached_vocab='', vocab_size=1000000, outofvocab='unk', embedding=None, special_char=True):
