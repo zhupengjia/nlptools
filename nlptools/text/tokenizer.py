@@ -498,8 +498,10 @@ class Tokenizer_BERT(Tokenizer_Base):
         '''
         from .vocab import Vocab
         vocab = Vocab.load_from_dict(self.tokenizer.vocab)
-        vocab._word_spec = [vocab.PAD]
-        vocab._id_spec = [vocab.PAD_ID]
+        vocab.UNK, vocab.CLS, vocab.SEP, vocab.MASK = '[UNK]', '[CLS]', '[SEP]', '[MASK]'
+        vocab.UNK_ID, vocab.CLS_ID, vocab.SEP_ID, vocab.MASK_ID = 100, 101, 102, 103
+        vocab._word_spec = [vocab.PAD, vocab.UNK, vocab.CLS, vocab.SEP, vocab.MASK]
+        vocab._id_spec = [vocab.PAD_ID, vocab.UNK_ID, vocab.CLS_ID, vocab.SEP_ID, vocab.MASK_ID]
         return vocab
 
 
