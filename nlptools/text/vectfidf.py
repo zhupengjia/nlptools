@@ -32,7 +32,7 @@ class VecTFIDF(object):
         Modified TF-IDF algorithm with wordvector
 
         Input:
-            - vocab: instance of text.vocab, default is None
+            - vocab: instance of .vocab, default is None
             - freqwords_path: path of freqword list, will force set the count of each word in the list to a large number
             - cached_index: path of cached index file
     '''
@@ -51,9 +51,12 @@ class VecTFIDF(object):
         if os.path.exists(freqwords_path):
             print('load freqword path', freqwords_path)
             with open(freqwords_path) as f:
-                for w in f.readlines():
-                    for i in self.vocab.sentence2id(w.strip(), ngrams=1, useBE=False, update=True):
-                        self.freqwords[i] = 0
+                for l in f.readlines():
+                    for w in re.split("\s", l):
+                        w = w.strip()
+                        if len(w) < 1: continue
+                        wordid = self.vocab.word2id(w)
+                        self.freqwords[wordid] = 0
 
 
     def n_sim(self, word_ids, sentence_ids):
