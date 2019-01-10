@@ -19,7 +19,7 @@ class NER_Base(object):
             - stopwords_path: the path of stopwords, default is None
             - ner_name_replace: dictionary, replace the entity name to the mapped name
     '''
-    def __init__(self, keywords = None, ner = None, regex = None, **args):
+    def __init__(self, keywords = None, ner = None, regex = None):
         self.custom_regex = {}
         self.keywords_regex = {}
         self.keywords_index = None
@@ -246,8 +246,8 @@ class NER_CoreNLP(NER_Base, Tokenizer_CoreNLP):
         Input:
             - please check the needed parameters from NER_Base and text.Tokenizer_CoreNLP
     '''
-    def __init__(self, **args):
-        NER_Base.__init__(self, **args)
+    def __init__(self, keywords = None, ner = None, regex = None, **args):
+        NER_Base.__init__(self, keywords, ner, regex)
         Tokenizer_CoreNLP.__init__(self, **args)
     
     def train(self, entities, data, n_iter=50):
@@ -264,8 +264,8 @@ class NER_Spacy(NER_Base, Tokenizer_Spacy):
         Input:
             -please check the needed parameters from NER_Base and text.Tokenizer_Spacy
     '''
-    def __init__(self, **args):
-        NER_Base.__init__(self, **args)
+    def __init__(self, keywords = None, ner = None, regex = None, **args):
+        NER_Base.__init__(self, keywords, ner, regex)
         Tokenizer_Spacy.__init__(self, **args)
         prefix_re = re.compile(r'''^[\‘\[\{\<\(\"\']''')
         suffix_re = re.compile(r'''[\]\}\>\)\"\'\,\.\!\?]$''')
@@ -316,8 +316,8 @@ class NER_LTP(NER_Base, Tokenizer_LTP):
         Input:
             - please check the needed parameters from NER_Base and text.Tokenizer_LTP
     '''
-    def __init__(self, **args):
-        NER_Base.__init__(self, **args)
+    def __init__(self, keywords = None, ner = None, regex = None, **args):
+        NER_Base.__init__(self, keywords, ner, regex)
         Tokenizer_LTP.__init__(self, **args)
 
     
@@ -403,8 +403,8 @@ class NER_Rest(NER_Base, Tokenizer_Rest):
         Input:
             - please check the needed parameters from NER_Base and text.Tokenizer_Rest
     '''
-    def __init__(self, **args):
-        NER_Base.__init__(self, **args)
+    def __init__(self, keywords = None, ner = None, regex = None, **args):
+        NER_Base.__init__(self, keywords, ner, regex)
         Tokenizer_Rest.__init__(self, **args)
     
     def train(self, entities, data, n_iter=50):
