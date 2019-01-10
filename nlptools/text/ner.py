@@ -71,7 +71,7 @@ class NER_Base(object):
             self.keywords_regex[k] = '|'.join(keyword)
 
     
-    def build_keywords_index(self, **args):
+    def build_keywords_index(self, **annoyargs):
         '''
             Build the keywords index via annoy search(word vector search). Any available parameters please check text.annoysearch
 
@@ -80,7 +80,7 @@ class NER_Base(object):
         '''
         from .annoysearch import AnnoySearch
         keywords = self.__read_keywords()
-        self.keywords_index = AnnoySearch(**args)
+        self.keywords_index = AnnoySearch(**annoyargs)
         self.keywords_kw2e = {}
         for k in keywords:
             for kw in keywords[k]:
