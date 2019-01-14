@@ -455,7 +455,7 @@ class Tokenizer_Simple(Tokenizer_Base):
         tokens = [s.lower() for s in self.re_punc.split(sentence) if len(s)>0]
         if remove_stopwords:
             tokens = [s for s in tokens if s not in self.stopwords]
-        return {'tokens': tokens}
+        return {'tokens': tokens, 'entities':[]}
 
 
 class Tokenizer_BERT(Tokenizer_Base):
@@ -489,7 +489,7 @@ class Tokenizer_BERT(Tokenizer_Base):
         tokens =  self.tokenizer.tokenize(sentence)
         if remove_stopwords:
             tokens = [t for t in tokens if not t in self.stopwords]
-        return {'tokens':tokens}
+        return {'tokens':tokens, 'entities':[]}
    
     @property
     def vocab(self):
@@ -533,7 +533,7 @@ class Tokenizer_Char(Tokenizer_Base):
             if remove_stopwords and s in self.stopwords:
                 continue
             tokens.append(s)
-        return {'tokens': tokens}
+        return {'tokens': tokens, 'entities': []}
 
 
 class Tokenizer(object):

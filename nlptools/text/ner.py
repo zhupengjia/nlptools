@@ -257,6 +257,24 @@ class NER_CoreNLP(NER_Base, Tokenizer_CoreNLP):
         raise('The function of CoreNLP ner training is not finished')
 
 
+class NER_BERT(NER_Base, Tokenizer_BERT):
+    '''
+        The NER part uses BERT. The class inherit from NER_Base and text.Tokenizer_BERT
+        
+        Input:
+            - please check the needed parameters from NER_Base and text.Tokenizer_BERT
+    '''
+    def __init__(self, keywords = None, ner = None, regex = None, **args):
+        NER_Base.__init__(self, keywords, ner, regex)
+        Tokenizer_BERT.__init__(self, **args)
+    
+    def train(self, entities, data, n_iter=50):
+        '''
+            Train the BERT user defined model, not implemented
+        '''
+        raise('The function of BERT ner training is not supported')
+
+
 class NER_Spacy(NER_Base, Tokenizer_Spacy):
     '''
         The NER part uses Spacy. The class inherit from NER_Base and Spacy
@@ -428,6 +446,7 @@ class NER(object):
     def __new__(cls, tokenizer='spacy', **args):
         tokenizers = {'corenlp':NER_CoreNLP, \
                       'spacy':NER_Spacy, \
+                      'bert': NER_BERT, \
                       'ltp':NER_LTP}
 
         if tokenizer in tokenizers:
