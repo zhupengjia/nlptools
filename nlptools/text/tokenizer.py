@@ -122,14 +122,44 @@ class Tokenizer_Spacy(Tokenizer_Base):
         Spacy wrapper, Please check `Spacy <https://spacy.io/>`_ for more details
 
         Input:
-            - spacy_model: model name or model path used for spacy.load, default is 'en'
+            - spacy_model: model name, default is "en"
+            - spacy_pipes: list like ["tagger", "parser", "ner"], default is None
+            - model_path: string, path of spacy model, default is None
+            - custom_pips: list of custom pipline functions, default is None
             - stopwords_path: the path of stopwords, default is None
             - ner_name_replace: dictionary, replace the entity name to the mapped name. Default is None
     '''
-    def __init__(self, spacy_model='en', **args):
-        import spacy
+    def __init__(self, spacy_model='en', spacy_pipes=None, model_path=None, **args):
+        from spacy.util import get_lang_class, get_data_path
         super().__init__(**args)
-        self.nlp = spacy.load(spacy_model)
+        nlp_cls = get_lang_class(spacy_model)
+        self.nlp = nlp_cls()
+        if spacy_pipes is not None:
+            for name in spacy_pipes:
+                component = self.nlp.create_pipe(name)
+                self.nlp.add_pipe(component)
+            if model_path is None:
+                model_path = os.path.join(get_data_path(), "en/en_core_web_sm-2.0.0")
+            self.nlp.from_disk(model_path)
+
+
+    def add_pipe(self, custom_pipe, **args):
+        '''
+            add custom pipe
+
+            Input:
+                - custom_pipe: pip function
+                - **args: any argumets for spacy add_pipe
+        '''
+        self.nlp.add_pipe(custom_pipe, **args)
+
+
+    def entities(self):
+        entities = []
+        for ent in self.nlp(sentence).ents:
+            entities.append((ent.text, ent.label_))
+        return entities
+
 
     def seg(self, sentence, remove_stopwords = True, tags_filter = None, entities_filter = None, pos_filter = None, dep_filter=None):
         ''' segment sentence to words
@@ -150,7 +180,7 @@ class Tokenizer_Spacy(Tokenizer_Base):
                 - pos: list of simple part-of-speech tags
                 - dep: list of syntactic dependency
         '''
-        txts, tokens, tags, entities, pos, dep= [], [], [], [], [], []
+        infos = {"tokens":[], "tags":[], "texts":[]. "entities":[], "pos":[], "dep":[]}
         for token in self.nlp(sentence):
             if remove_stopwords and token.text in self.stopwords:
                 continue
@@ -169,12 +199,13 @@ class Tokenizer_Spacy(Tokenizer_Base):
                 continue
             txt = token.text.strip()
             if len(txt) < 1 : continue
-            txts.append(txt)
-            tokens.append(token.lemma_)
-            tags.append(token.tag_)
-            entities.append(entity)
-            pos.append(token.pos_)
-            dep.append(token.dep_)
+            infos["texts"].append(txt)
+            infos["tokens"].append(token.lemma_)
+            infos["tags"].append(token.tag_)
+            infos["entities"].append(entity)
+            infos["pos"].append(token.pos_)
+            infos["dep"].append(token.dep_)
+            
             
         return {"tokens":tokens, "tags":tags, "texts":txts, "entities":entities, 'pos':pos, 'dep':dep}
    

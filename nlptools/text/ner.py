@@ -239,42 +239,6 @@ class NER_Base(object):
             return entities
 
 
-class NER_CoreNLP(NER_Base, Tokenizer_CoreNLP):
-    '''
-        The NER part uses stanford CoreNLP. The class inherit from NER_Base and text.Tokenizer_CoreNLP
-        
-        Input:
-            - please check the needed parameters from NER_Base and text.Tokenizer_CoreNLP
-    '''
-    def __init__(self, keywords = None, ner = None, regex = None, **args):
-        NER_Base.__init__(self, keywords, ner, regex)
-        Tokenizer_CoreNLP.__init__(self, **args)
-    
-    def train(self, entities, data, n_iter=50):
-        '''
-            Train the corenlp user defined model, not implemented
-        '''
-        raise('The function of CoreNLP ner training is not finished')
-
-
-class NER_BERT(NER_Base, Tokenizer_BERT):
-    '''
-        The NER part uses BERT. The class inherit from NER_Base and text.Tokenizer_BERT
-        
-        Input:
-            - please check the needed parameters from NER_Base and text.Tokenizer_BERT
-    '''
-    def __init__(self, keywords = None, ner = None, regex = None, **args):
-        NER_Base.__init__(self, keywords, ner, regex)
-        Tokenizer_BERT.__init__(self, **args)
-    
-    def train(self, entities, data, n_iter=50):
-        '''
-            Train the BERT user defined model, not implemented
-        '''
-        raise('The function of BERT ner training is not supported')
-
-
 class NER_Spacy(NER_Base, Tokenizer_Spacy):
     '''
         The NER part uses Spacy. The class inherit from NER_Base and Spacy
@@ -414,45 +378,19 @@ class NER_LTP(NER_Base, Tokenizer_LTP):
         self.ner_ins[-1].load(new_ner_file)
 
 
-class NER_Rest(NER_Base, Tokenizer_Rest):
-    '''
-        The NER part uses restapi. The class inherit from NER_Base and text.Tokenizer_Rest
-        
-        Input:
-            - please check the needed parameters from NER_Base and text.Tokenizer_Rest
-    '''
-    def __init__(self, keywords = None, ner = None, regex = None, **args):
-        NER_Base.__init__(self, keywords, ner, regex)
-        Tokenizer_Rest.__init__(self, **args)
-    
-    def train(self, entities, data, n_iter=50):
-        '''
-            Training the user defined NER model, not implemented.
-        '''
-        raise('training via NER Rest api is not supported')
-
-
 class NER(object):
     '''
         Entity recognition tool, integrate with several tools 
 
         Input:
             - tokenizer: string, choose for NER class:
-                1. *corenlp*: will use NER_CoreNLP
-                2. *spacy*: will use NER_Spacy
-                3. *ltp*: will use NER_LTP
-                4. *http://**: will use NER_Rest
+                1. *spacy*: will use NER_Spacy
     '''
     def __new__(cls, tokenizer='spacy', **args):
-        tokenizers = {'corenlp':NER_CoreNLP, \
-                      'spacy':NER_Spacy, \
-                      'bert': NER_BERT, \
-                      'ltp':NER_LTP}
+        tokenizers = {'spacy':NER_Spacy}
 
         if tokenizer in tokenizers:
             return tokenizers[tokenizer](**args)
-        elif 'http' in tokenizer:
-            return NER_Rest(**args) 
         raise('Error! No available tokenizer founded!!!')
 
 

@@ -1,69 +1,72 @@
-#!/usr/bin/env python3
-import sys
-sys.path.append('..')
-from nlptools.zoo.tagging.bilstm_crf import BiLSTM_CRF, prepare_sequence
-import torch
-from torch import optim
+#!/usr/bin/env python
+import os, re
+from spacy.util import get_lang_class, get_data_path
+from spacy.matcher import PhraseMatcher
+from spacy.tokens import Span
 
+nlp = get_lang_class("en")()
 
-START_TAG = "<START>"
-STOP_TAG = "<STOP>"
-EMBEDDING_DIM = 5
-HIDDEN_DIM = 4
+config = {
+    "ner":[], 
+    "keywords":{
+        "CUISINE": ["british", "cantonese"],
+        "ANIMAL": ['tree kangaroo', 'giant sea spider', "cat", "dog"]
+        },
+    "regex":{ 
+        "REST_INFO": 'resto_\w*'}
+    }
 
-# Make up some training data
-training_data = [ (
-    "the wall street journal reported today that apple corporation made money".split(),
-    "B I I I O O O B I O O".split()
-), (
-    "georgia tech is a university in georgia".split(),
-    "B I O O O O B".split()
-) ]
+sentence = "resto_rome_chep. Instead could it be with british food? This is a text about Barack Obama and a tree kangaroo."
 
-word_to_ix = {}
-for sentence, tags in training_data:
-    for word in sentence:
-        if word not in word_to_ix:
-            word_to_ix[word] = len(word_to_ix)
-            
-tag_to_ix = { "B": 0, "I": 1, "O": 2, START_TAG: 3, STOP_TAG: 4 }
+class RegexMatcher:
+    name = "regex_matcher"
 
-
-model = BiLSTM_CRF(len(word_to_ix), tag_to_ix, EMBEDDING_DIM, HIDDEN_DIM)
-optimizer = optim.SGD(model.parameters(), lr=0.01, weight_decay=1e-4)
-
-
-# Check predictions before training
-precheck_sent = prepare_sequence(training_data[0][0], word_to_ix)
-precheck_tags = torch.LongTensor([ tag_to_ix[t] for t in training_data[0][1] ])
-print(model(precheck_sent))
-
-
-
-# Make sure prepare_sequence from earlier in the LSTM section is loaded
-for epoch in range(300): # again, normally you would NOT do 300 epochs, it is toy data
-    for sentence, tags in training_data:
-        # Step 1. Remember that Pytorch accumulates gradients.  We need to clear them out
-        # before each instance
-        model.zero_grad()
+    def __init__(self, nlp):
+        self.patterns = {}
+        for k in config["regex"]:
+            self.patterns[k] = re.compile(config["regex"][k])
     
-        # Step 2. Get our inputs ready for the network, that is, turn them into Variables
-        # of word indices.
-        sentence_in = prepare_sequence(sentence, word_to_ix)
-        targets = torch.LongTensor([ tag_to_ix[t] for t in tags ])
+    def __call__(self, doc):
+        for k in self.patterns:
+            for match in re.finditer(self.patterns[k], doc.text):
+                start, end = match.span()
+                span = doc.char_span(start, end, label=k)
+                doc.ents = list(doc.ents) + [span]
+        return doc
+
+
+
+class KeywordsMatcher:
+    name = "keywords_matcher"
     
-        # Step 3. Run our forward pass.
-        neg_log_likelihood = model.neg_log_likelihood(sentence_in, targets)
+    def __init__(self, nlp):
+        self.matcher = PhraseMatcher(nlp.vocab)
+        patterns = {}
+        for k in config["keywords"]:
+            patterns[k] = [nlp(text) for text in config["keywords"][k]]
+            self.matcher.add(k, None, *patterns[k])
     
-        # Step 4. Compute the loss, gradients, and update the parameters by calling
-        # optimizer.step()
-        neg_log_likelihood.backward()
-        optimizer.step()
-
-# Check predictions after training
-precheck_sent = prepare_sequence(training_data[0][0], word_to_ix)
-print(model(precheck_sent))
-# We got it!
+    def __call__(self, doc):
+        matches = self.matcher(doc)
+        for match_id, start, end in matches:
+            span = Span(doc, start, end, label=match_id)
+            doc.ents = list(doc.ents) + [span]
+        return doc
 
 
+for name in ["ner"]:
+    component = nlp.create_pipe(name)
+    nlp.add_pipe(component)
+
+data_path = os.path.join(get_data_path(), "en/en_core_web_sm-2.0.0")
+nlp.from_disk(data_path)
+
+entity_matcher = KeywordsMatcher(nlp)
+regex_matcher = RegexMatcher(nlp)
+nlp.add_pipe(regex_matcher, after="ner")
+nlp.add_pipe(entity_matcher, after="regex_matcher")
+
+
+for ent in nlp(sentence).ents:
+    print(ent.label_, ent.text)
 
