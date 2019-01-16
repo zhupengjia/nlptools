@@ -16,7 +16,7 @@ class Tokenizer_Base(object):
     '''
     def __init__(self, stopwords_path = None, ner_name_replace = None):
         self.stopwords = {}
-        self.ner_name_replace = ner_name_replace
+        self.ner_name_replace = {} if ner_name_replace is None else ner_name_replace
         self.__loadStopwords(stopwords_path)
 
 
@@ -103,7 +103,7 @@ class Tokenizer_CoreNLP(Tokenizer_Base):
                     continue
                 if pos_filter is not None and token['pos'] not in pos_filter:
                     continue
-                if self.ner_name_replace is not None and token['ner'] in self.ner_name_replace:
+                if token['ner'] in self.ner_name_replace:
                     token['ner'] = self.ner_name_replace[token['ner']]
                 if entities_filter is not None and token['ner'] not in entities_filter:
                     continue
@@ -154,10 +154,13 @@ class Tokenizer_Spacy(Tokenizer_Base):
         self.nlp.add_pipe(custom_pipe, **args)
 
 
-    def entities(self):
+    def entities(self, sentence):
         entities = []
         for ent in self.nlp(sentence).ents:
-            entities.append((ent.text, ent.label_))
+            label = ent.label_
+            if label in self.ner_name_replace:
+                label = self.ner_name_replace[label]
+            entities.append((label_, ent.text))
         return entities
 
 
@@ -180,7 +183,7 @@ class Tokenizer_Spacy(Tokenizer_Base):
                 - pos: list of simple part-of-speech tags
                 - dep: list of syntactic dependency
         '''
-        infos = {"tokens":[], "tags":[], "texts":[]. "entities":[], "pos":[], "dep":[]}
+        infos = {"tokens":[], "tags":[], "texts":[], "entities":[], "pos":[], "dep":[]}
         for token in self.nlp(sentence):
             if remove_stopwords and token.text in self.stopwords:
                 continue
@@ -191,7 +194,7 @@ class Tokenizer_Spacy(Tokenizer_Base):
             if dep_filter is not None and token.dep_ not in dep_filter:
                 continue
             entity = token.ent_type_
-            if self.ner_name_replace is not None and entity in self.ner_name_replace:
+            if entity in self.ner_name_replace:
                 entitiy = self.ner_name_replace[entity]
             if entities_filter is not None and entity not in entities_filter:
                 continue
@@ -328,7 +331,7 @@ class Tokenizer_LTP(Tokenizer_Base):
                 entity_loc, entity = entity[0], entity[1]
             else:
                 entity_loc, entity = 'O', 'O'
-            if self.ner_name_replace is not None and entity in self.ner_name_replace:
+            if entity in self.ner_name_replace:
                 entity = self.ner_name_replace[entity]
             if tags_filter is not None and postags_[i] not in tags_filter:
                 continue
@@ -449,7 +452,7 @@ class Tokenizer_Rest(Tokenizer_Base):
                 continue
             if 'entities' in data:
                 entity = data['entities'][i]
-                if self.ner_name_replace is not None and data['entities'][i] in self.ner_name_replace:
+                if data['entities'][i] in self.ner_name_replace:
                     data['entities'][i] = self.ner_name_replace[data['entities'][i]]
                 if entities_filter is not None and 'entities' in data and data['entities'][i] not in entities_filter:
                     continue
