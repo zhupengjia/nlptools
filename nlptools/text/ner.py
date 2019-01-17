@@ -103,14 +103,17 @@ class NER_Base(object):
         return keywords_rebase
 
 
-    def get(self, sentence):
+    def get(self, sentence, return_dict=False):
         '''
             get entities and marked sentence
 
             Input:
                 - sentence: string
+                - return_dict: bool, True will return like {entityname:entity,}, False will return like [(entityname:entity), ...], default is False
         '''
         entities = self.entities(sentence)
+        if return_dict:
+            entities = {ename:e for ename, e in entities}
         for e in entities:
             sentence = re.sub(e[1], "$"+e[0], sentence)
         return entities, sentence
