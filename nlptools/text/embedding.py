@@ -49,10 +49,7 @@ class Embedding_Base(object):
 
 
     def __len__(self):
-        if self.additional_dim:
-            return self.dim+1
-        else:
-            return self.dim
+        return self.dim
 
 
     def __get_cached_vec(self):

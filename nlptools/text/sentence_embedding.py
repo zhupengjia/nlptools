@@ -23,7 +23,7 @@ class Sentence_Embedding:
         self.device = torch.device(device)
         self.encoder = BertModel.from_pretrained(bert_model_name).to(self.device)
 
-
+    @property
     def dim(self):
         '''
             dimention of sentence embedding
