@@ -18,7 +18,7 @@ class Sentence_Embedding:
         self.tokenizer = Tokenizer_BERT(bert_model_name=bert_model_name, do_lower_case=do_lower_case)
         self.vocab = self.tokenizer.vocab
         self.max_seq_len = max_seq_len
-        if not torch.cuda.is_available():
+        if not torch.cuda.is_available() or not "cuda" in device:
             device = 'cpu'
         self.device = torch.device(device)
         self.encoder = BertModel.from_pretrained(bert_model_name).to(self.device)
