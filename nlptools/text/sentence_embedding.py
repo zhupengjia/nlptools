@@ -3,6 +3,10 @@ from pytorch_pretrained_bert.modeling import BertModel
 from .tokenizer import Tokenizer_BERT
 import torch, numpy, math
 
+'''
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
+'''
+
 class Sentence_Embedding:
     '''
         Extract sentence embedding from bert
@@ -22,6 +26,7 @@ class Sentence_Embedding:
             device = 'cpu'
         self.device = torch.device(device)
         self.encoder = BertModel.from_pretrained(bert_model_name).to(self.device)
+        self.encoder.eval()
 
     @property
     def dim(self):
@@ -50,6 +55,8 @@ class Sentence_Embedding:
             sentence_ids = numpy.zeros((Nsentence, self.max_seq_len), 'int')
             attention_mask = numpy.zeros((Nsentence, self.max_seq_len), 'int')
             for j in range(starti, endi):
+                if not isinstance(sentences[j], str):
+                    continue
                 tokens = self.tokenizer(sentences[j])
                 token_ids = numpy.concatenate(([self.vocab.CLS_ID],self.vocab.words2id(tokens),[self.vocab.SEP_ID]))
                 seq_len = min(self.max_seq_len, len(token_ids)) 
