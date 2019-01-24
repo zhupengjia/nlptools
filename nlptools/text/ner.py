@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 import os, numpy, re, uuid, shutil, glob, sys
+from collections import defaultdict
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Span
 from .tokenizer import *
@@ -112,10 +113,13 @@ class NER_Base(object):
                 - return_dict: bool, True will return like {entityname:entity,}, False will return like [(entityname:entity), ...], default is False
         '''
         entities = self.entities(sentence)
+        for en, ev in entities:
+            sentence = re.sub(ev, "$"+en, sentence)
         if return_dict:
-            entities = {ename:e for ename, e in entities}
-        for e in entities:
-            sentence = re.sub(e[1], "$"+e[0], sentence)
+            entities_dict = defaultdict(list)
+            for en, ev in entities:
+                entities_dict[en].append(ev) 
+            entities = entities_dict
         return entities, sentence
 
 
