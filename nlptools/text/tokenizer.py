@@ -508,7 +508,7 @@ class Tokenizer_BERT(Tokenizer_Base):
     def __init__(self, bert_model_name, do_lower_case=True, **args):
         from pytorch_pretrained_bert import BertTokenizer 
         Tokenizer_Base.__init__(self, **args)
-        self.tokenizer = BertTokenizer.from_pretrained(pretrained_model_name=bert_model_name, do_lower_case=do_lower_case)
+        self.tokenizer = BertTokenizer.from_pretrained(bert_model_name, do_lower_case=do_lower_case)
 
     def seg(self, sentence, remove_stopwords = True):
         ''' segment sentence to words
