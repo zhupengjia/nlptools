@@ -539,6 +539,43 @@ class Tokenizer_BERT(Tokenizer_Base):
         return vocab
 
 
+class Tokenizer_GPT2(Tokenizer_Base):
+    '''
+        use GPT2 tokenizer, with byte-level BPE
+
+        Input:
+            - model_name: vocab file location or one of the supported model name:
+    '''
+    def __init__(self, model_name, **args):
+        from pytorch_pretrained_bert import GPT2LMHeadModel, GPT2Tokenizer
+        Tokenizer_Base.__init__(self, **args)
+        self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+
+    def seg(self, sentence, remove_stopwords = True):
+        ''' segment sentence to words
+            
+            Input:
+                - sentence: string
+                - remove_stopwords: bool, default is True
+
+            Output: dictionary with keys:
+                - tokens: list of tokens
+        '''
+        tokens =  self.tokenizer.encode(sentence)
+        if remove_stopwords:
+            tokens = [t for t in tokens if not t in self.stopwords]
+        return {'tokens':tokens, 'entities':[]}
+
+    @property
+    def vocab(self):
+        '''
+            return a nlptools.text.vocab instance, converted from BERT pretrained model
+        '''
+        from .vocab import Vocab
+        vocab = Vocab.load_from_dict(self.tokenizer.encoder)
+        return vocab
+
+
 # character level segment
 class Tokenizer_Char(Tokenizer_Base):
     '''
@@ -593,6 +630,7 @@ class Tokenizer(object):
                       'mecab': Tokenizer_Mecab, \
                       'simple':Tokenizer_Simple,\
                       'bert': Tokenizer_BERT, \
+                      'gpt2': Tokenizer_GPT2, \
                       'char': Tokenizer_Char}
         if tokenizer in tokenizers:
             return tokenizers[tokenizer](**args)
