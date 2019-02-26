@@ -6,13 +6,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from pytorch_pretrained_bert.modeling import BertLayerNorm, BertSelfAttention
+from pytorch_pretrained_bert.modeling import BertLayerNorm
+from .multihead_attention import MultiheadAttention
+
 
 class TransformerDecoder(nn.Module):
     """Transformer decoder."""
 
     def __init__(self, bert_embedding, num_hidden_layers=6, num_attention_heads=8, intermediate_size=1024, dropout=0.1):
-        super().__init__(vocab)
+        super().__init__()
         self.dropout = dropout
         
         self.embedding = bert_embedding
@@ -22,30 +24,31 @@ class TransformerDecoder(nn.Module):
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
-            TransformerDecoderLayer(embeding_dim, num_attention_heads, intermediate_size, dropout)
+            TransformerDecoderLayer(embedding_dim, num_attention_heads, intermediate_size, dropout)
             for i in range(num_hidden_layers)
         ])
         
-        self.fc3 = nn.Linear(embeddind_dim, num_embeddings)
+        self.fc3 = nn.Linear(embedding_dim, num_embeddings)
         self.fc3.weight = self.embedding.word_embeddings.weight
 
         self.layer_norm = BertLayerNorm(embedding_dim, eps=1e-12)
 
-    def forward(self, prev_output_tokens, encoder_out):
+    def forward(self, prev_output_tokens, encoder_out, encoder_padding_mask):
         # embed tokens and positions
-        x = self.embed_scale * self.embed_tokens(prev_output_tokens)
-
-        x = F.dropout(x, p=self.dropout, training=self.training)
+        x = self.embedding(prev_output_tokens)
+        
 
         # B x T x C -> T x B x C
         x = x.transpose(0, 1)
+        encoder_out = encoder_out.transpose(0, 1)
+        encoder_padding_mask = encoder_padding_mask.byte()
 
         # decoder layers
         for layer in self.layers:
             x, attn = layer(
                 x,
-                encoder_out['encoder_out'],
-                encoder_out['encoder_padding_mask']
+                encoder_out,
+                encoder_padding_mask
             )
 
         # T x B x C -> B x T x C
@@ -64,7 +67,7 @@ class TransformerDecoder(nn.Module):
 class TransformerDecoderLayer(nn.Module):
     """Decoder layer block."""
 
-    def __init__(self, embeding_dim, num_attention_heads, intermediate_size, dropout):
+    def __init__(self, embedding_dim, num_attention_heads, intermediate_size, dropout):
         super().__init__()
         self.dropout = dropout
         self.self_attn = MultiheadAttention(
@@ -73,7 +76,7 @@ class TransformerDecoderLayer(nn.Module):
         )
 
         self.encoder_attn = MultiheadAttention(
-            embeding_dim, num_attention_heads,
+            embedding_dim, num_attention_heads,
             dropout=self.dropout,
         )
         self.fc1 = nn.Linear(embedding_dim, intermediate_size)
