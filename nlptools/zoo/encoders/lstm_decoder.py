@@ -40,47 +40,46 @@ class AttentionLayer(nn.Module):
 class LSTMDecoder(nn.Module):
     """LSTM decoder."""
     def __init__(
-        self, embedding, encoder_output_units=512, out_embed_dim=512, hidden_size=512, 
+        self, embedding, encoder_output_units=512, out_embed_dim=None, 
         num_layers=1, attention=True, dropout=0.1, share_embed=False):
         super().__init__()
         self.dropout = dropout
-        self.hidden_size = hidden_size
+        self.encoder_output_units = encoder_output_units
+        self.hidden_size = encoder_output_units
+        self.dropout = nn.Dropout(dropout)
 
         self.embedding = embedding
         num_embeddings = self.embedding.num_embeddings
         embed_dim = self.embedding.embedding_dim
-        
-
-        self.encoder_output_units = encoder_output_units
-        assert encoder_output_units == hidden_size, \
-            'encoder_output_units ({}) != hidden_size ({})'.format(encoder_output_units, hidden_size)
-        # TODO another Linear layer if not equal
+        if out_embed_dim is None: out_embed_dim = embed_dim 
 
         self.layers = nn.ModuleList([
             nn.LSTMCell(
-                input_size=encoder_output_units + embed_dim if layer == 0 else hidden_size,
-                hidden_size=hidden_size,
+                input_size=encoder_output_units + embed_dim if layer == 0 else self.hidden_size,
+                hidden_size=self.hidden_size,
             )
             for layer in range(num_layers)
         ])
-        self.attention = AttentionLayer(encoder_output_units, hidden_size) if attention else None
-        if hidden_size != out_embed_dim:
-            self.additional_fc = nn.Linear(hidden_size, out_embed_dim)
-        self.fc_out = nn.Linear(out_embed_dim, num_embeddings, dropout=dropout)
+        self.attention = AttentionLayer(encoder_output_units, self.hidden_size) if attention else None
+        if self.hidden_size != out_embed_dim:
+            self.additional_fc = nn.Linear(self.hidden_size, out_embed_dim)
+        self.fc_out = nn.Linear(out_embed_dim, num_embeddings)
+
         if share_embed:
-            self.fc_out.weight = self.embed_tokens.weight
+            self.fc_out.weight = self.embedding.weight
 
 
     def forward(self, prev_output_tokens, encoder_out, encoder_padding_mask):
         bsz, seqlen = prev_output_tokens.size()
 
         # get outputs from encoder
-        encoder_outs, _, _ = encoder_out[:3]
+        print(encoder_out.size())
+        
         srclen = encoder_outs.size(0)
 
         # embed tokens
-        x = self.embed_tokens(prev_output_tokens)
-        x = F.dropout(x, p=self.dropout, training=self.training)
+        x = self.embedding(prev_output_tokens)
+        x = self.dropout(x)
 
         # B x T x C -> T x B x C
         x = x.transpose(0, 1)
@@ -102,7 +101,7 @@ class LSTMDecoder(nn.Module):
                 hidden, cell = rnn(input, (prev_hiddens[i], prev_cells[i]))
 
                 # hidden state becomes the input to the next layer
-                input = F.dropout(hidden, p=self.dropout, training=self.training)
+                input = self.dropout(hidden)
 
                 # save state for next time step
                 prev_hiddens[i] = hidden
@@ -113,7 +112,7 @@ class LSTMDecoder(nn.Module):
                 out, attn_scores[:, j, :] = self.attention(hidden, encoder_outs, encoder_padding_mask)
             else:
                 out = hidden
-            out = F.dropout(out, p=self.dropout, training=self.training)
+            out = self.dropout(out)
 
             # input feeding
             input_feed = out
@@ -134,15 +133,11 @@ class LSTMDecoder(nn.Module):
         # project back to size of vocabulary
         if hasattr(self, 'additional_fc'):
             x = self.additional_fc(x)
-            x = F.dropout(x, p=self.dropout, training=self.training)
+            x = self.dropout(x)
         x = self.fc_out(x)
 
         return x, attn_scores
 
-
-    def max_positions(self):
-        """Maximum output length supported by the decoder."""
-        return int(1e5)  # an arbitrary large number
 
 
 
