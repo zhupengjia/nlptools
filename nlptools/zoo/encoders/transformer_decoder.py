@@ -41,7 +41,9 @@ class TransformerDecoder(nn.Module):
         # B x T x C -> T x B x C
         x = x.transpose(0, 1)
         encoder_out = encoder_out.transpose(0, 1)
+
         encoder_padding_mask = encoder_padding_mask.byte()
+        encoder_padding_mask = ~encoder_padding_mask # for mask fill
 
         # decoder layers
         for layer in self.layers:
@@ -94,7 +96,7 @@ class TransformerDecoderLayer(nn.Module):
             mask_future_timesteps=True,
             need_weights=False,
         )
-        
+       
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = residual + x
 
