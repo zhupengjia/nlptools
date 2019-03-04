@@ -9,11 +9,16 @@ import torch.nn.functional as F
 from pytorch_pretrained_bert.modeling import BertLayerNorm
 from .multihead_attention import MultiheadAttention
 
+'''
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
+    Modified from fairseq: https://github.com/pytorch/fairseq
+'''
+
 
 class TransformerDecoder(nn.Module):
     """Transformer decoder."""
 
-    def __init__(self, bert_embedding, num_hidden_layers=6, num_attention_heads=8, intermediate_size=1024, dropout=0.1):
+    def __init__(self, bert_embedding, num_hidden_layers=6, num_attention_heads=8, intermediate_size=1024, dropout=0.1, shared_embed=True):
         super().__init__()
         self.dropout = dropout
         
@@ -28,10 +33,13 @@ class TransformerDecoder(nn.Module):
             for i in range(num_hidden_layers)
         ])
         
-        self.fc3 = nn.Linear(embedding_dim, num_embeddings)
-        self.fc3.weight = self.embedding.word_embeddings.weight
+        self.fc3 = nn.Linear(embedding_dim, num_embeddings, bias=False)
+        if shared_embed:
+            self.fc3.weight = self.embedding.word_embeddings.weight
 
         self.layer_norm = BertLayerNorm(embedding_dim, eps=1e-12)
+        self.layer_norm.weight.requires_grad = self.embedding.LayerNorm.weight.requires_grad
+        self.layer_norm.bias.requires_grad = self.embedding.LayerNorm.bias.requires_grad
 
     def forward(self, prev_output_tokens, encoder_out, encoder_padding_mask):
         # embed tokens and positions

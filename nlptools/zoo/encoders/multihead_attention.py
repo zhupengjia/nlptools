@@ -5,6 +5,11 @@ from torch import nn
 from torch.nn import Parameter
 import torch.nn.functional as F
 
+'''
+    Forked from fairseq: https://github.com/pytorch/fairseq
+'''
+
+
 def fill_with_neg_inf(t):
     """FP16-compatible function that fills a tensor with -inf."""
     return t.float().fill_(float('-inf')).type_as(t)
