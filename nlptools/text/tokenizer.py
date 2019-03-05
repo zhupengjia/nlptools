@@ -18,6 +18,8 @@ class Tokenizer_Base(object):
         self.stopwords = {}
         self.ner_name_replace = {} if ner_name_replace is None else ner_name_replace
         self.__loadStopwords(stopwords_path)
+        self.config = {"stopwords_path": stopwords_path,
+                "ner_name_replace": ner_name_replace} 
 
 
     def __loadStopwords(self, stopwords_path):
@@ -508,6 +510,8 @@ class Tokenizer_BERT(Tokenizer_Base):
     def __init__(self, bert_model_name, do_lower_case=True, **args):
         from pytorch_pretrained_bert import BertTokenizer 
         Tokenizer_Base.__init__(self, **args)
+        config = {"bert_model_name": bert_model_name, "do_lower_case": do_lower_case}
+        self.config = {**config, self.config}
         self.tokenizer = BertTokenizer.from_pretrained(bert_model_name, do_lower_case=do_lower_case)
 
     def seg(self, sentence, remove_stopwords = True):
