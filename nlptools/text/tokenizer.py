@@ -511,7 +511,7 @@ class Tokenizer_BERT(Tokenizer_Base):
         from pytorch_pretrained_bert import BertTokenizer 
         Tokenizer_Base.__init__(self, **args)
         config = {"bert_model_name": bert_model_name, "do_lower_case": do_lower_case}
-        self.config = {**config, self.config}
+        self.config = {**config, **self.config}
         self.tokenizer = BertTokenizer.from_pretrained(bert_model_name, do_lower_case=do_lower_case)
 
     def seg(self, sentence, remove_stopwords = True):
