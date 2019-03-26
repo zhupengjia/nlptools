@@ -40,6 +40,40 @@ class Ngrams(Vocab):
                 ids[i].append(self.word2id(new_token)) 
         return ids
 
-    
+    @staticmethod
+    def cast(vocab, ngrams=1, vocab_size=None, cached_vocab=''):
+        '''
+            Cast a Vocab to Ngrams vocab
+            
+            Input:
+                - vocab: vocab instance
+                - ngrams: int, default is 1
+                - vocab_size: if int, will use vocab_size, default is None
+                - cached_vocab: string, cached vocab file path, default is ''
+        '''
+        adjust_size = False if vocab_size is None else True
+        vocab_size = vocab.vocab_size if vocab_size is None else vocab_size
+        ngrams_vocab = Ngrams(ngrams, cached_vocab=cached_vocab, 
+                vocab_size=vocab_size, outofvocab=vocab.outofvocab, 
+                embedding=vocab.embedding)
+        vocab_size = ngrams_vocab.vocab_size
+        ngrams_vocab._word2id = vocab._word2id
+        if not adjust_size:
+            ngrams_vocab._id2tf = vocab._id2tf
+        else:
+            assert vocab_size > len(vocab._word2id)
+            ngrams_vocab._id2tf = numpy.concatenate([vocab._id2tf, numpy.zeros(vocab_size-len(vocab._id2tf), "int")])
+        ngrams_vocab._word_spec = vocab._word_spec
+        ngrams_vocab._id_spec = vocab._id_spec
+        ngrams_vocab.PAD = vocab.PAD
+        ngrams_vocab.BOS = vocab.BOS
+        ngrams_vocab.EOS = vocab.EOS
+        ngrams_vocab.UNK = vocab.UNK
+        ngrams_vocab.PAD_ID = vocab.PAD_ID
+        ngrams_vocab.BOS_ID = vocab.BOS_ID
+        ngrams_vocab.EOS_ID = vocab.EOS_ID
+        ngrams_vocab.UNK_ID = vocab.UNK_ID
+        return ngrams_vocab
+         
 
 
