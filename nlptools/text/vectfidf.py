@@ -46,6 +46,7 @@ class VecTFIDF(object):
         self.freqwords = {}
         self.word_idfs = None
         self.__loadFreqwords(self.freqwords_path)
+        self.load_index()
 
     def __loadFreqwords(self, freqwords_path=None):
         if os.path.exists(freqwords_path):
@@ -155,6 +156,8 @@ class VecTFIDF(object):
             tmp = zload(self.cached_index)
             self.count_matrix = tmp[0]
             self.word_idfs = tmp[1]
+            return
+        if corpus_ids is None:
             return
         count_matrix = self.get_count_matrix(corpus_ids)
         word_freqs = self.get_doc_freqs(count_matrix)
