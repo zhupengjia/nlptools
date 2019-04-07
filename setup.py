@@ -34,11 +34,11 @@ setup(
     setup_requires=['pytest-runner' ],
     install_requires=[
         "numpy",
-        "Cython",
-        "pandas",
-        "nameko",
+        #"Cython",
+        #"pandas",
+        #"nameko",
         'bidict',
-        "requests"
+        #"requests"
         ],
     tests_require=['pytest'],
     #ext_modules = cythonize(["nlptools/*/*.pyx", "nlptools/*/*/*/*.pyx"]),
