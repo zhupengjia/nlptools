@@ -1,50 +1,61 @@
 #!/usr/bin/env python
-
 import math
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-from pytorch_pretrained_bert.modeling import BertLayerNorm
-from .multihead_attention import MultiheadAttention
+from types import SimpleNamespace
+from fairseq.models.transformer import TransformerDecoderLayer
+from fairseq.models.fairseq_incremental_decoder import FairseqIncrementalDecoder
 
 '''
     Author: Pengjia Zhu (zhupengjia@gmail.com)
-    Modified from fairseq: https://github.com/pytorch/fairseq
 '''
 
 
-class TransformerDecoder(nn.Module):
-    """Transformer decoder."""
+class TransformerDecoder(FairseqIncrementalDecoder):
+    """
+        Transformer decoder. Modified from Fairseq
+        Worked with pretrained BERT model from pytorch_pretrained_bert
+    """
 
     def __init__(self, bert_embedding, num_hidden_layers=6, num_attention_heads=8, intermediate_size=1024, dropout=0.1, shared_embed=True):
-        super().__init__()
+        super().__init__(dictionary=None)
         self.dropout = dropout
-        
-        self.embedding = bert_embedding
-        
-        num_embeddings = self.embedding.word_embeddings.num_embeddings
-        embedding_dim = self.embedding.word_embeddings.embedding_dim
+       
+        self.word_embedding = bert_embedding.word_embeddings
+        self.position_embedding = bert_embedding.position_embeddings
+        self.layer_norm = bert_embedding.LayerNorm
+
+        num_embeddings = self.word_embedding.num_embeddings
+        embedding_dim = self.word_embedding.embedding_dim
+
+        args = SimpleNamespace(decoder_embed_dim = embedding_dim,
+                               decoder_attention_heads = num_attention_heads,
+                               dropout = dropout,
+                               attention_dropout = dropout,
+                               relu_dropout = dropout,
+                               decoder_normalize_before = False,
+                               decoder_ffn_embed_dim = intermediate_size
+                              )
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
-            TransformerDecoderLayer(embedding_dim, num_attention_heads, intermediate_size, dropout)
+            TransformerDecoderLayer(args)
             for i in range(num_hidden_layers)
         ])
         
         self.fc3 = nn.Linear(embedding_dim, num_embeddings, bias=False)
         if shared_embed:
-            self.fc3.weight = self.embedding.word_embeddings.weight
+            self.fc3.weight = self.word_embedding.weight
 
-        self.layer_norm = BertLayerNorm(embedding_dim, eps=1e-12)
-        self.layer_norm.weight.requires_grad = self.embedding.LayerNorm.weight.requires_grad
-        self.layer_norm.bias.requires_grad = self.embedding.LayerNorm.bias.requires_grad
-
-    def forward(self, prev_output_tokens, encoder_out, encoder_padding_mask):
+    def forward(self, prev_output_tokens, encoder_out, encoder_padding_mask, time_step=0, incremental_state=None):
         # embed tokens and positions
-        x = self.embedding(prev_output_tokens)
-        
+        word_embeddings = self.word_embedding(prev_output_tokens)
+        position_ids = torch.arange(time_step, prev_output_tokens.size(1), dtype=torch.long,
+                                   device=prev_output_tokens.device)
+        position_embeddings = self.position_embedding(position_ids)
+        x = word_embeddings + position_embeddings
+        x = self.layer_norm(x)
 
         # B x T x C -> T x B x C
         x = x.transpose(0, 1)
@@ -54,12 +65,15 @@ class TransformerDecoder(nn.Module):
         encoder_padding_mask = ~encoder_padding_mask # for mask fill
 
         # decoder layers
+        inner_states = [x]
         for layer in self.layers:
             x, attn = layer(
                 x,
                 encoder_out,
-                encoder_padding_mask
+                encoder_padding_mask,
+                incremental_state
             )
+            inner_states.append(x)
 
         # T x B x C -> B x T x C
         x = x.transpose(0, 1)
@@ -67,67 +81,7 @@ class TransformerDecoder(nn.Module):
         # project back to size of vocabulary
         x = self.fc3(x)
 
-        return x, attn
-
-    def max_positions(self):
-        """Maximum output length supported by the decoder."""
-        return self.embed_positions.max_positions()
+        return x, {'attn': attn, 'inner_states': inner_states}
 
 
-class TransformerDecoderLayer(nn.Module):
-    """Decoder layer block."""
-
-    def __init__(self, embedding_dim, num_attention_heads, intermediate_size, dropout):
-        super().__init__()
-        self.dropout = dropout
-        self.self_attn = MultiheadAttention(
-            embedding_dim, num_attention_heads,
-            dropout=self.dropout,
-        )
-
-        self.encoder_attn = MultiheadAttention(
-            embedding_dim, num_attention_heads,
-            dropout=self.dropout,
-        )
-        self.fc1 = nn.Linear(embedding_dim, intermediate_size)
-        self.fc2 = nn.Linear(intermediate_size, embedding_dim)
-        self.layer_norms = nn.ModuleList([BertLayerNorm(embedding_dim, eps=1e-12) for i in range(3)])
-
-    def forward(self, x, encoder_out, encoder_padding_mask):
-        residual = x
-        x = self.layer_norms[0](x)
-
-        x, _ = self.self_attn(
-            query=x,
-            key=x,
-            value=x,
-            mask_future_timesteps=True,
-            need_weights=False,
-        )
-       
-        x = F.dropout(x, p=self.dropout, training=self.training)
-        x = residual + x
-
-        residual = x
-        x = self.layer_norms[1](x)
-        
-        x, attn = self.encoder_attn(
-            query=x,
-            key=encoder_out,
-            value=encoder_out,
-            key_padding_mask=encoder_padding_mask
-        )
-        
-        
-        x = F.dropout(x, p=self.dropout, training=self.training)
-        x = residual + x
-
-        residual = x
-        x = self.layer_norms[2](x)
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, p=self.dropout, training=self.training)
-        x = self.fc2(x)
-        x = F.dropout(x, p=self.dropout, training=self.training)
-        x = residual + x
-        return x, attn
 
