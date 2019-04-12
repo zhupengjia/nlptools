@@ -83,5 +83,6 @@ class TransformerDecoder(FairseqIncrementalDecoder):
 
         return x, {'attn': attn, 'inner_states': inner_states}
 
-
+    def max_positions(self):
+        return  self.position_embedding.num_embeddings
 
