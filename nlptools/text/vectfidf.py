@@ -82,7 +82,7 @@ class VecTFIDF(object):
         return score.sum(axis = 1)
 
 
-    def tf(self, word_ids, sentence_ids):
+    def vectf(self, word_ids, sentence_ids):
         '''
             calculate term frequencies for each word in a token id list
 
@@ -172,7 +172,7 @@ class VecTFIDF(object):
             return count_matrix, word_idfs
 
 
-    def tfidf(self, word_ids, sentence_ids, word_idfs):
+    def vectfidf(self, word_ids, sentence_ids, word_idfs):
         '''
             calculate tfidf for each id in a token list
 
@@ -184,7 +184,7 @@ class VecTFIDF(object):
             Output:
                 tfidf list
         '''
-        tf = self.tf(word_ids, sentence_ids)
+        tf = self.vectf(word_ids, sentence_ids)
         idf = word_idfs[word_ids]
         return tf*idf
 
@@ -208,7 +208,7 @@ class VecTFIDF(object):
             word_idfs = self.word_idfs
         else:
             count_matrix, word_idfs = self.load_index(corpus_ids, local_use=True)
-        tfidf = corpus_ids.apply(lambda x: self.tfidf(word_ids, x, word_idfs).sum()).as_matrix()
+        tfidf = corpus_ids.apply(lambda x: self.vectfidf(word_ids, x, word_idfs).sum()).as_matrix()
         
         scores = numpy.argsort(tfidf)[::-1]
         scores = [int(s) for s in scores[:topN]]
