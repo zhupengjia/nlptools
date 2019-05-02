@@ -211,9 +211,7 @@ class Tokenizer_Spacy(Tokenizer_Base):
             infos["pos"].append(token.pos_)
             infos["dep"].append(token.dep_)
             
-            
-        return {"tokens":tokens, "tags":tags, "texts":txts, "entities":entities, 'pos':pos, 'dep':dep}
-   
+        return infos
 
 class Tokenizer_Jieba(Tokenizer_Base):
     '''
