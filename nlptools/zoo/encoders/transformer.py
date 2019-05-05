@@ -39,11 +39,12 @@ class TransformerDecoder(nn.Module):
         if shared_embed:
             self.fc3.weight = self.word_embedding.weight
 
-    def forward(self, prev_output_tokens, encoder_out, encoder_padding_mask, time_step=0, incremental_state=None):
+    def forward(self, prev_output_tokens, encoder_out, encoder_padding_mask,
+                time_step=0, incre_state=None):
         # embed tokens and positions
         word_embeddings = self.word_embedding(prev_output_tokens)
-        position_ids = torch.arange(time_step, prev_output_tokens.size(1), dtype=torch.long,
-                                   device=prev_output_tokens.device)
+        position_ids = torch.arange(time_step, prev_output_tokens.size(1) + time_step,
+                                    dtype=torch.long, device=prev_output_tokens.device)
         position_embeddings = self.position_embedding(position_ids)
         x = word_embeddings + position_embeddings
         x = self.layer_norm(x)
@@ -51,10 +52,7 @@ class TransformerDecoder(nn.Module):
         encoder_padding_mask = encoder_padding_mask.unsqueeze(1).repeat(1, prev_output_tokens.size(1), 1).unsqueeze(1).byte()
 
         # decoder layers
-        self_attn_mask = self.buffered_future_mask(x) if incremental_state is None else None
-        
-        print("embedding", x.size(), encoder_out.size())
-        print("mask", encoder_padding_mask.size(), self_attn_mask.size())
+        self_attn_mask = self.buffered_future_mask(x) if incre_state is None else None
         
         for layer in self.layers:
             x = layer(
@@ -62,7 +60,7 @@ class TransformerDecoder(nn.Module):
                 encoder_out=encoder_out,
                 encoder_padding_mask=encoder_padding_mask,
                 self_attn_mask=self_attn_mask,
-                incremental_state=incremental_state,
+                incre_state=incre_state,
             )
 
         # project back to size of vocabulary
@@ -74,6 +72,10 @@ class TransformerDecoder(nn.Module):
         mask = x.new(dim, dim).fill_(1).byte()
         return ~torch.triu(mask, 1)
 
+    def reorder_incremental_state(self, incre_state, order):
+        for k1 in incre_state:
+            for k2 in incre_state[k1]:
+                incre_state[k1][k2] = incre_state[k1][k2][order, :, :]
 
 class ResidualLayer(nn.Module):
     def __init__(self, layer_norm, dropout):
@@ -126,18 +128,20 @@ class TransformerDecoderLayer(nn.Module):
         self.feed_forward = FeedForward(self.embed_dim, attention_heads, dropout) 
         self.residual = ResidualLayer(layer_norm, dropout)        
 
-    def forward(self, x, encoder_out, encoder_padding_mask, self_attn_mask=None, incremental_state=None):
+    def forward(self, x, encoder_out, encoder_padding_mask=None, self_attn_mask=None,
+                incre_state=None):
         """
             encoded output of shape `(batch, src_len, embed_dim)`
         """
         x = self.residual(x, lambda _x: self.self_attn(
-            _x, _x, _x, mask=self_attn_mask, incremental_state=incremental_state))
+            _x, _x, _x, mask=self_attn_mask, incre_state=incre_state,
+            incre_keys=["q","k","v"]))
 
         if self.encoder_attn is not None:
             x = self.residual(x, lambda _x: self.encoder_attn(
                 _x, encoder_out, encoder_out,
-                mask=encoder_padding_mask, incremental_state=incremental_state))
-        
+                mask=encoder_padding_mask, incre_state=incre_state, incre_keys=["q"]))
+
         x = self.residual(x, self.feed_forward)
         return x
 
