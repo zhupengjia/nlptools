@@ -8,7 +8,10 @@ from scipy.spatial.distance import cosine
     Author: Pengjia Zhu (zhupengjia@gmail.com)
 '''
 
-class DocSim(object):
+class SimBase
+
+
+class WMD(object):
     '''
         Calculate similarities between sentences
 
@@ -147,3 +150,4 @@ class DocSim(object):
         return cosine(vec1, vec2)
 
 
+class BertSim()
