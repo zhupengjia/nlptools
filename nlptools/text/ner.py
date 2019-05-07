@@ -133,10 +133,9 @@ class NER_Spacy(NER_Base, Tokenizer_Spacy):
             - regex: dictionary of {entityname: regex}, entity recognition via REGEX. Default is None
             - Other arguments used in text.Tokenizer_Spacy
     '''
-    def __init__(self, keywords = None, ner = None, regex = None, **args):
+    def __init__(self, keywords = None, ner = None, regex = None,  **args):
         NER_Base.__init__(self, keywords, ner, regex)
-        spacy_pipes = ["ner"] if ner is not None else None
-        Tokenizer_Spacy.__init__(self, spacy_pipes=spacy_pipes, **args)
+        Tokenizer_Spacy.__init__(self, spacy_pipes=None, **args)
         prefix_re = re.compile(r'''^[\‘\[\{\<\(\"\']''')
         suffix_re = re.compile(r'''[\]\}\>\)\"\'\,\.\!\?]$''')
         infix_re = re.compile(r'''[\<\>\{\}\(\)\/\-~\:\,\!\'\’]''')
@@ -153,6 +152,9 @@ class NER_Spacy(NER_Base, Tokenizer_Spacy):
         if keywords is not None:
             entity_matcher = KeywordsMatcher(self.nlp, self._read_keywords(keywords))
             self.nlp.add_pipe(entity_matcher, last=True)
+
+        if ner is not None:
+            self.nlp.add_pipe("ner", last=True)
 
     def entities(self, sentence):
         '''
