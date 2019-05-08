@@ -165,7 +165,7 @@ class VecTFIDF(object):
         if not local_use:
             self.count_matrix = count_matrix
             self.word_idfs = word_idfs
-            if len(self.cached_index) > 0:
+            if self.cached_index:
                 zdump((count_matrix, word_idfs), self.cached_index)
                 self.vocab.save()
         else:

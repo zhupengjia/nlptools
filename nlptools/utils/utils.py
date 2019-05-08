@@ -203,6 +203,32 @@ def envread(keys):
     return cfg
 
 
+def decode_child_id(ids):
+    '''
+        convert child id to list
+    '''
+    if isinstance(ids, str):
+        ids2 = []
+        for i in re.split('[,，]', ids):
+            if i.isdigit():
+                ids2.append(int(i))
+            else:
+                itmp = [int(x) for x in re.split('[~-]', i) if x.strip()]
+                if len(itmp) > 1:
+                    ids2 += range(itmp[0], itmp[1]+1)
+                else:
+                    ids2.append(int(itmp[0]))
+        return ids2
+    if isinstance(ids, int):
+        return [ids]
+    if isinstance(ids, list):
+        if isinstance(ids[0], int):
+            return ids
+        if isinstance(ids[0], str):
+            return [int(x) for x in ids]
+    return None
+
+
 def distance2similarity(distance):
     '''
         Convert distance to similarity
@@ -244,7 +270,5 @@ def pad_sequence(M, padding_value=0, return_length=False):
         return seq, length
     else:
         return seq
-
-
 
 
