@@ -21,6 +21,8 @@ def format_sentence(sentence, vocab, tokenizer=None, max_seq_len=50):
         token_ids = sentence
     else:
         tokens = tokenizer(sentence)
+        if len(tokens) < 1:
+            return None
         token_ids = vocab.words2id(tokens)[:max_seq_len-2]
     seq_len = len(token_ids) + 2
     sentence = numpy.zeros(max_seq_len, 'int')
