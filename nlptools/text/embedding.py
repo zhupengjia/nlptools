@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#word2vec
+'''
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
+    Word2vec wrapper
+'''
 
-import time, base64, os
+import time, base64, os, h5py
 import numpy as np
 from scipy.spatial.distance import cosine
 from ..utils import zload, zdump, restpost
 
-
-'''
-    Author: Pengjia Zhu (zhupengjia@gmail.com)
-'''
 
 class Embedding_Base(object):
     '''
@@ -23,7 +22,7 @@ class Embedding_Base(object):
             - additional_dim: 0 for random, 1 for random but with additional dim, default is 0
             - base64: bool, if True, will return BASE64 instead of vector
     '''
-    def __init__(self, dim=300, data_type='float64', cached_data='', additional_dim=0, base64=False):
+    def __init__(self, dim=300, data_type='float64', cached_data='', additional_dim=0, base64=False, **args):
         if additional_dim:
             self.dim = int(dim) + 1
         else:
@@ -96,28 +95,22 @@ class Embedding_File(Embedding_Base):
     '''
     def __init__(self, w2v_word2idx, w2v_idx2vec, **args):
         Embedding_Base.__init__(self, **args)
-        self.word2idx = None
-        self.w2v_idx2vec = w2v_idx2vec
-        self.w2v_word2idx = w2v_word2idx
-
-    def _load_vec(self):
-        if self.word2idx is None:
-            self.word2idx = zload(self.w2v_word2idx)
-            self.idx2vec = np.load(self.w2v_idx2vec).astype('float')
+        h5file = h5py.File(w2v_idx2vec, 'r')
+        self.weight = h5file["word2vec"]
+        self.lookup = zload(w2v_word2idx)
+        self.dim = self.weight.shape[1]
 
     def __getitem__(self, word):
         if word in self.cached_vec:
             return self.cached_vec[word]
-        self._load_vec()
-        v = self.idx2vec[self.word2idx[word]] if word in self.word2idx else None
+        v = self.weight[self.lookup[word]] if word in self.lookup else None
         v = self._postdeal(v, self.base64)
         self.cached_vec[word] = v
         #print(v)
         return v
 
     def __contains__(self, word):
-        self._load_vec()
-        return word in self.word2idx
+        return word in self.lookup
 
 
 class Embedding_Redis(Embedding_Base):

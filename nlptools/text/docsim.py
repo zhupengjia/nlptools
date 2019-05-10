@@ -12,7 +12,7 @@ def format_sentence(sentence, vocab, tokenizer=None, max_seq_len=50):
         Format token ids to sentence and masks
 
         Input:
-            - sentence: string or list of token ids, 
+            - sentence: string or list of tokens/token ids, 
             - vocab:  instance of nlptools.text.vocab
             - tokenizer:  instance of nlptools.text.tokenizer, default is None
             - max_seq_len: int, default is 50
@@ -20,10 +20,16 @@ def format_sentence(sentence, vocab, tokenizer=None, max_seq_len=50):
     if tokenizer is None:
         token_ids = sentence
     else:
-        tokens = tokenizer(sentence)
-        if len(tokens) < 1:
-            return None
-        token_ids = vocab.words2id(tokens)[:max_seq_len-2]
+        if isinstance(sentence, str):
+            tokens = tokenizer(sentence)
+            if len(tokens) < 1:
+                return None
+        else:
+            tokens = sentence
+        if isinstance(sentence[0], int):
+            token_ids = tokens
+        else:
+            token_ids = vocab.words2id(tokens)[:max_seq_len-2]
     seq_len = len(token_ids) + 2
     sentence = numpy.zeros(max_seq_len, 'int')
     sentence_mask = numpy.zeros(max_seq_len, 'int')
@@ -182,6 +188,40 @@ class WMDSim(SimBase):
         vec2 = self.vocab.ave_vec(sentence_id2)
         return self.distance(vec1, vec2)
 
+    def get_embedding(self, sentences, sentence_masks):
+        '''
+            return sentence embedding
+
+            Input:
+                - sentences: torch tensor of sentence
+                - sentence_masks: torch tensor of sentence masks
+        '''
+        sentences = sentences.cpu().detach().numpy()
+        sentence_masks = sentence_masks.cpu().detach().numpy().astype("bool_")
+        sentences_list = []
+        for i in range(sentences.shape[0]):
+            sentences_list.append(sentences[i][sentence_masks[i]][1:-1])
+        return numpy.array(sentences_list)
+
+    def __call__(self, sentences, sentence_masks):
+        '''
+            return sentence ids
+            
+            Input:
+                - sentences: list of sentence ids
+                - sentence_masks: list of sentence masks
+        '''
+        for i in range(len(sentences)):
+            sentences[i] = sentences[i][sentence_masks[i].astype("bool_")][1:-1] 
+        return numpy.array(sentences)
+
+    def similarity(self, sentences1, sentences2):
+        sim_matrix = numpy.zeros((len(sentences1), len(sentences2)))
+        for i, s1 in enumerate(sentences1):
+            for j, s2 in enumerate(sentences2):
+                sim_matrix[i,j] = self.rwmd_distance(s1, s2)
+        return 1/(1+sim_matrix)
+
 
 class BERTSim(SimBase):
     '''
@@ -239,5 +279,8 @@ class BERTSim(SimBase):
             masks = torch.LongTensor(sentence_masks[starti:endi]).to(self.device)
             embeddings[starti:endi] = self.get_embedding(ids, masks)
         return embeddings
+    
+    def similarity(self, embedding1, embedding2):
+        return 1/(1+cosine_distances(embedding1, embedding2))
 
 
