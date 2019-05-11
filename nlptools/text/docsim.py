@@ -7,39 +7,6 @@ from sklearn.metrics.pairwise import cosine_distances
 from scipy.spatial.distance import cosine
 
 
-def format_sentence(sentence, vocab, tokenizer=None, max_seq_len=50):
-    """
-        Format token ids to sentence and masks
-
-        Input:
-            - sentence: string or list of tokens/token ids, 
-            - vocab:  instance of nlptools.text.vocab
-            - tokenizer:  instance of nlptools.text.tokenizer, default is None
-            - max_seq_len: int, default is 50
-    """
-    if tokenizer is None:
-        token_ids = sentence
-    else:
-        if isinstance(sentence, str):
-            tokens = tokenizer(sentence)
-            if len(tokens) < 1:
-                return None
-        else:
-            tokens = sentence
-        if isinstance(sentence[0], int):
-            token_ids = tokens
-        else:
-            token_ids = vocab.words2id(tokens)[:max_seq_len-2]
-    seq_len = len(token_ids) + 2
-    sentence = numpy.zeros(max_seq_len, 'int')
-    sentence_mask = numpy.zeros(max_seq_len, 'int')
-    sentence[0] = vocab.BOS_ID
-    sentence[1:seq_len-1] = token_ids
-    sentence[seq_len-1] = vocab.EOS_ID
-    sentence_mask[:seq_len] = 1
-    return sentence, sentence_mask
-
-
 class SimBase:
     def __init__(self, **args):
         pass
@@ -49,16 +16,6 @@ class SimBase:
 
     def to(self, device):
         pass
-
-    def distance(self, vec1, vec2):
-        '''
-            Cosine distance between two vectors
-
-            Input:
-                - vec1: first vector
-                - vec2: second vector
-        '''
-        return cosine(vec1, vec2)
 
 class WMDSim(SimBase):
     '''
@@ -71,7 +28,6 @@ class WMDSim(SimBase):
         super(WMDSim, self).__init__(**args)
         self.vocab = vocab
 
-
     def min_word_distance(self, sentence_id1, sentence_id2):
         '''
             Minimum word distance between two sentences
@@ -83,7 +39,6 @@ class WMDSim(SimBase):
         vec1 = self.vocab.ids2vec(sentence_id1)
         vec2 = self.vocab.ids2vec(sentence_id2)
         return cosine_distances(vec1, vec2).min()
-    
    
     def wcd_distance(self, sentence_id1, sentence_id2):
         '''
@@ -111,7 +66,6 @@ class WMDSim(SimBase):
         v1 = numpy.dot(d1, vectors)
         v2 = numpy.dot(d2, vectors)
         return self.distance(v1, v2)
-
 
     def wmd_distance(self, sentence_id1, sentence_id2):
         '''
@@ -141,7 +95,6 @@ class WMDSim(SimBase):
             return v/v.sum()
         d1, d2 = doc2sparse(sentence_id1), doc2sparse(sentence_id2)
         return emd(d1, d2, distance_matrix)
-    
 
     def rwmd_distance(self, sentence_id1, sentence_id2):
         '''
@@ -174,7 +127,6 @@ class WMDSim(SimBase):
 
         rwmd = max(numpy.dot(new_weights_dj, d1), numpy.dot(new_weights_di, d2))
         return rwmd
-
 
     def idf_weighted_distance(self, sentence_id1, sentence_id2):
         '''
