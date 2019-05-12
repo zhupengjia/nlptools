@@ -15,9 +15,11 @@ class Attention(nn.Module):
 
     def forward(self, q, k, v, mask=None):
         scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(q.size(-1))
+        # print("scores", scores.shape, mask.shape)
         
         if mask is not None:
             scores = scores.masked_fill(mask == 0, -1e9)
+        # print("scores", scores.shape)
 
         p_attn = self.softmax(scores)
         p_attn = self.dropout(p_attn)
@@ -61,6 +63,7 @@ class MultiheadAttention(nn.Module):
                 incre_state[obj_id][k] = v[k]
 
         # Do all the linear projections in batch from embed_dim => num_heads x head_dim
+        # print("qkv", v["q"].shape, v["k"].shape, v["v"].shape)
         v["q"],v["k"],v["v"] =\
                 [l(x).view(batch_size,
                            -1,
@@ -68,6 +71,7 @@ class MultiheadAttention(nn.Module):
                            self.head_dim).transpose(1, 2)\
                  for l, x in zip(self.linear_layers,
                                  (v["q"], v["k"], v["v"]))]
+        # print("qkv", v["q"].shape, v["k"].shape, v["v"].shape)
 
         # Apply attention on all the projected vectors in batch.
         x, attn = self.attention(v["q"], v["k"], v["v"], mask=mask)

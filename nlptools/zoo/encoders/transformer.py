@@ -24,6 +24,7 @@ class TransformerDecoder(nn.Module):
 
         num_embeddings = self.word_embedding.num_embeddings
         embedding_dim = self.word_embedding.embedding_dim
+        self.num_attention_heads = num_attention_heads
 
         self.layers = nn.ModuleList([])
         self.layers.extend([
@@ -48,12 +49,15 @@ class TransformerDecoder(nn.Module):
         position_embeddings = self.position_embedding(position_ids)
         x = word_embeddings + position_embeddings
         x = self.layer_norm(x)
+        # print("encoder_padding_mask", encoder_padding_mask.size())
+        encoder_padding_mask = encoder_padding_mask.unsqueeze(1).unsqueeze(2).byte()
 
-        encoder_padding_mask = encoder_padding_mask.unsqueeze(1).repeat(1, prev_output_tokens.size(1), 1).unsqueeze(1).byte()
+        # print("encoder_padding_mask", encoder_padding_mask.size())
 
         # decoder layers
         self_attn_mask = self.buffered_future_mask(x) if incre_state is None else None
-        
+        # print("self_attn_mask", self_attn_mask.size())
+
         for layer in self.layers:
             x = layer(
                 x,
