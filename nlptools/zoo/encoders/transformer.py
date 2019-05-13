@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import torch, sys
+import torch, math
 import torch.nn as nn
 from types import SimpleNamespace
 from pytorch_pretrained_bert.modeling import gelu, BertLayerNorm
@@ -91,6 +91,10 @@ class TransformerDecoder(nn.Module):
                                intermediate_size = intermediate_size)
             for i in range(num_hidden_layers)
         ])
+        
+        self.fc3 = nn.Linear(embedding_dim, num_embeddings, bias=False)
+        if shared_embed:
+            self.fc3.weight = self.word_embedding.weight
 
     def forward(self, prev_output_tokens, encoder_out, encoder_padding_mask,
                 time_step=0, incre_state=None):
@@ -117,12 +121,20 @@ class TransformerDecoder(nn.Module):
                 incre_state=incre_state,
             )
 
+        # project back to size of vocabulary
+        x = self.fc3(x)
+        return x
 
     def buffered_future_mask(self, x):
         dim = x.size(1)
         mask = x.new(dim, dim).fill_(1).byte()
         return ~torch.triu(mask, 1)
 
+
+    def reorder_incremental_state(self, incre_state, order):
+        for k1 in incre_state:
+            for k2 in incre_state[k1]:
+                incre_state[k1][k2] = incre_state[k1][k2][order, :, :]
 
 class ResidualLayer(nn.Module):
     def __init__(self, hidden_size, dropout):
@@ -143,10 +155,9 @@ class FeedForward(nn.Module):
         self.w_1 = nn.Linear(d_model, d_ff)
         self.w_2 = nn.Linear(d_ff, d_model)
         self.dropout = nn.Dropout(dropout)
-        self.activation = gelu()
 
     def forward(self, x):
-        return self.w_2(self.dropout(self.activation(self.w_1(x))))
+        return self.w_2(self.dropout(gelu(self.w_1(x))))
 
 
 class TransformerDecoderLayer(nn.Module):
@@ -166,7 +177,7 @@ class TransformerDecoderLayer(nn.Module):
 
         self.self_attn_residual = ResidualLayer(hidden_size=embed_dim, dropout=dropout)
         self.output_residual = ResidualLayer(hidden_size=embed_dim, dropout=dropout)
-        self.feed_forward = FeedForward(self.embed_dim, intermediate_size, dropout) 
+        self.feed_forward = FeedForward(embed_dim, intermediate_size, dropout) 
 
 
     def forward(self, x, encoder_out, encoder_padding_mask=None, self_attn_mask=None, incre_state=None):
