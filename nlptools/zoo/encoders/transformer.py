@@ -60,7 +60,7 @@ class MultiheadAttention(nn.Module):
         context_layer = context_layer.view(*new_context_layer_shape)
 
         if incre_state is not None:
-            context_layer = x[:, prev_size:, :]
+            context_layer = context_layer[:, prev_size:, :]
 
         return self.output_linear(context_layer)
 
@@ -111,6 +111,9 @@ class TransformerDecoder(nn.Module):
 
         self_attn_mask = self.buffered_future_mask(x) if incre_state is None else None
 
+        # print("transformer_embedding", x.shape)
+        # print("encoder_padding_mask", encoder_padding_mask.shape)
+
         #decoder layers
         for layer in self.layers:
             x = layer(
@@ -118,7 +121,7 @@ class TransformerDecoder(nn.Module):
                 encoder_out=encoder_out,
                 encoder_padding_mask=encoder_padding_mask,
                 self_attn_mask=self_attn_mask,
-                incre_state=incre_state,
+                incre_state=incre_state
             )
 
         # project back to size of vocabulary
@@ -184,17 +187,21 @@ class TransformerDecoderLayer(nn.Module):
         '''
         encoded output of shape (batch, src_len, embed_dim)
         '''
-
+        # print("decoder_layer_input", x.shape)
         x = self.self_attn_residual(x, lambda _x: self.self_attn(
             _x, _x, _x, mask=self_attn_mask, incre_state=incre_state,
             incre_keys=["q","k","v"]))
+
+        # print("self_attn", x.shape)
 
         if self.encoder_attn is not None:
             x = self.encoder_attn_residual(x, lambda _x: self.encoder_attn(
                 _x, encoder_out, encoder_out,
                 mask=encoder_padding_mask, incre_state=incre_state, incre_keys=["q"]))
+            # print("encoder_attn", x.shape)
 
         x = self.output_residual(x, self.feed_forward)
+        # print("output", x.shape)
 
         return x
 
