@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import torch, math
 import torch.nn as nn
-from types import SimpleNamespace
-from pytorch_pretrained_bert.modeling import gelu, BertLayerNorm
+from pytorch_pretrained_bert.modeling import gelu, BertLayerNorm, BertModel, BertConfig
 
 '''
     Author: Pengjia Zhu (zhupengjia@gmail.com)
@@ -65,10 +64,31 @@ class MultiheadAttention(nn.Module):
         return self.output_linear(context_layer)
 
 
+class TransformerEncoder(BertModel):
+    """
+        Transformer Encoder, call BertModel directly
+    """
+    def __init__(self, vocab_size=30522, num_hidden_layers=12, num_attention_heads=12,
+                 max_position_embeddings=512, intermediate_size=3072, hidden_size=768, dropout=0.1):
+        config = BertConfig(vocab_size_or_config_json_file=vocab_size,
+                            num_hidden_layers=num_hidden_layers,
+                            num_attention_heads=num_attention_heads,
+                            max_position_embeddings=max_position_embeddings,
+                            intermediate_size=intermediate_size,
+                            hidden_size=hidden_size,
+                            attention_probs_dropout_prob=dropout,
+                            hidden_act="gelu",
+                            hidden_dropout_prob=dropout,
+                            initializer_range=0.02,
+                            layer_norm_eps=1e-12,
+                            type_vocab_size=2)
+        super(TransformerEncoder, self).__init__(config=config)
+
+
 class TransformerDecoder(nn.Module):
     """
-        Transformer decoder
-        Worked with pretrained BERT model from pytorch_pretrained_bert
+        transformer decoder
+        worked with pretrained bert model from pytorch_pretrained_bert
     """
 
     def __init__(self, bert_embedding, num_hidden_layers=6, num_attention_heads=8, intermediate_size=1024, dropout=0.1, shared_embed=True):
@@ -135,6 +155,8 @@ class TransformerDecoder(nn.Module):
 
 
     def reorder_incremental_state(self, incre_state, order):
+        if incre_state is None:
+            return
         for k1 in incre_state:
             for k2 in incre_state[k1]:
                 incre_state[k1][k2] = incre_state[k1][k2][order, :, :]
