@@ -83,6 +83,7 @@ class TransformerEncoder(BertModel):
                             layer_norm_eps=1e-12,
                             type_vocab_size=2)
         super(TransformerEncoder, self).__init__(config=config)
+        self.config = self.config.to_dict()
 
 
 class TransformerDecoder(nn.Module):
@@ -91,10 +92,16 @@ class TransformerDecoder(nn.Module):
         worked with pretrained bert model from pytorch_pretrained_bert
     """
 
-    def __init__(self, bert_embedding, num_hidden_layers=6, num_attention_heads=8, intermediate_size=1024, dropout=0.1, shared_embed=True):
+    def __init__(self, bert_embedding, num_hidden_layers=6, num_attention_heads=8,
+                 intermediate_size=1024, dropout=0.1, shared_embed=True):
         super().__init__()
+        self.config = {"num_hidden_layers": num_hidden_layers,
+                       "num_attention_heads": num_attention_heads,
+                       "intermediate_size": intermediate_size,
+                       "shared_embed": shared_embed}
+
         self.dropout = dropout
-        
+          
         self.word_embedding = bert_embedding.word_embeddings
         self.position_embedding = bert_embedding.position_embeddings
         self.layer_norm = bert_embedding.LayerNorm
