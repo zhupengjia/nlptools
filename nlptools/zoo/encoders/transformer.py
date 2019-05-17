@@ -1,11 +1,12 @@
 #!/usr/bin/env python
+'''
+    Author: Pengjia Zhu (zhupengjia@gmail.com)
+'''
+
 import torch, math
 import torch.nn as nn
 from pytorch_pretrained_bert.modeling import gelu, BertLayerNorm, BertModel, BertConfig
 
-'''
-    Author: Pengjia Zhu (zhupengjia@gmail.com)
-'''
 
 class MultiheadAttention(nn.Module):
     def __init__(self, embed_dim, num_heads, dropout=0.1):
@@ -124,7 +125,7 @@ class TransformerDecoder(nn.Module):
             self.fc3.weight = self.word_embedding.weight
 
     def forward(self, prev_output_tokens, encoder_out, encoder_padding_mask,
-                time_step=0, incre_state=None):
+                time_step=0, incre_state=None, **args):
         # embed tokens and positions
         word_embeddings = self.word_embedding(prev_output_tokens)
         position_ids = torch.arange(time_step, prev_output_tokens.size(1) + time_step,
