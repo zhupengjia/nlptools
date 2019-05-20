@@ -3,7 +3,7 @@
     Author: Pengjia Zhu (zhupengjia@gmail.com)
 '''
 
-import torch
+import torch, h5py
 import torch.nn as nn
 from pytorch_pretrained_bert.modeling import gelu, BertLayerNorm, BertModel, BertConfig
 from .attention import MultiheadAttention
@@ -13,8 +13,9 @@ class TransformerEncoder(BertModel):
     """
         Transformer Encoder, call BertModel directly
     """
-    def __init__(self, vocab_size=30522, num_hidden_layers=12, num_attention_heads=12,
-                 max_position_embeddings=512, intermediate_size=3072, hidden_size=768, dropout=0.1):
+    def __init__(self, vocab_size=30522, pretrained_embedding=None, num_hidden_layers=12,
+                 num_attention_heads=12, max_position_embeddings=512, intermediate_size=3072,
+                 hidden_size=768, dropout=0.1):
         config = BertConfig(vocab_size_or_config_json_file=vocab_size,
                             num_hidden_layers=num_hidden_layers,
                             num_attention_heads=num_attention_heads,
@@ -29,6 +30,10 @@ class TransformerEncoder(BertModel):
                             type_vocab_size=2)
         super(TransformerEncoder, self).__init__(config=config)
         self.config = self.config.to_dict()
+        if pretrained_embedding:
+            with h5py.File(pretrained_embedding, 'r') as h5file:
+                self.embeddings.word_embeddings = nn.Embedding.from_pretrained(torch.FloatTensor(h5file["word2vec"]))
+
 
 class TransformerDecoder(nn.Module):
     """

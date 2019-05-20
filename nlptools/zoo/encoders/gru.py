@@ -3,17 +3,17 @@
     Author: Pengjia Zhu (zhupengjia@gmail.com)
 '''
 
-import torch
+import torch, h5py
 import torch.nn as nn
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
-torch.autograd.set_detect_anomaly(True)
 
 class GRUEncoder(nn.Module):
     """
         GRU Encoder
     """
-    def __init__(self, vocab_size, hidden_size=768, intermediate_size=1024, num_hidden_layers=1,
+    def __init__(self, vocab_size, pretrained_embedding=None, hidden_size=768,
+                 intermediate_size=1024, num_hidden_layers=1,
                  bidirectional=True, dropout=0.1, **args):
         super().__init__()
         self.config = {"vocab_size": vocab_size,
@@ -21,7 +21,11 @@ class GRUEncoder(nn.Module):
                        "intermediate_size": intermediate_size,
                        "num_hidden_layers": num_hidden_layers,
                        "bidirectional": bidirectional}
-        self.embeddings = nn.Embedding(vocab_size, hidden_size)
+        if pretrained_embedding:
+            with h5py.File(pretrained_embedding, 'r') as h5file:
+                self.embeddings = nn.Embedding.from_pretrained(torch.FloatTensor(h5file["word2vec"]))
+        else:
+            self.embeddings = nn.Embedding(vocab_size, hidden_size)
         self.gru = nn.GRU(input_size=hidden_size, hidden_size=intermediate_size,
                             num_layers=num_hidden_layers, dropout=dropout if num_hidden_layers > 1 else 0,
                             bidirectional=bidirectional, batch_first=True)
