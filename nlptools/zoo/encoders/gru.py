@@ -13,22 +13,23 @@ class GRUEncoder(nn.Module):
     """
         GRU Encoder
     """
-    def __init__(self, vocab_size, hidden_size=768, num_hidden_layers=1,
+    def __init__(self, vocab_size, hidden_size=768, intermediate_size=1024, num_hidden_layers=1,
                  bidirectional=True, dropout=0.1, **args):
         super().__init__()
         self.config = {"vocab_size": vocab_size,
                        "hidden_size": hidden_size,
+                       "intermediate_size": intermediate_size,
                        "num_hidden_layers": num_hidden_layers,
                        "bidirectional": bidirectional}
         self.embeddings = nn.Embedding(vocab_size, hidden_size)
-        self.gru = nn.GRU(input_size=hidden_size, hidden_size=hidden_size,
+        self.gru = nn.GRU(input_size=hidden_size, hidden_size=intermediate_size,
                             num_layers=num_hidden_layers, dropout=dropout if num_hidden_layers > 1 else 0,
                             bidirectional=bidirectional, batch_first=True)
 
         self.num_hidden_layers = num_hidden_layers
         self.bidirectional = bidirectional
-        self.linear_out_x = nn.Linear(hidden_size*2 if bidirectional else hidden_size, hidden_size)
-        self.linear_out_hidden = nn.Linear(hidden_size*2 if bidirectional else hidden_size, hidden_size)
+        self.linear_out_x = nn.Linear(intermediate_size*2 if bidirectional else intermediate_size, hidden_size)
+        self.linear_out_hidden = nn.Linear(intermediate_size*2 if bidirectional else intermediate_size, hidden_size)
 
     def forward(self, input_ids, attention_mask, **args):
         length = attention_mask.sum(dim=1)
@@ -59,32 +60,40 @@ class GRUDecoder(nn.Module):
     """
         GRU Decoder
     """
-    def __init__(self, word_embedding, num_hidden_layers=1, attention=True, num_attention_heads=8, max_seq_len=20, dropout=0.1, shared_embed=True):
+    def __init__(self, word_embedding, num_hidden_layers=1, attention=True,
+                 intermediate_size=1024, max_seq_len=20, dropout=0.1, shared_embed=True):
         super().__init__()
-        self.config = {"num_attention_heads": num_attention_heads,
-                       "num_hidden_layers": num_hidden_layers,
+        self.config = {"num_hidden_layers": num_hidden_layers,
+                       "intermediate_size": intermediate_size,
                        "shared_embed": shared_embed,
-                       "max_seq_len": max_seq_len, 
+                       "max_seq_len": max_seq_len,
                        "attention": attention
                       }
         self.word_embedding = word_embedding
 
         self.hidden_size = self.word_embedding.embedding_dim
+        self.num_embeddings = self.word_embedding.num_embeddings
+        self.intermediate_size = intermediate_size
         self.num_hidden_layers = num_hidden_layers
 
-        self.gru = nn.GRU(input_size=self.hidden_size, hidden_size=self.hidden_size,
+        self.gru = nn.GRU(input_size=self.hidden_size, hidden_size=self.intermediate_size,
                             num_layers=num_hidden_layers,
                             dropout=dropout if num_hidden_layers > 1 else 0, batch_first=True)
 
         if attention:
-            #self.attention = MultiheadAttention(self.hidden_size, num_attention_heads, dropout=dropout)
-            self.attn = nn.Linear(self.hidden_size*2,  max_seq_len)
+            self.attn = nn.Linear(self.hidden_size+self.intermediate_size,  max_seq_len)
             self.attn_combine = nn.Linear(self.hidden_size*2, self.hidden_size)
         else:
             self.attn = None
             self.attn_combine = None
         self.dropout = nn.Dropout(dropout)
-        self.output_linear = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
+        if self.intermediate_size != self.hidden_size:
+            self.hidden_proj = nn.Linear(self.hidden_size, self.intermediate_size)
+        else:
+            self.hidden_proj = None
+       
+        self.intermediate_linear = nn.Linear(self.intermediate_size, self.hidden_size)
+        self.output_linear = nn.Linear(self.hidden_size, self.num_embeddings, bias=False)
         if shared_embed:
             self.output_linear.weight = self.word_embedding.weight
 
@@ -100,8 +109,10 @@ class GRUDecoder(nn.Module):
             hidden = incre_state[obj_id]
         elif encoder_hidden is not None:
             hidden = encoder_hidden[:self.num_hidden_layers, :, :]
+            if self.hidden_proj is not None:
+                hidden = self.hidden_proj(hidden)
         else:
-            hidden = encoder_out.new_zeros(self.num_hidden_layers, bsz, self.hidden_size)
+            hidden = encoder_out.new_zeros(self.num_hidden_layers, bsz, self.intermediate_size)
 
         if self.attn is not None:
             attn = hidden[0].unsqueeze(1).expand(-1, seqlen, -1)
@@ -114,12 +125,14 @@ class GRUDecoder(nn.Module):
 
             attn = torch.matmul(score, encoder_out)
             out = torch.cat((out, attn), 2)
-        out = self.attn_combine(out)
+            out = self.attn_combine(out)
+        
         out, hidden = self.gru(out, hidden)
 
         if incre_state is not None:
             incre_state[obj_id] = hidden
         
+        out = self.intermediate_linear(out)
         out = self.output_linear(out)
         return out
 
