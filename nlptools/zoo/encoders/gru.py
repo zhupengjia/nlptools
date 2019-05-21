@@ -5,6 +5,7 @@
 
 import torch, h5py
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
@@ -36,6 +37,7 @@ class GRUEncoder(nn.Module):
         self.linear_out_hidden = nn.Linear(intermediate_size*2 if bidirectional else intermediate_size, hidden_size)
 
     def forward(self, input_ids, attention_mask, **args):
+        max_seq_len = input_ids.size(1)
         length = attention_mask.sum(dim=1)
         length, new_order = torch.sort(length, 0, descending=True)
         _, un_order = new_order.sort(0)
@@ -46,6 +48,10 @@ class GRUEncoder(nn.Module):
         x = pack_padded_sequence(x, length, batch_first=True)
         x, hidden = self.gru(x)
         x, _ = pad_packed_sequence(x, batch_first=True)
+        
+        if x.size(1) < max_seq_len:
+            x = F.pad(x, (0,0,0,max_seq_len-x.size(1),0,0), "constant")
+
         x = x[un_order]
         hidden = hidden[:, un_order, :]
 
@@ -95,7 +101,7 @@ class GRUDecoder(nn.Module):
             self.hidden_proj = nn.Linear(self.hidden_size, self.intermediate_size)
         else:
             self.hidden_proj = None
-       
+
         self.intermediate_linear = nn.Linear(self.intermediate_size, self.hidden_size)
         self.output_linear = nn.Linear(self.hidden_size, self.num_embeddings, bias=False)
         if shared_embed:
@@ -122,7 +128,7 @@ class GRUDecoder(nn.Module):
             attn = hidden[0].unsqueeze(1).expand(-1, seqlen, -1)
             attn = torch.cat((out, attn), 2)
             score = nn.Softmax(dim=2)(self.attn(attn))
-            
+
             if mask is not None:
                 mask = mask.unsqueeze(1)
                 score = score.masked_fill(mask == 0, -1e9)
@@ -130,13 +136,19 @@ class GRUDecoder(nn.Module):
             attn = torch.matmul(score, encoder_out)
             out = torch.cat((out, attn), 2)
             out = self.attn_combine(out)
-        
+
         out, hidden = self.gru(out, hidden)
 
         if incre_state is not None:
             incre_state[obj_id] = hidden
-        
+
         out = self.intermediate_linear(out)
         out = self.output_linear(out)
         return out
+
+    def reorder_incremental_state(self, incre_state, order):
+        if incre_state is None:
+            return
+        for k1 in incre_state:
+            incre_state[k1] = incre_state[k1][:, order, :]
 
