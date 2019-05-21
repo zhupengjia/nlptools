@@ -70,6 +70,9 @@ class Tokenizer_Base(object):
         if batch: return numpy.asarray([self.seg(s)['tokens'] for s in sentence], dtype=numpy.object)
         return self.seg(sentence)['tokens']
 
+    def tokens2sentence(self, tokens):
+        return " ".join(tokens)
+
 
 class Tokenizer_CoreNLP(Tokenizer_Base):
     '''
@@ -576,6 +579,17 @@ class Tokenizer_BERT(Tokenizer_Base):
         vocab.addBE()
         return vocab
 
+    def tokens2sentence(self, tokens):
+        '''
+            Join token list to sentence
+        '''
+        new_tokens = []
+        for i, t in enumerate(tokens):
+            if i > 0 and t[:2] == "##":
+                new_tokens[-1] += t[2:]
+            else:
+                new_tokens.append(t)
+        return " ".join(new_tokens)
 
 class Tokenizer_GPT2(Tokenizer_Base):
     '''
