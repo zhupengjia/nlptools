@@ -108,7 +108,7 @@ class GRUDecoder(nn.Module):
             self.output_linear.weight = self.word_embedding.weight
 
 
-    def forward(self, prev_output_tokens, encoder_out, mask=None,
+    def forward(self, prev_output_tokens, encoder_out, encoder_padding_mask=None,
                 encoder_hidden=None, incre_state=None, **args):
         bsz, seqlen = prev_output_tokens.size()
 
@@ -129,9 +129,9 @@ class GRUDecoder(nn.Module):
             attn = torch.cat((out, attn), 2)
             score = nn.Softmax(dim=2)(self.attn(attn))
 
-            if mask is not None:
-                mask = mask.unsqueeze(1)
-                score = score.masked_fill(mask == 0, -1e9)
+            if encoder_padding_mask is not None:
+                encoder_padding_mask = encoder_padding_mask.unsqueeze(1)
+                score = score.masked_fill(encoder_padding_mask == 0, -1e9)
 
             attn = torch.matmul(score, encoder_out)
             out = torch.cat((out, attn), 2)
