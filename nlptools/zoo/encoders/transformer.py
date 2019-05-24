@@ -3,9 +3,10 @@
     Author: Pengjia Zhu (zhupengjia@gmail.com)
 '''
 
-import torch, h5py
+import torch, tempfile, tarfile, os, shutil, sys
 import torch.nn as nn
-from pytorch_pretrained_bert.modeling import gelu, BertLayerNorm, BertModel, BertConfig
+from pytorch_pretrained_bert.modeling import gelu, BertLayerNorm, BertModel, BertConfig, PRETRAINED_MODEL_ARCHIVE_MAP, WEIGHTS_NAME, CONFIG_NAME, BERT_CONFIG_NAME
+from pytorch_pretrained_bert.file_utils import cached_path
 from .attention import MultiheadAttention
 
 
@@ -13,7 +14,7 @@ class TransformerEncoder(BertModel):
     """
         Transformer Encoder, call BertModel directly
     """
-    def __init__(self, vocab_size=30522, pretrained_embedding=None, num_hidden_layers=12,
+    def __init__(self, vocab_size=30522, bert_model_name=None, num_hidden_layers=12,
                  num_attention_heads=12, max_position_embeddings=512, intermediate_size=3072,
                  hidden_size=768, dropout=0.1):
         config = BertConfig(vocab_size_or_config_json_file=vocab_size,
@@ -30,9 +31,42 @@ class TransformerEncoder(BertModel):
                             type_vocab_size=2)
         super(TransformerEncoder, self).__init__(config=config)
         self.config = self.config.to_dict()
-        if pretrained_embedding:
-            with h5py.File(pretrained_embedding, 'r') as h5file:
-                self.embeddings.word_embeddings = nn.Embedding.from_pretrained(torch.FloatTensor(h5file["word2vec"]))
+        if bert_model_name:
+            # extract file path
+            if bert_model_name in PRETRAINED_MODEL_ARCHIVE_MAP:
+                archive_file = PRETRAINED_MODEL_ARCHIVE_MAP[bert_model_name]
+            else:
+                archive_file = bert_model_name
+            archive_file = cached_path(archive_file)
+
+            #load dict
+            tempdir = None
+            if os.path.isdir(archive_file):
+                serialization_dir = archive_file
+            else:
+                tempdir = tempfile.mkdtemp()
+                with tarfile.open(archive_file, 'r:gz') as archive:
+                    archive.extractall(tempdir)
+                serialization_dir = tempdir
+
+            weights_path = os.path.join(serialization_dir, WEIGHTS_NAME)
+            bert_state_dict = torch.load(weights_path)
+            if tempdir:
+                shutil.rmtree(tempdir)
+
+            bert_state_keys = bert_state_dict.keys()
+
+            for k, p in self.named_parameters():
+                bert_key = "bert." + k
+                if bert_key in bert_state_keys and bert_state_dict[bert_key].size() == p.size():
+                    p.data.copy_(bert_state_dict[bert_key].data)
+
+    def freeze(self):
+        """
+        freeze parameters
+        """
+        for param in self.parameters():
+            param.requires_grad = False
 
 
 class TransformerDecoder(nn.Module):
@@ -47,6 +81,7 @@ class TransformerDecoder(nn.Module):
         self.config = {"num_hidden_layers": num_hidden_layers,
                        "num_attention_heads": num_attention_heads,
                        "intermediate_size": intermediate_size,
+                       "initializer_range": 0.02,
                        "shared_embed": shared_embed}
 
         self.dropout = dropout
@@ -71,6 +106,20 @@ class TransformerDecoder(nn.Module):
         self.fc3 = nn.Linear(embedding_dim, num_embeddings, bias=False)
         if shared_embed:
             self.fc3.weight = self.word_embedding.weight
+
+        self.apply(self.init_bert_weights)
+
+    def init_bert_weights(self, module):
+        """
+            Initialize the weights.
+        """
+        if isinstance(module, (nn.Linear, nn.Embedding)):
+            module.weight.data.normal_(mean=0.0, std=self.config["initializer_range"])
+        elif isinstance(module, BertLayerNorm):
+            module.bias.data.zero_()
+            module.weight.data.fill_(1.0)
+        if isinstance(module, nn.Linear) and module.bias is not None:
+            module.bias.data.zero_()
 
     def forward(self, prev_output_tokens, encoder_out, encoder_padding_mask,
                 time_step=0, incre_state=None, **args):
