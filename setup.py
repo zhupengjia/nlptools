@@ -18,11 +18,12 @@ def read(fname):
 
 setup(
     name = "nlptools",
-    version = "0.4",
+    version = "0.5.0",
+    python_requires=">=3.0",
     author = "Pengjia Zhu",
     author_email = "zhupengjia@gmail.com",
-    description = ("nlptools"),
-    license = "Commercial",
+    description = "nlptools",
+    license = "MIT License",
     keywords = "nlptools",
     url = "",
     packages= find_packages(),
@@ -31,7 +32,6 @@ setup(
             # 'embedding = dtm.embedding:main'
             # ]
         # },
-    setup_requires=['pytest-runner' ],
     install_requires=[
         "numpy",
         #"Cython",
@@ -40,11 +40,11 @@ setup(
         'bidict',
         #"requests"
         ],
-    tests_require=['pytest'],
-    #ext_modules = cythonize(["nlptools/*/*.pyx", "nlptools/*/*/*/*.pyx"]),
     long_description=read('README.md'),
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
         "Topic :: Utilities",
     ],
 )

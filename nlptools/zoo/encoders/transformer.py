@@ -30,7 +30,6 @@ class TransformerEncoder(BertModel):
                             layer_norm_eps=1e-12,
                             type_vocab_size=2)
         super(TransformerEncoder, self).__init__(config=config)
-        self.config = self.config.to_dict()
         if bert_model_name:
             # extract file path
             if bert_model_name in PRETRAINED_MODEL_ARCHIVE_MAP:

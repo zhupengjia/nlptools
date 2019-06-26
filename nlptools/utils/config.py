@@ -30,7 +30,7 @@ class Config(dict):
             config = vars(cfginput)
         else:
             with open(cfginput, encoding='utf-8') as f:
-                config = yaml.load(f)
+                config = yaml.load(f, Loader=yaml.FullLoader)
             
         for k in config:
             if isinstance(config[k], (dict, argparse.Namespace)):
