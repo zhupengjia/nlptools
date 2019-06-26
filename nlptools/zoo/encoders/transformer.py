@@ -38,20 +38,7 @@ class TransformerEncoder(BertModel):
                 archive_file = bert_model_name
             archive_file = cached_path(archive_file)
 
-            #load dict
-            tempdir = None
-            if os.path.isdir(archive_file):
-                serialization_dir = archive_file
-            else:
-                tempdir = tempfile.mkdtemp()
-                with tarfile.open(archive_file, 'r:gz') as archive:
-                    archive.extractall(tempdir)
-                serialization_dir = tempdir
-
-            weights_path = os.path.join(serialization_dir, WEIGHTS_NAME)
-            bert_state_dict = torch.load(weights_path)
-            if tempdir:
-                shutil.rmtree(tempdir)
+            bert_state_dict = torch.load(archive_file)
 
             bert_state_keys = bert_state_dict.keys()
 

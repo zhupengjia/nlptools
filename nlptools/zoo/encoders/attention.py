@@ -49,7 +49,7 @@ class MultiheadAttention(nn.Module):
         # Apply attention on all the projected vectors in batch.
         scores = torch.matmul(v["q"], v["k"].transpose(-1, -2)) / math.sqrt(self.head_dim)
         if mask is not None:
-            scores = scores.masked_fill(mask == 0, -1e9)
+            scores = scores.masked_fill(mask == 0, -1e3)
 
         attn_probs = self.dropout(nn.Softmax(dim=-1)(scores))
         context_layer = torch.matmul(attn_probs, v["v"])
