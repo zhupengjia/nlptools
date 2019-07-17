@@ -33,6 +33,20 @@ class Speech_Deepspeech:
         process = subprocess.run(['ffmpeg', '-i', oggfile, "-ar", "16000",  wavfile])
         if process.returncode != 0:
             raise Exception("something went wrong when converting voice data")
+    
+    @staticmethod
+    def wav2ogg(wavfile, oggfile):
+        """
+            Convert wav file to ogg file
+
+            Input:
+                - wavfile: wav file path
+                - oggfile: ogg file path
+        """
+        #process = subprocess.run(['ffmpeg', '-i', wavfile, "-ac", "1", "-map", "0:a", "-codec:a", "opus", "-b:a", "128k", "-vbr", "off", "-ar", "24000", oggfile])
+        process = subprocess.run(['ffmpeg', '-i', wavfile, oggfile])
+        if process.returncode != 0:
+            raise Exception("something went wrong when converting voice data")
 
     def __call__(self, wavfile):
         with wave.open(wavfile, "rb") as fin:
