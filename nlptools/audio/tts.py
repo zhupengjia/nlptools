@@ -1,28 +1,12 @@
 #!/usr/bin/env python
-import os
-import sys
-import io
 import torch 
-import time
-import numpy as np
-from collections import OrderedDict
-
-import librosa
-import librosa.display
-
-from TTS.models.tacotron import Tacotron 
-from TTS.layers import *
-from TTS.utils.data import *
-from TTS.utils.audio import AudioProcessor
-from TTS.utils.generic_utils import load_config, setup_model
-from TTS.utils.text import text_to_sequence
 from TTS.utils.synthesis import synthesis
 
 
 class MozillaTTS:
     """
         Wrapper for Mozilla TTS
-        
+
         Related repositories:
             - Mozilla TTS:
                 - https://github.com/mozilla/TTS
@@ -35,6 +19,7 @@ class MozillaTTS:
 
     """
     def __init__(self, tts_model, tts_config, wavernn_model=None, wavernn_config=None, device="cpu"):
+        from TTS.utils.generic_utils import load_config
         self.tts_config = load_config(tts_config)
         self.tts_config.windowing = True
         if not torch.cuda.is_available():
@@ -57,6 +42,8 @@ class MozillaTTS:
     def _load_tts(self):
         # LOAD TTS MODEL
         from TTS.utils.text.symbols import symbols, phonemes
+        from TTS.utils.audio import AudioProcessor
+        from TTS.utils.generic_utils import setup_model
 
         # load the model
         num_chars = len(phonemes) if self.tts_config.use_phonemes else len(symbols)
@@ -76,7 +63,6 @@ class MozillaTTS:
 
     def _load_wavernn(self):
         from WaveRNN.models.wavernn import Model
-        bits = 10
 
         self.wavernn = Model(
                 rnn_dims=512,
@@ -110,6 +96,6 @@ if __name__ == "__main__":
     wavernn_model = "/home/pzhu/data/wavernn/checkpoint_433000.pth.tar"
     wavernn_config = "/home/pzhu/data/wavernn/config.json"
 
-    tts = MozillaTTS(tts_model, tts_config, wavernn_model=None, wavernn_config=None, device="cuda:0")
+    tts = MozillaTTS(tts_model, tts_config, wavernn_model, wavernn_config, device="cuda:0")
     tts(sentence, "/tmp/tts.wav")
 
