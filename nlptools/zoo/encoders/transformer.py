@@ -5,8 +5,8 @@
 
 import torch, tempfile, tarfile, os, shutil, sys
 import torch.nn as nn
-from pytorch_pretrained_bert.modeling import gelu, BertLayerNorm, BertModel, BertConfig, PRETRAINED_MODEL_ARCHIVE_MAP, WEIGHTS_NAME, CONFIG_NAME, BERT_CONFIG_NAME
-from pytorch_pretrained_bert.file_utils import cached_path
+from pytorch_transformers.modeling_bert import gelu, BertLayerNorm, BertModel, BertConfig, BERT_PRETRAINED_MODEL_ARCHIVE_MAP
+from pytorch_transformers.file_utils import cached_path
 from .attention import MultiheadAttention
 
 
@@ -32,8 +32,8 @@ class TransformerEncoder(BertModel):
         super(TransformerEncoder, self).__init__(config=config)
         if bert_model_name:
             # extract file path
-            if bert_model_name in PRETRAINED_MODEL_ARCHIVE_MAP:
-                archive_file = PRETRAINED_MODEL_ARCHIVE_MAP[bert_model_name]
+            if bert_model_name in BERT_PRETRAINED_MODEL_ARCHIVE_MAP:
+                archive_file = BERT_PRETRAINED_MODEL_ARCHIVE_MAP[bert_model_name]
             else:
                 archive_file = bert_model_name
             archive_file = cached_path(archive_file)
