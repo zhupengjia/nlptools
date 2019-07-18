@@ -546,7 +546,7 @@ class Tokenizer_BERT(Tokenizer_Base):
             - do_lower_case: default True
     '''
     def __init__(self, bert_model_name, do_lower_case=True, **args):
-        from pytorch_pretrained_bert import BertTokenizer 
+        from pytorch_transformers import BertTokenizer 
         Tokenizer_Base.__init__(self, **args)
         config = {"bert_model_name": bert_model_name, "do_lower_case": do_lower_case}
         self.config = {**config, **self.config}

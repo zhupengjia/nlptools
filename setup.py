@@ -18,7 +18,7 @@ def read(fname):
 
 setup(
     name = "nlptools",
-    version = "0.5.1",
+    version = "0.6.0",
     python_requires=">=3.0",
     author = "Pengjia Zhu",
     author_email = "zhupengjia@gmail.com",
