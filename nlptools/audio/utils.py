@@ -65,4 +65,6 @@ def concat_wavs(wavfiles, outfile, silence=0):
     else:
         process = subprocess.run(["sox"] + wavfiles + [outfile])
     if process.returncode != 0:
+        print(process.returncode)
         raise Exception("something went wrong when making silence wav, please check if you have sox installed")
+
