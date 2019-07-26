@@ -78,7 +78,6 @@ class TFIDF:
         freqs = numpy.array(binary.sum(1)).squeeze()
         return freqs
 
-
     def load_index(self, corpus_ids=None, retrain=False, local_use=False):
         '''
             Build or load index for corpus_ids
@@ -96,6 +95,7 @@ class TFIDF:
             tmp = zload(self.cached_index)
             self.count_matrix = tmp[0]
             self.word_idfs = tmp[1]
+            self.vocab_size = self.count_matrix.shape[0]
             return
         if corpus_ids is None:
             return
@@ -109,6 +109,20 @@ class TFIDF:
                 zdump((count_matrix, word_idfs), self.cached_index)
         else:
             return count_matrix, word_idfs
+
+    def get_index(self):
+        """
+            return index file
+        """
+        return self.count_matrix, self.word_idfs
+
+    def set_index(cls, count_matrix, word_idfs):
+        """
+            set index 
+        """
+        self.count_matrix = count_matrix
+        self.word_idfs = word_idfs
+        self.vocab_size = self.count_matrix.shape[0]
 
     def search_index(self, word_ids, corpus_ids=None, topN=1, global_idfs=True):
         '''
