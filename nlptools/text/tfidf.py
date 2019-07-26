@@ -38,12 +38,13 @@ class TFIDF:
         self.vocab_size = vocab_size
         self.load_index()
 
-    def get_count_matrix(self, corpus_ids):
+    def get_count_matrix(self, corpus_ids, corpus_len):
         '''
             count bag of words in corpus_ids
 
             Input:
-                - corpus_ids: corpus ids, format of [[id, id, ...],...] 
+                - corpus_ids: list or iterator of corpus ids, format of [[id, id, ...],...] 
+                - corpus_len: int, length of corpus ids
 
             Output:
                 - count matrix (scipy.sparse.csr_matrix)
@@ -53,7 +54,7 @@ class TFIDF:
             max(multiprocessing.cpu_count()-2, 1)
         )
 
-        for b_row, b_col, b_data in pool.imap_unordered(n_count_ids, zip(corpus_ids, range(len(corpus_ids)))):
+        for b_row, b_col, b_data in pool.imap_unordered(n_count_ids, zip(corpus_ids, range(corpus_len))):
             row.extend(b_row)
             col.extend(b_col)
             data.extend(b_data)
@@ -61,7 +62,7 @@ class TFIDF:
         pool.join()
         
         count_matrix = scipy.sparse.csr_matrix(
-            (data, (row, col)), shape=(self.vocab_size, len(corpus_ids))
+            (data, (row, col)), shape=(self.vocab_size, corpus_len)
         )
         count_matrix.sum_duplicates()
          
@@ -78,12 +79,13 @@ class TFIDF:
         freqs = numpy.array(binary.sum(1)).squeeze()
         return freqs
 
-    def load_index(self, corpus_ids=None, retrain=False, local_use=False):
+    def load_index(self, corpus_ids=None, corpus_len=None, retrain=False, local_use=False):
         '''
             Build or load index for corpus_ids
 
             Input:
-                - corpus_ids: a list of sentence_ids. Will only be used when the index is needed to train. default is None.
+                - corpus_ids: a list or an iterator of sentence_ids. Will only be used when the index is needed to train. default is None.
+                - corpus_len: int, length of corpus ids. Necessary if corpus_ids is an iterator. Default is None
                 - retrain: bool, check if index need to rebuild, default is False
                 - local_use: bool, check if return count_matrix or word_idfs. If not, they will be saved to intern variable. Else they will be returned. Default is False
 
@@ -99,7 +101,9 @@ class TFIDF:
             return
         if corpus_ids is None:
             return
-        count_matrix = self.get_count_matrix(corpus_ids)
+        if corpus_len is None:
+            corpus_len = len(corpus_ids)
+        count_matrix = self.get_count_matrix(corpus_ids, corpus_len)
         word_freqs = self.get_doc_freqs(count_matrix)
         word_idfs = numpy.log(count_matrix.shape[1] - word_freqs + 0.5) - numpy.log(word_freqs + 0.5)
         if not local_use:
