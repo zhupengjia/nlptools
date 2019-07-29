@@ -2,6 +2,7 @@
 import numpy, os, pandas, re
 from sklearn.metrics.pairwise import pairwise_distances
 from .tfidf import TFIDF
+from .vocab import Vocab
 
 '''
     Author: Pengjia Zhu (zhupengjia@gmail.com)

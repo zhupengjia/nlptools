@@ -1,27 +1,25 @@
 #!/usr/bin/env python3
-import numpy, multiprocessing, os, scipy
-from collections import Counter
+import numpy, multiprocessing, os
+from scipy.sparse import csr_matrix, lil_matrix
 from functools import partial
 from ..utils import zload, zdump
-from .vocab import Vocab
 
 
 def n_count_ids(ids):
     '''
         calculate n_count for each id in ids
-        
-        Input: 
+
+        Input:
             - ids: list of int
 
         Output:
             - sparse matrix with (row list, col list, data list)
     '''
     ids, doc_id = ids
-    counts = Counter(ids)
-    row = list(counts.keys())
-    data = list(counts.values())
-    col = [doc_id] * len(row)
-    return row, col, data
+    row, counts= numpy.unique(ids, return_counts=True)
+    col = numpy.ones(len(row)) * doc_id
+
+    return row, col, counts
 
 class TFIDF:
     '''
@@ -49,29 +47,25 @@ class TFIDF:
             Output:
                 - count matrix (scipy.sparse.csr_matrix)
         '''
-        row, col, data = [], [], []
+        #row, col, data = [], [], []
         pool = multiprocessing.Pool(
             max(multiprocessing.cpu_count()-2, 1)
         )
 
+        count_matrix = lil_matrix((self.vocab_size, corpus_len), dtype="int")
+
         for b_row, b_col, b_data in pool.imap_unordered(n_count_ids, zip(corpus_ids, range(corpus_len))):
-            row.extend(b_row)
-            col.extend(b_col)
-            data.extend(b_data)
+            count_matrix[b_row, b_col] += b_data
         pool.close()
         pool.join()
-        
-        count_matrix = scipy.sparse.csr_matrix(
-            (data, (row, col)), shape=(self.vocab_size, corpus_len)
-        )
-        count_matrix.sum_duplicates()
-         
+
+        count_matrix = count_matrix.tocsr()
+
         return count_matrix
 
     def get_doc_freqs(self, cnts):
         '''
             Return word --> # of docs it appears in.
-            
             Input:
                 - count matrix
         '''
@@ -120,7 +114,7 @@ class TFIDF:
         """
         return self.count_matrix, self.word_idfs
 
-    def set_index(cls, count_matrix, word_idfs):
+    def set_index(self, count_matrix, word_idfs):
         """
             set index 
         """
@@ -195,7 +189,7 @@ class TFIDF:
 
         # One row, sparse csr matrix
         indptr = numpy.array([0, len(wids_unique)])
-        spvec = scipy.sparse.csr_matrix(
+        spvec = csr_matrix(
             (data, wids_unique, indptr), shape=(1, self.vocab_size)
         )
         return spvec 
