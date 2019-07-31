@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import numpy, multiprocessing, os
+from tqdm import tqdm
 from scipy.sparse import csr_matrix, lil_matrix
 from functools import partial
 from ..utils import zload, zdump
@@ -54,7 +55,7 @@ class TFIDF:
 
         count_matrix = lil_matrix((self.vocab_size, corpus_len), dtype="int")
 
-        for b_row, b_col, b_data in pool.imap_unordered(n_count_ids, zip(corpus_ids, range(corpus_len))):
+        for b_row, b_col, b_data in tqdm(pool.imap_unordered(n_count_ids, zip(corpus_ids, range(corpus_len))), desc="Building count matrix"):
             count_matrix[b_row, b_col] += b_data
         pool.close()
         pool.join()
