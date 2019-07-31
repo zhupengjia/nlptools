@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import numpy, multiprocessing, os
 from tqdm import tqdm
-from scipy.sparse import csr_matrix, lil_matrix
+from scipy.sparse import csr_matrix
 from functools import partial
 from ..utils import zload, zdump
 
@@ -18,7 +18,7 @@ def n_count_ids(ids):
     '''
     ids, doc_id = ids
     row, counts= numpy.unique(ids, return_counts=True)
-    col = numpy.ones(len(row)) * doc_id
+    col = numpy.ones(len(row), "int") * doc_id
 
     return row, col, counts
 
@@ -48,19 +48,22 @@ class TFIDF:
             Output:
                 - count matrix (scipy.sparse.csr_matrix)
         '''
-        #row, col, data = [], [], []
+        row, col, data = [], [], []
         pool = multiprocessing.Pool(
             max(multiprocessing.cpu_count()-2, 1)
         )
 
-        count_matrix = lil_matrix((self.vocab_size, corpus_len), dtype="int")
-
-        for b_row, b_col, b_data in tqdm(pool.imap_unordered(n_count_ids, zip(corpus_ids, range(corpus_len))), desc="Building count matrix"):
-            count_matrix[b_row, b_col] += b_data
+        for b_row, b_col, b_data in tqdm(pool.imap_unordered(n_count_ids, zip(corpus_ids, range(corpus_len))), total=corpus_len, desc="Building count matrix"):
+            row.extend(b_row)
+            col.extend(b_col)
+            data.extend(b_data)
         pool.close()
         pool.join()
 
-        count_matrix = count_matrix.tocsr()
+        count_matrix = csr_matrix(
+            (data, (row, col)), shape=(self.vocab_size, corpus_len)
+        )
+        count_matrix.sum_duplicates()
 
         return count_matrix
 
