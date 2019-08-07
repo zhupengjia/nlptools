@@ -137,7 +137,7 @@ class TFIDF:
                 - global_idfs, bool, use global idfs calculated from large corpus when doing load_index or idfs from input corpus_ids, default is True
 
             Output:
-                - [(score, tfidf), ...], ...
+                - [(id, tfidf), ...], ...
         '''
         if corpus_ids is None:
             spvec = self.text2spvec(word_ids, self.word_idfs)
