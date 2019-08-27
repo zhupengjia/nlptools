@@ -158,7 +158,17 @@ class TFIDF:
         doc_scores = res.data[o_sort]
         doc_ids = [int(x) for x in res.indices[o_sort]]
         return list(zip(doc_ids, doc_scores))
-    
+   
+    def search(self, word_ids, topN=1):
+        """
+            Doing search
+
+            Input:
+                - word_ids: token ids
+                - topN: int, return topN result, default is 1
+        """
+        return self.search_index(word_ids, topN=topN)
+
     def search_index_batch(self, word_idss, topN = 1):
         """
             Process a batch of closest_docs requests multithreaded. Note: we can use plain threads here as scipy is outside of the GIL.

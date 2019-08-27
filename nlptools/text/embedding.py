@@ -86,7 +86,7 @@ class Embedding_File(Embedding_Base):
 
         Input:
             - w2v_word2idx: pickle filepath for word-idx mapping
-            - w2v_idx2vec: numpy dump for idx-vector mapping
+            - w2v_idx2vec: hdf5 dump for idx-vector mapping
             - any parameters mentioned in Embedding_Base
 
         Usage:
