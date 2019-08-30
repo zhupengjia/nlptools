@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-import os, numpy, re, uuid, shutil, glob, sys
+import os, re, uuid, shutil, glob, traceback
 from collections import defaultdict
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Span
-from .tokenizer import *
+from .tokenizer import Tokenizer_Spacy, Tokenizer_LTP
 
 
 '''
@@ -114,7 +114,11 @@ class NER_Base(object):
         '''
         entities = self.entities(sentence)
         for en, ev in entities:
-            sentence = re.sub(ev, "$"+en, sentence)
+            try:
+                sentence = re.sub(ev, r"$"+en, sentence)
+            except:
+                err = traceback.format_exc()
+                print(err)
         if return_dict:
             entities_dict = defaultdict(list)
             for en, ev in entities:
@@ -186,8 +190,6 @@ class NER_Spacy(NER_Base, Tokenizer_Spacy):
 
         '''
         import random
-
-        from pathlib import Path
         if 'ner' not in self.nlp.pipe_names:
             self.nlp.create_pipe('ner')
             self.nlp.add_pipe('ner')
