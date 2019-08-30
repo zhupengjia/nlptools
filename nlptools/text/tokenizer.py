@@ -172,17 +172,12 @@ class Tokenizer_Spacy(Tokenizer_Base):
             - ner_name_replace: dictionary, replace the entity name to the mapped name. Default is None
     '''
     def __init__(self, spacy_model='en', spacy_pipes=None, model_path=None, **args):
-        from spacy.util import get_lang_class, get_data_path
+        import spacy
         super().__init__(**args)
-        nlp_cls = get_lang_class(spacy_model)
-        self.nlp = nlp_cls()
+        disabled_pipelines = ['tagger', 'parser', 'ner', 'textcat', 'entity_ruler', 'sentencizer']
         if spacy_pipes is not None:
-            for name in spacy_pipes:
-                component = self.nlp.create_pipe(name)
-                self.nlp.add_pipe(component)
-            if model_path is None:
-                model_path = os.path.join(get_data_path(), "en/en_core_web_sm-2.0.0")
-            self.nlp.from_disk(model_path)
+            disabled_pipelines = list(set(disabled_pipelines) - set(spacy_pipes))
+        self.nlp = spacy.load(spacy_model, disable=disabled_pipelines)
 
 
     def add_pipe(self, custom_pipe, **args):
