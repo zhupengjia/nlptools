@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import os, string, numpy, re, glob, json, requests
+import os, string, numpy, re, glob, json, requests, copy
+from string import punctuation
 from ..utils import restpost
 
 '''
@@ -27,10 +28,16 @@ def format_sentence(sentence, vocab, tokenizer=None, max_seq_len=50):
                 return None
         else:
             tokens = sentence
-        if isinstance(sentence[0], int):
-            token_ids = tokens[:max_seq_len-2]
-        else:
-            token_ids = vocab.words2id(tokens)[:max_seq_len-2]
+        if not isinstance(sentence[0], int):
+            if len(tokens) > max_seq_len - 2:
+                tokens_bak = copy.deepcopy(tokens)
+                tokens = list(tokens)
+                while len(tokens) > 0 and tokens[-1][-1] in punctuation:
+                    tokens.pop()
+                if len(tokens) < 1:
+                    tokens = tokens_bak
+            token_ids = vocab.words2id(tokens)
+        token_ids = token_ids[:max_seq_len-2]
     if isinstance(token_ids, torch.Tensor):
         token_ids = token_ids.cpu().detach().numpy()
         token_ids = token_ids[:max_seq_len-2]
