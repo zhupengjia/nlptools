@@ -115,7 +115,7 @@ class NER_Base(object):
         entities = self.entities(sentence)
         for en, ev in entities:
             try:
-                sentence = re.sub(ev, r"$"+en, sentence)
+                sentence = re.sub(ev, r"{"+en+r"}", sentence)
             except:
                 err = traceback.format_exc()
                 print(err)
