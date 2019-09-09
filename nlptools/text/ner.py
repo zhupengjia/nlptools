@@ -154,11 +154,18 @@ class NER_Spacy(NER_Base, Tokenizer_Spacy):
 
         if regex is not None:
             regex_matcher = RegexMatcher(self.nlp, regex)
-            self.nlp.add_pipe(regex_matcher, before="ner")
+            if "ner" in self.nlp.pipe_names:
+                self.nlp.add_pipe(regex_matcher, before="ner")
+            else:
+                self.nlp.add_pipe(regex_matcher, last=True)
 
         if keywords is not None:
             entity_matcher = KeywordsMatcher(self.nlp, self._read_keywords(keywords))
-            self.nlp.add_pipe(entity_matcher, before="ner")
+            if "ner" in self.nlp.pipe_names:
+                self.nlp.add_pipe(entity_matcher, before="ner")
+            else:
+                self.nlp.add_pipe(entity_matcher, last=True)
+
 
     def entities(self, sentence):
         '''
