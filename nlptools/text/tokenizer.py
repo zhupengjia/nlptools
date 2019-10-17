@@ -548,7 +548,7 @@ class Tokenizer_BERT(Tokenizer_Base):
             - do_lower_case: default True
     '''
     def __init__(self, bert_model_name, do_lower_case=True, **args):
-        from pytorch_transformers import BertTokenizer 
+        from transformers import BertTokenizer 
         Tokenizer_Base.__init__(self, **args)
         config = {"bert_model_name": bert_model_name, "do_lower_case": do_lower_case}
         self.config = {**config, **self.config}
@@ -601,7 +601,7 @@ class Tokenizer_GPT2(Tokenizer_Base):
             - model_name: vocab file location or one of the supported model name:
     '''
     def __init__(self, model_name, **args):
-        from pytorch_pretrained_bert import GPT2LMHeadModel, GPT2Tokenizer
+        from transformers import GPT2LMHeadModel, GPT2Tokenizer
         Tokenizer_Base.__init__(self, **args)
         self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 
