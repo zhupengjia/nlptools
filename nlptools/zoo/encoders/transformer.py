@@ -5,8 +5,8 @@
 
 import torch, tempfile, tarfile, os, shutil, sys
 import torch.nn as nn
-from pytorch_transformers.modeling_bert import gelu, BertLayerNorm, BertModel, BertConfig, BERT_PRETRAINED_MODEL_ARCHIVE_MAP
-from pytorch_transformers.file_utils import cached_path
+from transformers.modeling_bert import gelu, BertLayerNorm, BertModel, BertConfig, BERT_PRETRAINED_MODEL_ARCHIVE_MAP
+from transformers.file_utils import cached_path
 from .attention import MultiheadAttention
 
 
